@@ -13,8 +13,10 @@ This project is a web application designed to collect basketball data from vario
 - Database: MongoDB
 
 ## Installation
-1. Clone the repository: `git clone' 
-2. Navigate to the project directory: `cd basketball-data-collection-web-app`
-3. Install dependencies: `npm install`
-4. Start the application: `npm run dev`
-5. Open your browser and navigate to `http://localhost:3000` to access the application.
+1. Open Terminal (if Windows user, install git before continuing)
+2. Clone the repository in preferred directory: `git clone https://github.com/pieroevcc/Basketball-Data-Collection-Web-App.git`
+3. Navigate to the project directory: `cd basketball-data-collection-web-app`
+4. Install dependencies: `npm install`
+5. Start the application: `npm run dev`
+6. Open your browser and navigate to `http://localhost:####` to access the application.
+7. To exit the application: `q`

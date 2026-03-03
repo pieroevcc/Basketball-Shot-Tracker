@@ -89,6 +89,23 @@
   min-height: 500px;
 }
 
+.stats-tab-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Both children have width:100% in their own CSS which overrides flex-basis.
+   Reset width so flex-basis (300px) controls sizing instead. */
+.stats-tab-layout > * {
+  flex: 1 1 300px;
+  width: auto;
+  max-width: 500px;
+}
+
 .app-footer {
   text-align: center;
   color: rgb(255, 255, 255);

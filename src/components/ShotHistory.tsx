@@ -5,9 +5,10 @@ import './ShotHistory.css';
 interface ShotHistoryProps {
   shots: Shot[];
   onClear: () => void;
+  onDelete: (id: string) => void;
 }
 
-const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear }) => {
+const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear, onDelete }) => {
   const recentShots = [...shots].reverse().slice(0, 10);
 
   return (
@@ -32,6 +33,13 @@ const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear }) => {
               <span className={`shot-result ${shot.made ? 'made' : 'missed'}`}>
                 {shot.made ? '✅ Made' : '❌ Missed'}
               </span>
+              <button
+                className="delete-btn"
+                onClick={() => onDelete(shot.id)}
+                title="Delete this shot"
+              >
+                ✕
+              </button>
             </div>
           ))}
         </div>

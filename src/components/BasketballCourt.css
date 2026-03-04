@@ -78,3 +78,88 @@
   background: #777;
   transform: translateY(-2px);
 }
+
+.btn-undo {
+  background: #6366f1;
+  color: #fff;
+}
+
+.btn-undo:hover {
+  background: #4f46e5;
+  transform: translateY(-2px);
+}
+
+/* Shot counter (used when maxShots is set) */
+.shot-counter {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  padding: 8px 20px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.shot-counter-done {
+  color: #4ade80;
+}
+
+/* Wrapper for the SVG + overlay stacking */
+.court-svg-wrapper-interactive {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* Locked state: dim the court and disable pointer events */
+.court-locked {
+  pointer-events: none;
+  opacity: 0.65;
+  cursor: default !important;
+}
+
+/* Overlay shown on top of locked court */
+.court-locked-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.court-locked-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 24px;
+}
+
+.locked-emoji {
+  font-size: 52px;
+  animation: locked-bounce 1s ease-in-out infinite alternate;
+}
+
+@keyframes locked-bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-8px); }
+}
+
+.locked-text {
+  font-size: 28px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.locked-subtext {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  max-width: 260px;
+}

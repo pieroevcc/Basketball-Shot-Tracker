@@ -107,6 +107,10 @@ npm install firebase
 }
 ```
 
+# Project Rules
+- Tech Stack: React, Tailwind, Firebase/Firestore.
+- Style: Functional components with TypeScript.
+- State: Use the `useSession` hook for all real-time Firestore sync.
 ---
 
 ## GitHub Repo

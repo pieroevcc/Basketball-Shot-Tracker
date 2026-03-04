@@ -20,3 +20,14 @@ This project is a web application designed to collect basketball data from vario
 5. Start the application: `npm run dev`
 6. Open your browser and navigate to `http://localhost:####` to access the application.
 7. To exit the application: `q`
+
+1. Deploy the security rules (one-time setup):
+
+npm install -g firebase-tools
+firebase login
+firebase use basketball-shot-tracker-21c0e
+firebase deploy --only firestore:rules
+2. Run the app:
+
+
+npm run dev

@@ -1,0 +1,323 @@
+.teacher-lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 100vh;
+  gap: 24px;
+}
+
+/* ---- Code Banner ---- */
+.teacher-code-banner {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border-radius: 20px;
+  padding: 24px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+}
+
+.teacher-code-label {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.teacher-code-value {
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 16px;
+  color: #FF6B35;
+  font-family: 'Courier New', monospace;
+  line-height: 1.1;
+}
+
+/* ---- Section card ---- */
+.teacher-section {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.teacher-section-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #1a1a2e;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.participant-badge {
+  font-size: 16px;
+  font-weight: 700;
+  background: #FF6B35;
+  color: white;
+  border-radius: 20px;
+  padding: 4px 14px;
+}
+
+.teacher-section-subtitle {
+  font-size: 16px;
+  color: #555;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.teacher-empty {
+  font-size: 18px;
+  color: #888;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+/* ---- Participant list ---- */
+.teacher-participant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.teacher-participant-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f7f7f7;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 18px;
+}
+
+.participant-name {
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.participant-joined {
+  font-size: 14px;
+  font-weight: 600;
+  color: #27ae60;
+  background: #eafaf1;
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+/* ---- Progress table ---- */
+.teacher-progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.teacher-progress-table thead th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  border-bottom: 2px solid #eee;
+}
+
+.teacher-progress-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.teacher-progress-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.teacher-progress-table td {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+.td-name {
+  font-weight: 700;
+  font-size: 18px;
+  color: #1a1a2e;
+}
+
+.td-shots {
+  font-weight: 700;
+  color: #555;
+  white-space: nowrap;
+}
+
+.td-bar {
+  width: 40%;
+  min-width: 100px;
+}
+
+.progress-bar-bg {
+  background: #eee;
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FF6B35, #f97316);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.status-done {
+  color: #27ae60;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.status-going {
+  color: #f97316;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ---- Teams list ---- */
+.teacher-teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teacher-team-card {
+  background: #f7f7ff;
+  border: 2px solid #c7d2fe;
+  border-radius: 16px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  flex-wrap: wrap;
+}
+
+.teacher-team-card.large {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.team-badge {
+  font-size: 12px;
+  font-weight: 700;
+  background: #6366f1;
+  color: white;
+  border-radius: 8px;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.team-member-name {
+  color: #1a1a2e;
+}
+
+.vs-divider {
+  color: #6366f1;
+  font-size: 20px;
+}
+
+.team-member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+}
+
+.team-member-row .progress-bar-bg {
+  flex: 1;
+  min-width: 80px;
+}
+
+/* ---- Action buttons ---- */
+.teacher-action-btn {
+  padding: 18px 36px;
+  font-size: 20px;
+  font-weight: 900;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  letter-spacing: 0.3px;
+  align-self: flex-start;
+}
+
+.teacher-action-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+
+.teacher-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.teacher-action-btn.primary {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
+}
+
+.teacher-action-btn.primary:hover:not(:disabled) {
+  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.5);
+}
+
+.teacher-action-btn.warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+}
+
+.teacher-action-btn.warning:hover:not(:disabled) {
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.5);
+}
+
+.teacher-action-btn.danger {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: white;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+}
+
+.teacher-ended-badge {
+  padding: 16px 32px;
+  background: #f0f0f0;
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .teacher-code-value {
+    font-size: 52px;
+    letter-spacing: 10px;
+  }
+
+  .teacher-action-btn {
+    align-self: stretch;
+    text-align: center;
+  }
+}

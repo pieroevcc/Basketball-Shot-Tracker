@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sessions: anyone can read; only create allowed (no client-side delete)
+    match /sessions/{sessionCode} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+
+      // Participants subcollection
+      match /participants/{studentId} {
+        allow read: if true;
+        allow create: if true;
+        allow update: if true;
+        allow delete: if false;
+      }
+
+      // Shots subcollection
+      match /shots/{shotId} {
+        allow read: if true;
+        allow create: if true;
+        allow delete: if true;  // needed for undo
+        allow update: if false;
+      }
+    }
+  }
+}

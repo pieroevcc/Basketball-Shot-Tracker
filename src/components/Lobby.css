@@ -1,0 +1,231 @@
+.lobby {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.lobby-card {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 28px;
+  padding: 52px 44px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.lobby-icon {
+  font-size: 72px;
+  animation: spin-slow 3s linear infinite;
+}
+
+@keyframes spin-slow {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.lobby-title {
+  font-size: 36px;
+  font-weight: 900;
+  color: #FF6B35;
+  margin: 0;
+}
+
+.lobby-waiting-text {
+  font-size: 20px;
+  color: #555;
+  margin: 0;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.lobby-session-code {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #f9f9f9;
+  border-radius: 16px;
+  padding: 16px 32px;
+  border: 2px dashed #ddd;
+}
+
+.lobby-code-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+  font-weight: 700;
+}
+
+.lobby-code {
+  font-size: 36px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: 6px;
+  font-family: 'Courier New', monospace;
+}
+
+.lobby-name-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.lobby-name-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #888;
+  font-weight: 700;
+  margin: 0;
+}
+
+.lobby-name-display {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.lobby-current-name {
+  font-size: 30px;
+  font-weight: 900;
+  color: #1a1a2e;
+}
+
+.btn-edit-name {
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-edit-name:hover {
+  background: #e0e0e0;
+  transform: scale(1.05);
+}
+
+.lobby-name-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.lobby-name-input {
+  padding: 14px 20px;
+  font-size: 22px;
+  font-weight: 700;
+  border: 3px solid #FF6B35;
+  border-radius: 14px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.lobby-edit-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-save-name {
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF6B35, #D2691E);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.btn-save-name:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn-save-name:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-cancel-name {
+  padding: 10px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #eee;
+  color: #555;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel-name:hover {
+  background: #ddd;
+}
+
+.lobby-save-error {
+  color: #c0392b;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Pulsing dots */
+.lobby-pulse-dots {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FF6B35;
+  animation: pulse-dot 1.4s infinite ease-in-out;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulse-dot {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
+  40%            { transform: scale(1.2); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .lobby-card {
+    padding: 36px 20px;
+  }
+
+  .lobby-title {
+    font-size: 28px;
+  }
+
+  .lobby-waiting-text {
+    font-size: 17px;
+  }
+
+  .lobby-code {
+    font-size: 28px;
+    letter-spacing: 4px;
+  }
+}

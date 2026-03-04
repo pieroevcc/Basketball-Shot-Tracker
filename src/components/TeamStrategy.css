@@ -1,0 +1,147 @@
+.team-strategy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  padding: 24px 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.strategy-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.strategy-title {
+  font-size: 36px;
+  font-weight: 900;
+  color: white;
+  margin: 0;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.strategy-prompt {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  max-width: 600px;
+  line-height: 1.5;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.strategy-teammate-badge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  padding: 8px 24px;
+  font-size: 17px;
+  color: white;
+  font-weight: 600;
+}
+
+.strategy-courts {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.strategy-court-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 20px;
+  flex: 1 1 320px;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+}
+
+.strategy-court-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #1a1a2e;
+  margin: 0;
+  text-align: center;
+}
+
+.strategy-court-summary {
+  display: flex;
+  gap: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #555;
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 8px 20px;
+}
+
+.strategy-court-summary span {
+  border-right: 2px solid #ddd;
+  padding-right: 20px;
+}
+
+.strategy-court-summary span:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.strategy-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  align-self: center;
+}
+
+.strategy-tip {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 20px 28px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 700px;
+  width: 100%;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.strategy-tip-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.strategy-tip-text {
+  font-size: 17px;
+  color: #333;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+@media (max-width: 700px) {
+  .strategy-title {
+    font-size: 26px;
+  }
+
+  .strategy-vs {
+    font-size: 22px;
+  }
+
+  .strategy-courts {
+    flex-direction: column;
+    align-items: center;
+  }
+}

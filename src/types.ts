@@ -5,6 +5,33 @@ export interface Shot {
   made: boolean;
   timestamp: number;
   zone: string;
+  studentId?: string;
+  activity?: 'solo' | 'team';
+}
+
+export type SessionStatus =
+  | 'lobby'
+  | 'solo_active'
+  | 'solo_review'
+  | 'team_strategy'
+  | 'team_active'
+  | 'team_review'
+  | 'ended';
+
+export interface Session {
+  sessionCode: string;
+  status: SessionStatus;
+  createdAt: number;
+  hostDeviceId: string;
+}
+
+export interface Participant {
+  studentId: string;
+  name: string;
+  joinedAt: number;
+  teamId: string | null;
+  soloShotsComplete: number;
+  teamShotsComplete: number;
 }
 
 export interface Stats {

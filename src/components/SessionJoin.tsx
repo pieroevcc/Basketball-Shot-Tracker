@@ -11,7 +11,7 @@ interface SessionJoinProps {
   onGoToPractice: () => void;
 }
 
-const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack, onGoToTeacher, onGoToPractice }) => {
+const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack: _onBack, onGoToTeacher, onGoToPractice }) => {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);

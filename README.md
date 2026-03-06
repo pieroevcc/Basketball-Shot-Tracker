@@ -7,27 +7,40 @@ This project is a web application designed to collect basketball data from vario
 - Data validation to ensure accuracy and consistency
 - Ability to export data for analysis
 
-## Technologies Used
-- Frontend: HTML, CSS, JavaScript
-- Backend: Node.js, Express.js
-- Database: MongoDB
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | React 18 |
+| Language | TypeScript |
+| Build Tool | Vite |
+| Styling | CSS / Tailwind |
+| Database | Firebase Firestore |
+| Hosting | Firebase Hosting |
 
 ## Installation
-1. Open Terminal (if Windows user, install git before continuing)
-2. Clone the repository in preferred directory: `git clone https://github.com/pieroevcc/Basketball-Data-Collection-Web-App.git`
-3. Navigate to the project directory: `cd basketball-data-collection-web-app`
-4. Install dependencies: `npm install`
-5. Start the application: `npm run dev`
-6. Open your browser and navigate to `http://localhost:####` to access the application.
-7. To exit the application: `q`
 
-1. Deploy the security rules (one-time setup):
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [Git](https://git-scm.com/)
 
+### First-time setup (one per machine)
+```bash
 npm install -g firebase-tools
 firebase login
-firebase use basketball-shot-tracker-21c0e
-firebase deploy --only firestore:rules
-2. Run the app:
+```
 
-
+### Running locally
+```bash
+git clone https://github.com/pieroevcc/Basketball-Data-Collection-Web-App.git
+cd Basketball-Data-Collection-Web-App
+npm install
 npm run dev
+```
+Open your browser to `http://localhost:5173`.
+
+### Deploying to Firebase
+```bash
+npm run build
+firebase deploy
+```

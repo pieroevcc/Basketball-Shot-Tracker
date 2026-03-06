@@ -25,7 +25,9 @@ There are two user roles:
 
 ---
 
-## Running the App
+## Running the App (Developer Testing Only)
+
+> **Note:** `npm run dev` is for local developer testing only. Students and teachers access the app via the deployed Firebase Hosting URL.
 
 ```bash
 npm install
@@ -34,9 +36,11 @@ npm run build      # production build
 npm test           # run Vitest test suite
 ```
 
-## Firebase (optional)
+## Firebase Setup (Required)
 
-The app works fully offline using `localStorage`. To enable cloud sync, create a `.env` file:
+Firebase is required for the app to function. It provides real-time data sync across a classroom of 20–30 students simultaneously — enabling shared session state between students and the teacher without any backend server.
+
+Create a `.env` file with the following variables:
 
 ```env
 VITE_FIREBASE_API_KEY=...
@@ -48,4 +52,4 @@ VITE_FIREBASE_APP_ID=...
 VITE_FIREBASE_MEASUREMENT_ID=...
 ```
 
-When these variables are present, shots are saved to Firestore in addition to `localStorage`.
+Shots are saved to Firestore and synced in real time across all connected students and the teacher's session view.

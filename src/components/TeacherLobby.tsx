@@ -96,10 +96,10 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
           <button
             className="teacher-action-btn primary"
             onClick={handleStartSolo}
-            disabled={participants.length < 2}
+            disabled={participants.length < 1}
           >
-            {participants.length < 2
-              ? `Need at least 2 students (${participants.length}/2)`
+            {participants.length < 1
+              ? `Need at least 1 student (${participants.length}/1)`
               : '▶ Start Solo Activity'}
           </button>
         </div>

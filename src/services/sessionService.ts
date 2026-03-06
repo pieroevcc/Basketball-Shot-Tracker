@@ -11,7 +11,6 @@ import {
   query,
   where,
   orderBy,
-  deleteDoc,
 } from 'firebase/firestore';
 import { Shot, Session, Participant, SessionStatus } from '../types';
 
@@ -73,6 +72,10 @@ export async function createSession(): Promise<string> {
   }
 }
 
+const N8N_WEBHOOK_URL = 'https://piero7.app.n8n.cloud/webhook/session-end';
+const SPREADSHEET_ID = '1yraTcUbOuzTVakjLxEwjCfCVuWZk07KFhlpXObnwC7c';
+const TEACHER_EMAIL = 'pierevco@gmail.com';
+
 /**
  * Advances a session to the given status.
  */
@@ -80,6 +83,14 @@ export async function advanceSession(sessionCode: string, newStatus: SessionStat
   const database = requireDb();
   try {
     await updateDoc(doc(database, 'sessions', sessionCode), { status: newStatus });
+
+    if (newStatus === 'ended') {
+      fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionCode, spreadsheetId: SPREADSHEET_ID, teacherEmail: TEACHER_EMAIL }),
+      }).catch((err) => console.warn('n8n webhook failed:', err));
+    }
   } catch (err) {
     console.warn('Failed to advance session:', err);
     throw err;
@@ -111,7 +122,11 @@ export async function pairTeams(sessionCode: string): Promise<void> {
     while (i < participants.length) {
       const remaining = participants.length - i;
       const teamId = `team-${pairIndex + 1}`;
-      if (remaining === 3 || remaining === 2) {
+      if (remaining === 1) {
+        // Solo participant — assign to their own team
+        teamAssignments.set(participants[i].studentId, teamId);
+        break;
+      } else if (remaining === 3 || remaining === 2) {
         // Assign remaining participants to this team
         for (let j = i; j < participants.length; j++) {
           teamAssignments.set(participants[j].studentId, teamId);

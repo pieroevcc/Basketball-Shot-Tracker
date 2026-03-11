@@ -7,16 +7,6 @@ This project is a web application designed to collect basketball data from vario
 - Data validation to ensure accuracy and consistency
 - Ability to export data for analysis
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Framework | React 18 |
-| Language | TypeScript |
-| Build Tool | Vite |
-| Styling | CSS / Tailwind |
-| Database | Firebase Firestore |
-| Hosting | Firebase Hosting |
 
 ## Installation
 

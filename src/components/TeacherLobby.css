@@ -22,6 +22,23 @@
   box-sizing: border-box;
 }
 
+.teacher-back-btn {
+  align-self: flex-start;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.teacher-back-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .teacher-code-label {
   font-size: 14px;
   font-weight: 700;

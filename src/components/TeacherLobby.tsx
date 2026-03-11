@@ -10,6 +10,7 @@ interface TeacherLobbyProps {
   sessionCode: string;
   advanceSession: UseSessionReturn['advanceSession'];
   pairTeams: UseSessionReturn['pairTeams'];
+  onReturnHome: () => void;
 }
 
 const MAX_SOLO_SHOTS = 15;
@@ -22,6 +23,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
   sessionCode,
   advanceSession,
   pairTeams,
+  onReturnHome,
 }) => {
   const status: SessionStatus = session.status;
 
@@ -68,6 +70,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
     <div className="teacher-lobby">
       {/* Always-visible code banner */}
       <div className="teacher-code-banner">
+        <button className="teacher-back-btn" onClick={onReturnHome}>← Back</button>
         <span className="teacher-code-label">Session Code</span>
         <span className="teacher-code-value">{sessionCode}</span>
       </div>

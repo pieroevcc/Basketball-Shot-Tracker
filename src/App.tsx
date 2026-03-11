@@ -44,14 +44,10 @@ function clearSessionStorage() {
 // ---------------------------------------------------------------------------
 function App() {
   // ---- App-level state (persisted in localStorage) ----
-  const [appMode, setAppMode] = useState<AppMode>(() => (readLocalStorage('appMode') as AppMode) ?? 'session');
-  const [role, setRole] = useState<AppRole>(() => (readLocalStorage('appRole') as AppRole) ?? 'student');
-  const [sessionCode, setSessionCode] = useState<string | null>(() =>
-    localStorage.getItem('sessionCode')
-  );
-  const [studentId, setStudentId] = useState<string | null>(() =>
-    localStorage.getItem('studentId')
-  );
+  const [appMode, setAppMode] = useState<AppMode>('session');
+  const [role, setRole] = useState<AppRole>('student');
+  const [sessionCode, setSessionCode] = useState<string | null>(null);
+  const [studentId, setStudentId] = useState<string | null>(null);
 
   // ---- Practice mode state ----
   const [practiceSubMode, setPracticeSubMode] = useState<'student' | 'mentor' | null>(() => {
@@ -415,6 +411,7 @@ function App() {
           sessionCode={sessionCode}
           advanceSession={advanceSession}
           pairTeams={pairTeams}
+          onReturnHome={handleReturnHome}
         />
       </div>
     );

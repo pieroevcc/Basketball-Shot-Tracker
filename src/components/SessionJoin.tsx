@@ -9,9 +9,10 @@ interface SessionJoinProps {
   onBack: () => void;
   onGoToTeacher: () => void;
   onGoToPractice: () => void;
+  onGoToTest: () => void;
 }
 
-const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack: _onBack, onGoToTeacher, onGoToPractice }) => {
+const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack: _onBack, onGoToTeacher, onGoToPractice, onGoToTest }) => {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +120,7 @@ const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack
         <div className="session-join-alt-links">
           <button className="alt-link" onClick={onGoToTeacher}>👨‍🏫 Teacher? Create a session</button>
           <button className="alt-link" onClick={onGoToPractice}>🏋️ Practice offline</button>
+          <button className="alt-link" onClick={onGoToTest}>🧪 Test Mode</button>
         </div>
       </div>
     </div>

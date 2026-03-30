@@ -16,7 +16,7 @@ import SabotagePanel from './components/SabotagePanel';
 import { useShots } from './hooks/useShots';
 import { useSession } from './hooks/useSession';
 import { Shot, calculateStats } from './types';
-import { isFirebaseConfigured } from './firebase';
+
 import './App.css';
 
 // ---------------------------------------------------------------------------
@@ -100,8 +100,6 @@ function App() {
     undoLastShot,
   } = useSession(appMode === 'session' ? sessionCode : null, studentId);
 
-  const firebaseOk = isFirebaseConfigured();
-
   // Sync state to localStorage
   useEffect(() => {
     if (appMode) localStorage.setItem('appMode', appMode);
@@ -134,8 +132,8 @@ function App() {
 
   const handleReturnHome = () => {
     clearSessionStorage();
-    setAppMode(null);
-    setRole(null);
+    setAppMode('session');
+    setRole('student');
     setSessionCode(null);
     setStudentId(null);
     setPracticeSubMode(null);
@@ -192,82 +190,6 @@ function App() {
   const myTeamShots = shots.filter(
     (s) => s.studentId === studentId && s.activity === 'team'
   );
-
-  // ---------------------------------------------------------------------------
-  // LANDING PAGE
-  // ---------------------------------------------------------------------------
-  if (!appMode) {
-    return (
-      <div className="app landing">
-        <div className="landing-content">
-          <div className="landing-ball">🏀</div>
-          <h1 className="landing-title">Basketball Shot Tracker</h1>
-          <p className="landing-subtitle">
-            Track your shots, see your heat map, and learn from your data!
-          </p>
-
-          <div className="landing-buttons">
-            {firebaseOk ? (
-              <>
-                <button
-                  className="landing-btn student"
-                  onClick={() => {
-                    setAppMode('session');
-                    setRole('student');
-                  }}
-                >
-                  <span className="landing-btn-icon">🎮</span>
-                  <span className="landing-btn-label">Join Session</span>
-                  <span className="landing-btn-sub">Enter your class code</span>
-                </button>
-
-                <button
-                  className="landing-btn teacher"
-                  onClick={() => {
-                    setAppMode('session');
-                    setRole('teacher');
-                  }}
-                >
-                  <span className="landing-btn-icon">👨‍🏫</span>
-                  <span className="landing-btn-label">Create Session</span>
-                  <span className="landing-btn-sub">Start a class session</span>
-                </button>
-
-                <button
-                  className="landing-btn test-solo"
-                  onClick={() => {
-                    setSoloOnly(true);
-                    setAppMode('session');
-                    setRole('teacher');
-                  }}
-                >
-                  <span className="landing-btn-icon">🧪</span>
-                  <span className="landing-btn-label">Test: Solo Only</span>
-                  <span className="landing-btn-sub">Temporary test feature</span>
-                </button>
-              </>
-            ) : (
-              <div className="firebase-notice">
-                Configure Firebase to enable live sessions
-              </div>
-            )}
-
-            <button
-              className="landing-btn practice"
-              onClick={() => {
-                setAppMode('practice');
-                setRole(null);
-              }}
-            >
-              <span className="landing-btn-icon">🏋️</span>
-              <span className="landing-btn-label">Practice Mode</span>
-              <span className="landing-btn-sub">No Firebase needed</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ---------------------------------------------------------------------------
   // PRACTICE MODE  (original student/mentor experience, preserved)
@@ -485,6 +407,7 @@ function App() {
             onBack={handleReturnHome}
             onGoToTeacher={() => { setAppMode('session'); setRole('teacher'); }}
             onGoToPractice={() => { setAppMode('practice'); setRole(null); }}
+            onGoToTest={() => { setSoloOnly(true); setAppMode('session'); setRole('teacher'); }}
           />
         </div>
       );

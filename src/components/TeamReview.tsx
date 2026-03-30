@@ -18,36 +18,40 @@ const TeamReview: React.FC<TeamReviewProps> = ({
   studentId,
 }) => {
   const myTeamId = myParticipant?.teamId ?? null;
-  const teammate = myTeamId
-    ? participants.find(
-        (p) => p.teamId === myTeamId && p.studentId !== studentId
-      )
-    : null;
 
-  const teammateId = teammate?.studentId ?? null;
+  // All team members
+  const teamMembers = myTeamId
+    ? participants.filter((p) => p.teamId === myTeamId)
+    : [];
 
-  // All team activity shots from this pair
+  // All team activity shots from this team
   const teamShots = shots.filter(
     (s) =>
       s.activity === 'team' &&
-      (s.studentId === studentId || s.studentId === teammateId)
+      teamMembers.some((m) => m.studentId === s.studentId)
+  );
+
+  // Opponent team shots for comparison
+  const opponentMembers = participants.filter(
+    (p) => p.teamId !== null && p.teamId !== myTeamId
+  );
+  const opponentShots = shots.filter(
+    (s) =>
+      s.activity === 'team' &&
+      opponentMembers.some((m) => m.studentId === s.studentId)
   );
 
   const stats = calculateStats(teamShots);
-  const myName = myParticipant?.name ?? 'You';
-  const teammateName = teammate?.name ?? 'Teammate';
+  const opponentStats = calculateStats(opponentShots);
 
-  const myTeamShots = teamShots.filter((s) => s.studentId === studentId);
-  const teammateTeamShots = teamShots.filter((s) => s.studentId === teammateId);
+  const teamName = teamMembers.map((m) => m.name).join(' + ');
 
   return (
     <div className="team-review">
       <div className="team-review-header">
         <div className="team-review-trophy">🏆</div>
-        <h1 className="team-review-title">
-          Team — {myName} + {teammateName}
-        </h1>
-        <p className="team-review-subtitle">Here's how your team did together!</p>
+        <h1 className="team-review-title">Team Results</h1>
+        <p className="team-review-subtitle">{teamName}</p>
       </div>
 
       <div className="team-review-summary-cards">
@@ -63,6 +67,23 @@ const TeamReview: React.FC<TeamReviewProps> = ({
           <span className="summary-number">{stats.shootingPercentage.toFixed(0)}%</span>
           <span className="summary-label">Team %</span>
         </div>
+        <div className="review-summary-card" style={{ background: '#f39c12' }}>
+          <span className="summary-number">{stats.totalPoints}</span>
+          <span className="summary-label">Team Points</span>
+        </div>
+      </div>
+
+      {/* Score comparison */}
+      <div className="team-review-comparison">
+        <div className="comparison-team">
+          <span className="comparison-label">Your Team</span>
+          <span className="comparison-score">{stats.totalPoints} pts</span>
+        </div>
+        <div className="comparison-vs">vs</div>
+        <div className="comparison-team">
+          <span className="comparison-label">Opponent</span>
+          <span className="comparison-score">{opponentStats.totalPoints} pts</span>
+        </div>
       </div>
 
       <div className="team-review-main">
@@ -77,21 +98,24 @@ const TeamReview: React.FC<TeamReviewProps> = ({
       </div>
 
       <div className="team-review-individual">
-        <div className="individual-card">
-          <h3 className="individual-name">{myName}</h3>
-          <span className="individual-stat">{myTeamShots.length} shots</span>
-          <span className="individual-stat">
-            {myTeamShots.filter((s) => s.made).length} made
-          </span>
-        </div>
-        <div className="individual-plus">+</div>
-        <div className="individual-card">
-          <h3 className="individual-name">{teammateName}</h3>
-          <span className="individual-stat">{teammateTeamShots.length} shots</span>
-          <span className="individual-stat">
-            {teammateTeamShots.filter((s) => s.made).length} made
-          </span>
-        </div>
+        {teamMembers.map((member, i) => {
+          const memberShots = teamShots.filter((s) => s.studentId === member.studentId);
+          const memberStats = calculateStats(memberShots);
+          return (
+            <React.Fragment key={member.studentId}>
+              {i > 0 && <div className="individual-plus">+</div>}
+              <div className="individual-card">
+                <h3 className="individual-name">
+                  {member.name}
+                  {member.studentId === studentId && ' (You)'}
+                </h3>
+                <span className="individual-stat">{memberShots.length} shots</span>
+                <span className="individual-stat">{memberStats.totalMade} made</span>
+                <span className="individual-stat">{memberStats.totalPoints} pts</span>
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );

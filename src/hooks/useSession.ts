@@ -1,16 +1,31 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Session, Participant, Shot, SessionStatus } from '../types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  Session,
+  Participant,
+  Shot,
+  SessionStatus,
+  ShotAllocation,
+  SabotageAction,
+  getBlockedZones,
+  getEffectiveMaxShots,
+} from '../types';
 import {
   createSession as createSessionService,
   advanceSession as advanceSessionService,
   pairTeams as pairTeamsService,
+  assignRound1Groups as assignRound1GroupsService,
   joinSession as joinSessionService,
   updateParticipantName as updateParticipantNameService,
   addSessionShot as addSessionShotService,
   undoLastShot as undoLastShotService,
+  saveShotAllocations as saveShotAllocationsService,
+  saveSabotageActions as saveSabotageActionsService,
+  calculateRound1Winner as calculateRound1WinnerService,
   subscribeToSession,
   subscribeToParticipants,
   subscribeToShots,
+  subscribeToAllocations,
+  subscribeToSabotages,
 } from '../services/sessionService';
 
 export interface UseSessionReturn {
@@ -19,13 +34,27 @@ export interface UseSessionReturn {
   myParticipant: Participant | null;
   shots: Shot[];
   teammateShots: Shot[];
+  allocations: ShotAllocation[];
+  sabotageActions: SabotageAction[];
   loading: boolean;
   error: string | null;
 
+  // Derived values
+  myGroupMembers: Participant[];
+  myTeamMembers: Participant[];
+  opponentTeam: Participant[];
+  blockedZones: string[];
+  myAllocatedShots: number;
+  round1Leaderboard: Participant[];
+
   // Teacher actions
-  createSession: () => Promise<string>;
+  createSession: (soloOnly?: boolean) => Promise<string>;
   advanceSession: (code: string, newStatus: SessionStatus) => Promise<void>;
   pairTeams: (code: string) => Promise<void>;
+  assignGroups: (code: string) => Promise<void>;
+  calculateRound1Winner: (code: string) => Promise<void>;
+  saveShotAllocations: (code: string, allocations: ShotAllocation[]) => Promise<void>;
+  saveSabotageActions: (code: string, actions: SabotageAction[]) => Promise<void>;
 
   // Student actions
   joinSession: (code: string, name: string, studentId: string) => Promise<void>;
@@ -41,6 +70,8 @@ export function useSession(
   const [session, setSession] = useState<Session | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [shots, setShots] = useState<Shot[]>([]);
+  const [allocations, setAllocations] = useState<ShotAllocation[]>([]);
+  const [sabotageActions, setSabotageActions] = useState<SabotageAction[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +81,8 @@ export function useSession(
       setSession(null);
       setParticipants([]);
       setShots([]);
+      setAllocations([]);
+      setSabotageActions([]);
       return;
     }
 
@@ -69,6 +102,8 @@ export function useSession(
     let unsubSession: (() => void) | undefined;
     let unsubParticipants: (() => void) | undefined;
     let unsubShots: (() => void) | undefined;
+    let unsubAllocations: (() => void) | undefined;
+    let unsubSabotages: (() => void) | undefined;
 
     try {
       unsubSession = subscribeToSession(sessionCode, (s) => {
@@ -107,10 +142,28 @@ export function useSession(
       setLoading(false);
     }
 
+    try {
+      unsubAllocations = subscribeToAllocations(sessionCode, (a) => {
+        setAllocations(a);
+      });
+    } catch (err) {
+      console.warn('Failed to subscribe to allocations:', err);
+    }
+
+    try {
+      unsubSabotages = subscribeToSabotages(sessionCode, (s) => {
+        setSabotageActions(s);
+      });
+    } catch (err) {
+      console.warn('Failed to subscribe to sabotages:', err);
+    }
+
     return () => {
       unsubSession?.();
       unsubParticipants?.();
       unsubShots?.();
+      unsubAllocations?.();
+      unsubSabotages?.();
     };
   }, [sessionCode]);
 
@@ -120,25 +173,63 @@ export function useSession(
       ? participants.find((p) => p.studentId === studentId) ?? null
       : null;
 
-  // Derived: teammateShots — shots where activity is 'team' and studentId matches the teammate
-  const teammateShots: Shot[] = (() => {
+  // Derived: teammateShots — shots from all teammates in the team activity
+  const teammateShots: Shot[] = useMemo(() => {
     if (!myParticipant || !myParticipant.teamId) return [];
-    const teammate = participants.find(
-      (p) => p.teamId === myParticipant.teamId && p.studentId !== myParticipant.studentId
-    );
-    if (!teammate) return [];
+    const teammateIds = participants
+      .filter((p) => p.teamId === myParticipant.teamId && p.studentId !== myParticipant.studentId)
+      .map((p) => p.studentId);
     return shots.filter(
-      (s) => s.studentId === teammate.studentId && s.activity === 'team'
+      (s) => teammateIds.includes(s.studentId ?? '') && s.activity === 'team'
     );
-  })();
+  }, [myParticipant, participants, shots]);
+
+  // Derived: myGroupMembers — participants in the same Round 1 group
+  const myGroupMembers: Participant[] = useMemo(() => {
+    if (!myParticipant || !myParticipant.groupId) return [];
+    return participants.filter((p) => p.groupId === myParticipant.groupId);
+  }, [myParticipant, participants]);
+
+  // Derived: myTeamMembers — participants in the same team (including self)
+  const myTeamMembers: Participant[] = useMemo(() => {
+    if (!myParticipant || !myParticipant.teamId) return [];
+    return participants.filter((p) => p.teamId === myParticipant.teamId);
+  }, [myParticipant, participants]);
+
+  // Derived: opponentTeam — participants on a different team
+  const opponentTeam: Participant[] = useMemo(() => {
+    if (!myParticipant || !myParticipant.teamId) return [];
+    return participants.filter(
+      (p) => p.teamId !== null && p.teamId !== myParticipant.teamId
+    );
+  }, [myParticipant, participants]);
+
+  // Derived: blockedZones — zones blocked for my team by opponent sabotage
+  const blockedZones: string[] = useMemo(() => {
+    if (!myParticipant || !myParticipant.teamId) return [];
+    return getBlockedZones(myParticipant.teamId, sabotageActions);
+  }, [myParticipant, sabotageActions]);
+
+  // Derived: myAllocatedShots — effective max shots for Round 2
+  const myAllocatedShots: number = useMemo(() => {
+    if (!myParticipant) return 20;
+    return getEffectiveMaxShots(myParticipant, sabotageActions, 20);
+  }, [myParticipant, sabotageActions]);
+
+  // Derived: round1Leaderboard — participants sorted by round1Score descending
+  const round1Leaderboard: Participant[] = useMemo(() => {
+    return [...participants]
+      .filter((p) => p.round1Score !== undefined)
+      .sort((a, b) => (b.round1Score ?? 0) - (a.round1Score ?? 0));
+  }, [participants]);
 
   // ---------------------------------------------------------------------------
   // Teacher action callbacks
   // ---------------------------------------------------------------------------
 
-  const createSession = useCallback(async (): Promise<string> => {
+  const createSession = useCallback(async (soloOnly?: boolean): Promise<string> => {
     try {
-      const code = await createSessionService();
+      const code = await createSessionService(soloOnly);
       return code;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create session.';
@@ -169,6 +260,52 @@ export function useSession(
       throw err;
     }
   }, []);
+
+  const assignGroups = useCallback(async (code: string): Promise<void> => {
+    try {
+      await assignRound1GroupsService(code);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to assign groups.';
+      setError(message);
+      throw err;
+    }
+  }, []);
+
+  const calculateRound1WinnerCb = useCallback(async (code: string): Promise<void> => {
+    try {
+      await calculateRound1WinnerService(code);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to calculate Round 1 winner.';
+      setError(message);
+      throw err;
+    }
+  }, []);
+
+  const saveShotAllocations = useCallback(
+    async (code: string, allocs: ShotAllocation[]): Promise<void> => {
+      try {
+        await saveShotAllocationsService(code, allocs);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to save shot allocations.';
+        setError(message);
+        throw err;
+      }
+    },
+    []
+  );
+
+  const saveSabotageActionsCb = useCallback(
+    async (code: string, actions: SabotageAction[]): Promise<void> => {
+      try {
+        await saveSabotageActionsService(code, actions);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to save sabotage actions.';
+        setError(message);
+        throw err;
+      }
+    },
+    []
+  );
 
   // ---------------------------------------------------------------------------
   // Student action callbacks
@@ -229,11 +366,29 @@ export function useSession(
     myParticipant,
     shots,
     teammateShots,
+    allocations,
+    sabotageActions,
     loading,
     error,
+
+    // Derived
+    myGroupMembers,
+    myTeamMembers,
+    opponentTeam,
+    blockedZones,
+    myAllocatedShots,
+    round1Leaderboard,
+
+    // Teacher actions
     createSession,
     advanceSession,
     pairTeams,
+    assignGroups,
+    calculateRound1Winner: calculateRound1WinnerCb,
+    saveShotAllocations,
+    saveSabotageActions: saveSabotageActionsCb,
+
+    // Student actions
     joinSession,
     updateName,
     addShot,

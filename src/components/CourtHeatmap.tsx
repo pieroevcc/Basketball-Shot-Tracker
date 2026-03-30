@@ -69,18 +69,23 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
         <path d="M 227 470 A 20 20 0 0 1 273 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
 
         {/* Shot markers */}
-        {shots.map((shot) => (
-          <circle
-            key={shot.id}
-            cx={shot.x}
-            cy={shot.y}
-            r="8"
-            fill={shot.made ? '#00ff00' : '#ff0000'}
-            stroke="#fff"
-            strokeWidth="2"
-            opacity="0.7"
-          />
-        ))}
+        {shots.map((shot) => {
+          const pos = ZONES[shot.zone as keyof typeof ZONES];
+          const cx = pos?.x ?? shot.x;
+          const cy = pos?.y ?? shot.y;
+          return (
+            <circle
+              key={shot.id}
+              cx={cx}
+              cy={cy}
+              r="8"
+              fill={shot.made ? '#00ff00' : '#ff0000'}
+              stroke="#fff"
+              strokeWidth="2"
+              opacity="0.7"
+            />
+          );
+        })}
 
         {/* Zone percentage labels */}
         {Object.entries(stats.byZone).map(([zone, data]) => {
@@ -88,10 +93,10 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
           if (!pos || data.total === 0) return null;
           return (
             <g key={zone}>
-              <rect x={pos.x - 22} y={pos.y - 12} width="44" height="22" rx="5" fill="rgba(0,0,0,0.6)" />
+              <rect x={pos.x - 28} y={pos.y - 18} width="56" height="34" rx="5" fill="rgba(0,0,0,0.6)" />
               <text
                 x={pos.x}
-                y={pos.y + 1}
+                y={pos.y - 5}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="white"
@@ -99,6 +104,17 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
                 fontWeight="bold"
               >
                 {data.percentage.toFixed(0)}%
+              </text>
+              <text
+                x={pos.x}
+                y={pos.y + 10}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill="#ffd700"
+                fontSize="10"
+                fontWeight="bold"
+              >
+                {data.points} pts
               </text>
             </g>
           );

@@ -23,6 +23,10 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
           <span>Shooting %:</span>
           <strong>{stats.shootingPercentage.toFixed(1)}%</strong>
         </div>
+        <div className="stat-item">
+          <span>Total Points:</span>
+          <strong>{stats.totalPoints}</strong>
+        </div>
       </div>
 
       <div className="zone-stats">
@@ -36,6 +40,9 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
               </div>
               <div className="zone-stat">
                 <span>%:</span> <strong>{data.percentage.toFixed(1)}%</strong>
+              </div>
+              <div className="zone-stat">
+                <span>Pts:</span> <strong>{data.points}</strong>
               </div>
               <div className={`zone-indicator ${getHotColdClass(data.percentage)}`}></div>
             </div>

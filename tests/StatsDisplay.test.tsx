@@ -7,13 +7,14 @@ const emptyStats: Stats = {
   totalShots: 0,
   totalMade: 0,
   shootingPercentage: 0,
+  totalPoints: 0,
   byZone: {
-    'Zone 1: Paint': { made: 0, total: 0, percentage: 0 },
-    'Zone 2: Left Mid-Range': { made: 0, total: 0, percentage: 0 },
-    'Zone 3: Right Mid-Range': { made: 0, total: 0, percentage: 0 },
-    'Zone 4: Left Outside': { made: 0, total: 0, percentage: 0 },
-    'Zone 5: Top of Key': { made: 0, total: 0, percentage: 0 },
-    'Zone 6: Right Outside': { made: 0, total: 0, percentage: 0 },
+    'Zone 1: Paint': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 2: Left Mid-Range': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 3: Right Mid-Range': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 4: Left Outside': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 5: Top of Key': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 6: Right Outside': { made: 0, total: 0, percentage: 0, points: 0 },
   },
 };
 
@@ -21,13 +22,14 @@ const populatedStats: Stats = {
   totalShots: 10,
   totalMade: 7,
   shootingPercentage: 70,
+  totalPoints: 9,
   byZone: {
-    'Zone 1: Paint': { made: 5, total: 6, percentage: 83.3 },
-    'Zone 2: Left Mid-Range': { made: 2, total: 4, percentage: 50 },
-    'Zone 3: Right Mid-Range': { made: 0, total: 0, percentage: 0 },
-    'Zone 4: Left Outside': { made: 0, total: 0, percentage: 0 },
-    'Zone 5: Top of Key': { made: 0, total: 0, percentage: 0 },
-    'Zone 6: Right Outside': { made: 0, total: 0, percentage: 0 },
+    'Zone 1: Paint': { made: 5, total: 6, percentage: 83.3, points: 5 },
+    'Zone 2: Left Mid-Range': { made: 2, total: 4, percentage: 50, points: 4 },
+    'Zone 3: Right Mid-Range': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 4: Left Outside': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 5: Top of Key': { made: 0, total: 0, percentage: 0, points: 0 },
+    'Zone 6: Right Outside': { made: 0, total: 0, percentage: 0, points: 0 },
   },
 };
 

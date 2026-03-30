@@ -11,6 +11,8 @@ import TeacherLobby from './components/TeacherLobby';
 import TeamStrategy from './components/TeamStrategy';
 import TeamReview from './components/TeamReview';
 import SessionEnded from './components/SessionEnded';
+import ShotAllocationPanel from './components/ShotAllocationPanel';
+import SabotagePanel from './components/SabotagePanel';
 import { useShots } from './hooks/useShots';
 import { useSession } from './hooks/useSession';
 import { Shot, calculateStats } from './types';
@@ -44,12 +46,22 @@ function clearSessionStorage() {
 // ---------------------------------------------------------------------------
 function App() {
   // ---- App-level state (persisted in localStorage) ----
-  const [appMode, setAppMode] = useState<AppMode>('session');
-  const [role, setRole] = useState<AppRole>('student');
-  const [sessionCode, setSessionCode] = useState<string | null>(null);
-  const [studentId, setStudentId] = useState<string | null>(null);
+  const [appMode, setAppMode] = useState<AppMode>(
+    () => (readLocalStorage('appMode') as AppMode) ?? 'session'
+  );
+  const [role, setRole] = useState<AppRole>(
+    () => (readLocalStorage('appRole') as AppRole) ?? 'student'
+  );
+  const [sessionCode, setSessionCode] = useState<string | null>(
+    () => readLocalStorage('sessionCode')
+  );
+  const [studentId, setStudentId] = useState<string | null>(
+    () => readLocalStorage('studentId')
+  );
 
   // ---- Practice mode state ----
+  const [soloOnly, setSoloOnly] = useState<boolean>(false);
+
   const [practiceSubMode, setPracticeSubMode] = useState<'student' | 'mentor' | null>(() => {
     // Only restore practice sub-mode when in practice mode
     const savedMode = localStorage.getItem('appMode');
@@ -68,11 +80,20 @@ function App() {
     myParticipant,
     shots,
     teammateShots,
+    allocations,
+    sabotageActions,
     loading,
     error,
+    blockedZones,
+    myAllocatedShots,
+    round1Leaderboard: _round1Leaderboard,
     createSession,
     advanceSession,
     pairTeams,
+    assignGroups,
+    calculateRound1Winner,
+    saveShotAllocations,
+    saveSabotageActions,
     joinSession,
     updateName,
     addShot,
@@ -81,13 +102,27 @@ function App() {
 
   const firebaseOk = isFirebaseConfigured();
 
-  // Sync appMode changes to localStorage
+  // Sync state to localStorage
   useEffect(() => {
     if (appMode) localStorage.setItem('appMode', appMode);
     else localStorage.removeItem('appMode');
   }, [appMode]);
 
-  // Sync practiceSubMode to localStorage
+  useEffect(() => {
+    if (role) localStorage.setItem('appRole', role);
+    else localStorage.removeItem('appRole');
+  }, [role]);
+
+  useEffect(() => {
+    if (sessionCode) localStorage.setItem('sessionCode', sessionCode);
+    else localStorage.removeItem('sessionCode');
+  }, [sessionCode]);
+
+  useEffect(() => {
+    if (studentId) localStorage.setItem('studentId', studentId);
+    else localStorage.removeItem('studentId');
+  }, [studentId]);
+
   useEffect(() => {
     if (practiceSubMode) localStorage.setItem('practiceSubMode', practiceSubMode);
     else localStorage.removeItem('practiceSubMode');
@@ -104,6 +139,7 @@ function App() {
     setSessionCode(null);
     setStudentId(null);
     setPracticeSubMode(null);
+    setSoloOnly(false);
   };
 
   const handleStudentJoined = (code: string, sid: string, _name: string) => {
@@ -131,8 +167,7 @@ function App() {
   };
 
   // Session shot recording
-  const MAX_SOLO_SHOTS = 15;
-  const MAX_TEAM_SHOTS = 20;
+  const MAX_SOLO_SHOTS = 20;
 
   const handleSessionShot = async (shot: Shot, _zone: string) => {
     if (!sessionCode || !studentId || !session) return;
@@ -196,6 +231,19 @@ function App() {
                   <span className="landing-btn-icon">👨‍🏫</span>
                   <span className="landing-btn-label">Create Session</span>
                   <span className="landing-btn-sub">Start a class session</span>
+                </button>
+
+                <button
+                  className="landing-btn test-solo"
+                  onClick={() => {
+                    setSoloOnly(true);
+                    setAppMode('session');
+                    setRole('teacher');
+                  }}
+                >
+                  <span className="landing-btn-icon">🧪</span>
+                  <span className="landing-btn-label">Test: Solo Only</span>
+                  <span className="landing-btn-sub">Temporary test feature</span>
                 </button>
               </>
             ) : (
@@ -381,6 +429,7 @@ function App() {
             createSession={createSession}
             onCreated={handleSessionCreated}
             onBack={handleReturnHome}
+            soloOnly={soloOnly}
           />
         </div>
       );
@@ -395,6 +444,7 @@ function App() {
             shots={shots}
             participants={participants}
             sessionCode={sessionCode}
+            session={session}
             onReturnHome={handleReturnHome}
           />
         </div>
@@ -411,6 +461,12 @@ function App() {
           sessionCode={sessionCode}
           advanceSession={advanceSession}
           pairTeams={pairTeams}
+          assignGroups={assignGroups}
+          calculateRound1Winner={calculateRound1Winner}
+          saveShotAllocations={saveShotAllocations}
+          saveSabotageActions={saveSabotageActions}
+          allocations={allocations}
+          sabotageActions={sabotageActions}
           onReturnHome={handleReturnHome}
         />
       </div>
@@ -474,6 +530,7 @@ function App() {
               <span>{mySoloShots.length} shots</span>
               <span>{soloStats.totalMade} made</span>
               <span>{soloStats.shootingPercentage.toFixed(0)}%</span>
+              <span>{soloStats.totalPoints} pts</span>
             </div>
           )}
         </div>
@@ -514,9 +571,41 @@ function App() {
       );
     }
 
+    // Shot Allocation
+    if (status === 'shot_allocation') {
+      return (
+        <div className="app session-mode">
+          <ShotAllocationPanel
+            sessionCode={sessionCode}
+            participants={participants}
+            myParticipant={myParticipant}
+            shots={shots}
+            allocations={allocations}
+            saveShotAllocations={saveShotAllocations}
+          />
+        </div>
+      );
+    }
+
+    // Sabotage
+    if (status === 'sabotage') {
+      return (
+        <div className="app session-mode">
+          <SabotagePanel
+            sessionCode={sessionCode}
+            participants={participants}
+            myParticipant={myParticipant}
+            sabotageActions={sabotageActions}
+            saveSabotageActions={saveSabotageActions}
+          />
+        </div>
+      );
+    }
+
     // Team Active
     if (status === 'team_active') {
       const teamStats = calculateStats(myTeamShots);
+      const effectiveMaxShots = myAllocatedShots;
       return (
         <div className="app session-mode">
           <div className="session-activity-header">
@@ -524,13 +613,19 @@ function App() {
             <p className="activity-subtitle">
               Shoot as a team! Use your strategy from the last round.
             </p>
+            {blockedZones.length > 0 && (
+              <p className="activity-warning">
+                Blocked zones: {blockedZones.join(', ')}
+              </p>
+            )}
           </div>
           <div className="session-court-wrapper">
             <BasketballCourt
               onShotRecorded={handleSessionShot}
               shots={myTeamShots}
-              maxShots={MAX_TEAM_SHOTS}
+              maxShots={effectiveMaxShots}
               onUndo={handleUndoShot}
+              blockedZones={blockedZones}
             />
           </div>
           {myTeamShots.length > 0 && (
@@ -538,6 +633,7 @@ function App() {
               <span>{myTeamShots.length} shots</span>
               <span>{teamStats.totalMade} made</span>
               <span>{teamStats.shootingPercentage.toFixed(0)}%</span>
+              <span>{teamStats.totalPoints} pts</span>
             </div>
           )}
         </div>
@@ -567,6 +663,7 @@ function App() {
             shots={shots}
             participants={participants}
             sessionCode={sessionCode}
+            session={session}
             onReturnHome={handleReturnHome}
           />
         </div>

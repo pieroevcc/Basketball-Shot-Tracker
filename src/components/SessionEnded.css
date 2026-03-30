@@ -1,3 +1,76 @@
+/* ---- Feedback Popup ---- */
+.feedback-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.feedback-popup-card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 32px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.feedback-popup-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.feedback-popup-body {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.feedback-popup-link {
+  display: inline-block;
+  padding: 16px 36px;
+  font-size: 18px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.feedback-popup-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(102, 126, 234, 0.5);
+}
+
+.feedback-popup-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  text-decoration: underline;
+}
+
+.feedback-popup-close:hover {
+  color: #555;
+}
+
 /* ---- Shared ---- */
 .session-ended {
   display: flex;
@@ -61,6 +134,37 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+}
+
+.ended-teacher-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-export-pdf {
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 2px solid #3b82f6;
+  background: #fff;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.btn-export-pdf:hover:not(:disabled) {
+  background: #3b82f6;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.btn-export-pdf:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .ended-teacher-title {

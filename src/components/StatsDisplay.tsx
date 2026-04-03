@@ -50,25 +50,6 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
         </div>
       </div>
 
-      <div className="legend">
-        <h3>🔥 Heat Map Legend</h3>
-        <div className="legend-item">
-          <div className="legend-color hot"></div>
-          <span>Hot (70%+)</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color warm"></div>
-          <span>Warm (50-69%)</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color cool"></div>
-          <span>Cool (30-49%)</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color cold"></div>
-          <span>Cold (&lt;30%)</span>
-        </div>
-      </div>
     </div>
   );
 };

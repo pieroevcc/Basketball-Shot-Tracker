@@ -28,6 +28,8 @@ export interface Session {
   hostDeviceId: string;
   round1Winner?: string; // studentId of Round 1 individual winner
   soloOnly?: boolean;   // test mode: skip all team phases
+  teacherDisconnected?: boolean; // set when teacher closes/reloads page
+  teacherLastSeen?: number;      // Unix ms, updated by teacher heartbeat every 30 s
 }
 
 export interface Participant {

@@ -34,7 +34,7 @@ const SessionCreate: React.FC<SessionCreateProps> = ({ onCreated, createSession,
 
   return (
     <div className="session-create">
-      <button className="back-btn" onClick={onBack}>← Back</button>
+      {!sessionCode && <button className="back-btn" onClick={onBack}>← Back</button>}
       <div className="session-create-card">
         <div className="session-create-icon">{soloOnly ? '🧪' : '👨‍🏫'}</div>
         <h1 className="session-create-title">Create Session</h1>

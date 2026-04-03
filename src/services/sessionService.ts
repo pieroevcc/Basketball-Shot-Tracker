@@ -70,6 +70,7 @@ export async function createSession(soloOnly?: boolean): Promise<string> {
       sessionCode,
       status: 'lobby',
       createdAt: Date.now(),
+      teacherLastSeen: Date.now(),
       hostDeviceId: crypto.randomUUID(),
       ...(soloOnly ? { soloOnly: true } : {}),
     };
@@ -84,6 +85,32 @@ export async function createSession(soloOnly?: boolean): Promise<string> {
 const N8N_WEBHOOK_URL = 'https://piero7.app.n8n.cloud/webhook/session-end';
 const SPREADSHEET_ID = '1yraTcUbOuzTVakjLxEwjCfCVuWZk07KFhlpXObnwC7c';
 const TEACHER_EMAIL = 'pierevco@gmail.com';
+
+/**
+ * Marks the session as teacher-disconnected (teacher closed/reloaded the page).
+ * Called from a beforeunload handler — fire and forget.
+ */
+export function markTeacherDisconnected(sessionCode: string): void {
+  try {
+    const database = requireDb();
+    updateDoc(doc(database, 'sessions', sessionCode), { teacherDisconnected: true }).catch(() => {});
+  } catch {
+    // Silently ignore — best-effort on page unload
+  }
+}
+
+/**
+ * Updates the teacher's heartbeat timestamp. Called on an interval while the
+ * teacher's tab is open so students can detect a dead session.
+ */
+export function updateTeacherHeartbeat(sessionCode: string): void {
+  try {
+    const database = requireDb();
+    updateDoc(doc(database, 'sessions', sessionCode), { teacherLastSeen: Date.now() }).catch(() => {});
+  } catch {
+    // ignore — best-effort
+  }
+}
 
 /**
  * Advances a session to the given status.
@@ -356,18 +383,20 @@ export async function undoLastShot(
 
 /**
  * Subscribes to the session document. Returns an unsubscribe function.
+ * Calls callback with null if the document does not exist.
  */
 export function subscribeToSession(
   sessionCode: string,
-  callback: (session: Session) => void
+  callback: (session: Session | null) => void,
+  onError?: (err: Error) => void
 ): () => void {
   const database = requireDb();
   const sessionRef = doc(database, 'sessions', sessionCode);
-  return onSnapshot(sessionRef, (snap) => {
-    if (snap.exists()) {
-      callback(snap.data() as Session);
-    }
-  });
+  return onSnapshot(
+    sessionRef,
+    (snap) => { callback(snap.exists() ? (snap.data() as Session) : null); },
+    (err) => { onError?.(err); }
+  );
 }
 
 /**

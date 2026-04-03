@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BasketballCourt from './components/BasketballCourt';
 import StatsDisplay from './components/StatsDisplay';
 import ShotHistory from './components/ShotHistory';
@@ -15,6 +15,7 @@ import ShotAllocationPanel from './components/ShotAllocationPanel';
 import SabotagePanel from './components/SabotagePanel';
 import { useShots } from './hooks/useShots';
 import { useSession } from './hooks/useSession';
+import { markTeacherDisconnected, updateTeacherHeartbeat } from './services/sessionService';
 import { Shot, calculateStats } from './types';
 
 import './App.css';
@@ -100,6 +101,10 @@ function App() {
     undoLastShot,
   } = useSession(appMode === 'session' ? sessionCode : null, studentId);
 
+  // Ref so interval callbacks always see the latest session without resetting the timer.
+  const sessionRef = useRef(session);
+  useEffect(() => { sessionRef.current = session; }, [session]);
+
   // Sync state to localStorage
   useEffect(() => {
     if (appMode) localStorage.setItem('appMode', appMode);
@@ -125,6 +130,78 @@ function App() {
     if (practiceSubMode) localStorage.setItem('practiceSubMode', practiceSubMode);
     else localStorage.removeItem('practiceSubMode');
   }, [practiceSubMode]);
+
+  // When teacher closes or reloads the page, mark session as disconnected so
+  // students are kicked out via the onSnapshot listener.
+  useEffect(() => {
+    if (role !== 'teacher' || !sessionCode) return;
+    const handleBeforeUnload = () => markTeacherDisconnected(sessionCode);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [role, sessionCode]);
+
+  // Teacher heartbeat — writes teacherLastSeen to Firestore every 30 s so
+  // students can detect a dead session even if beforeunload didn't fire.
+  useEffect(() => {
+    if (role !== 'teacher' || !sessionCode) return;
+    updateTeacherHeartbeat(sessionCode);
+    const id = setInterval(() => updateTeacherHeartbeat(sessionCode), 30_000);
+    return () => clearInterval(id);
+  }, [role, sessionCode]);
+
+  const TEACHER_TIMEOUT_MS = 60_000; // 2× heartbeat interval
+
+  // Fires on every session snapshot — catches reload-into-dead-session immediately.
+  useEffect(() => {
+    if (role !== 'student' || !session) return;
+    const gone =
+      !!session.teacherDisconnected ||
+      (session.teacherLastSeen !== undefined &&
+        Date.now() - session.teacherLastSeen > TEACHER_TIMEOUT_MS);
+    if (gone) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, session?.teacherDisconnected, session?.teacherLastSeen]);
+
+  // Fires every 15 s — catches the case where session stops updating
+  // (teacher gone, no more snapshots to drive the effect above).
+  useEffect(() => {
+    if (role !== 'student' || !sessionCode) return;
+    const id = setInterval(() => {
+      const s = sessionRef.current;
+      if (!s) return;
+      const gone =
+        !!s.teacherDisconnected ||
+        (s.teacherLastSeen !== undefined &&
+          Date.now() - s.teacherLastSeen > TEACHER_TIMEOUT_MS);
+      if (gone) handleReturnHome();
+    }, 15_000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, sessionCode]);
+
+  // If a student reloads into a session that no longer exists in Firestore,
+  // redirect home instead of showing a stale join form.
+  useEffect(() => {
+    if (loading || !sessionCode || role !== 'student') return;
+    if (session === null) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, session, sessionCode, role]);
+
+  // When the teacher reloads, beforeunload has already written teacherDisconnected:true.
+  // On reconnect, detect that flag and send the teacher home too.
+  useEffect(() => {
+    if (role !== 'teacher' || !session) return;
+    if (session.teacherDisconnected) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, session?.teacherDisconnected]);
+
+  // If teacher reloads into a session that no longer exists, go home instead
+  // of landing on the "Create Session" screen with stale localStorage.
+  useEffect(() => {
+    if (loading || !sessionCode || role !== 'teacher') return;
+    if (session === null) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, session, sessionCode, role]);
 
   // ---------------------------------------------------------------------------
   // Action handlers
@@ -302,10 +379,6 @@ function App() {
             <ShotHistory shots={practiceShots} onDelete={deleteShot} onClear={handleClearPractice} />
           )}
         </main>
-
-        <footer className="app-footer">
-          <p>💡 Tip: Click on different zones to record shots. Green = Hot, Red = Cold</p>
-        </footer>
       </div>
     );
   }

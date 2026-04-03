@@ -107,9 +107,12 @@ export function useSession(
 
     try {
       unsubSession = subscribeToSession(sessionCode, (s) => {
-        setSession(s);
+        setSession(s); // s may be null if session document does not exist
         sessionLoaded = true;
         checkAllLoaded();
+      }, (err) => {
+        setError(err.message);
+        setLoading(false);
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe to session.';

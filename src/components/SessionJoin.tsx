@@ -118,9 +118,9 @@ const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack
         </form>
 
         <div className="session-join-alt-links">
-          <button className="alt-link" onClick={onGoToTeacher}>👨‍🏫 Teacher? Create a session</button>
-          <button className="alt-link" onClick={onGoToPractice}>🏋️ Practice offline</button>
-          <button className="alt-link" onClick={onGoToTest}>🧪 Test Mode</button>
+          <button className="alt-link" onClick={onGoToTeacher}>Create a session</button>
+          <button className="alt-link" onClick={onGoToPractice}>Practice offline</button>
+          <button className="alt-link" onClick={onGoToTest}>Test Mode</button>
         </div>
       </div>
     </div>

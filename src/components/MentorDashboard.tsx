@@ -71,6 +71,18 @@ function generateInsights(shots: Shot[], stats: Stats): string[] {
     }
   }
 
+  // Dynamic Shot Scores insight based on user request
+  const zoneScores = Object.entries(stats.byZone).map(([zone, z]) => {
+    const ptsPerMake = (zone.includes('Outside') || zone.includes('Top of Key')) ? 3 : 2;
+    return { zone, score: z.made * ptsPerMake };
+  });
+  if (zoneScores.length > 0) {
+    const highestScoringZone = zoneScores.reduce((a, b) => a.score > b.score ? a : b);
+    if (highestScoringZone.score > 0) {
+      insights.push(`Different zones have different shot scores: ${highestScoringZone.zone} generated the most points (${highestScoringZone.score} pts).`);
+    }
+  }
+
   return insights;
 }
 
@@ -99,6 +111,90 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, onDelet
     { id: 'history' as const, label: '📝 History' },
   ];
 
+  // Top Player calculation
+  const studentStats: Record<string, { made: number, total: number, score: number }> = {};
+  shots.forEach(shot => {
+    const sid = shot.studentId || 'Local Player';
+    if (!studentStats[sid]) studentStats[sid] = { made: 0, total: 0, score: 0 };
+    studentStats[sid].total += 1;
+    if (shot.made) studentStats[sid].made += 1;
+    studentStats[sid].score += (shot.made ? (shot.zone.includes('Outside') || shot.zone.includes('Top of Key') ? 3 : 2) : 0);
+  });
+
+  let topPlayerName = 'N/A';
+  let topPlayerStats = { made: 0, total: 0, score: 0 };
+  if (Object.keys(studentStats).length > 0) {
+    const topSid = Object.keys(studentStats).reduce((a, b) => studentStats[a].score > studentStats[b].score ? a : b);
+    topPlayerName = topSid === 'Local Player' ? 'Player 1' : `Player ${topSid.substring(0, 4)}`;
+    topPlayerStats = studentStats[topSid];
+  }
+
+  // Recent Streak calculation
+  let currentStreak = 0;
+  for (let i = shots.length - 1; i >= 0; i--) {
+    if (shots[i].made) currentStreak++;
+    else break;
+  }
+
+  // Generate dynamic Make Rate sparkline
+  const renderSparkline = (shots: Shot[]) => {
+    if (shots.length < 2) {
+      // Return static beautiful sparkline if not enough data
+      return (
+        <svg className="sparkline-svg" viewBox="-2 -2 104 44" preserveAspectRatio="none">
+           <defs>
+             <linearGradient id="gradient-blue" x1="0" x2="0" y1="0" y2="1">
+               <stop offset="0%" stopColor="rgba(96, 165, 250, 0.4)" />
+               <stop offset="100%" stopColor="rgba(96, 165, 250, 0)" />
+             </linearGradient>
+           </defs>
+           <path d="M0,35 L20,25 L40,30 L60,15 L80,20 L100,5 L100,40 L0,40 Z" fill="url(#gradient-blue)"/>
+           <path d="M0,35 L20,25 L40,30 L60,15 L80,20 L100,5" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+           <circle cx="20" cy="25" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="40" cy="30" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="60" cy="15" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="80" cy="20" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="100" cy="5" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+         </svg>
+      );
+    }
+
+    const numPoints = Math.min(6, shots.length);
+    const points: {x: number, y: number}[] = [];
+    
+    // Create trend points across temporal chunks
+    for (let i = 0; i < numPoints; i++) {
+      const sliceEnd = Math.floor(((i + 1) / numPoints) * shots.length);
+      const chunkOptions = shots.slice(0, sliceEnd);
+      const makes = chunkOptions.filter(s => s.made).length;
+      const rate = makes / chunkOptions.length;
+      
+      points.push({
+        x: (i / (numPoints - 1)) * 100,
+        y: 35 - (rate * 30) // Map 0-1 to Y=35 (bottom) to Y=5 (top)
+      });
+    }
+
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+    const fillD = `${pathD} L100,40 L0,40 Z`;
+
+    return (
+      <svg className="sparkline-svg" viewBox="-2 -2 104 44" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="gradient-blue" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="rgba(96, 165, 250, 0.4)" />
+            <stop offset="100%" stopColor="rgba(96, 165, 250, 0)" />
+          </linearGradient>
+        </defs>
+        <path d={fillD} fill="url(#gradient-blue)"/>
+        <path d={pathD} fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+        ))}
+      </svg>
+    );
+  };
+
   return (
     <div className="mentor-dashboard">
       <div className="mentor-tabs">
@@ -116,24 +212,63 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, onDelet
       <div className="mentor-content">
         {activeTab === 'overview' && (
           <div className="overview-panel">
-            <div className="summary-cards">
-              <div className="summary-card">
-                <span className="card-value">{stats.totalShots}</span>
-                <span className="card-label">Total Shots</span>
+            
+            {/* TOP ROW: Top Player & Recent Streak */}
+            <div className="top-stats-row">
+              <div className="top-stat-card">
+                <div className="top-stat-header">
+                   <span className="top-stat-title">Top player: {topPlayerName}</span>
+                </div>
+                <div className="top-player-data">
+                  <div className="tp-stat">
+                    <span className="tp-label">MADE</span>
+                    <span className="tp-val">{topPlayerStats.made}</span>
+                  </div>
+                  <div className="tp-stat">
+                    <span className="tp-label">ATTEMPTS</span>
+                    <span className="tp-val">{topPlayerStats.total}</span>
+                  </div>
+                  <div className="tp-stat">
+                    <span className="tp-label">SCORE:</span>
+                    <span className="tp-val text-yellow score-val">{topPlayerStats.score}</span>
+                  </div>
+                </div>
               </div>
-              <div className="summary-card">
-                <span className="card-value">
-                  {stats.totalShots > 0 ? `${stats.shootingPercentage.toFixed(1)}%` : '—'}
+
+              <div className="top-stat-card streak-card">
+                <span className="top-stat-title">Recent Streak</span>
+                <span className="streak-val">{currentStreak} Makes</span>
+                <div className="streak-cont">
+                  <div className="streak-bar-bg">
+                    <div className="streak-bar-fill" style={{ width: `${Math.min(100, (currentStreak / 5) * 100)}%` }} />
+                  </div>
+                  <span className="streak-target">/ 5</span>
+                </div>
+              </div>
+            </div>
+
+            {/* SECOND ROW: Original 4 Summary Cards */}
+            <div className="summary-cards four-cols">
+              <div className="summary-card stat-standard">
+                <span className="custom-card-value text-white">{stats.totalShots}</span>
+                <span className="custom-card-title">TOTAL SHOTS</span>
+              </div>
+              <div className="summary-card stat-standard make-rate-card">
+                <span className="custom-card-value text-white z-index-1">
+                  {stats.totalShots > 0 ? <>{stats.shootingPercentage.toFixed(1)}% <span className="text-green">↑</span></> : '—'}
                 </span>
-                <span className="card-label">Make Rate</span>
+                <span className="custom-card-title z-index-1">MAKE RATE</span>
+                <div className="make-rate-graphic">
+                  {renderSparkline(shots)}
+                </div>
               </div>
-              <div className="summary-card made">
-                <span className="card-value">{stats.totalMade}</span>
-                <span className="card-label">Made</span>
+              <div className="summary-card stat-standard made">
+                <span className="custom-card-value text-white">{stats.totalMade} <span className="text-green">↑</span></span>
+                <span className="custom-card-title">MADE</span>
               </div>
-              <div className="summary-card missed">
-                <span className="card-value">{stats.totalShots - stats.totalMade}</span>
-                <span className="card-label">Missed</span>
+              <div className="summary-card stat-standard missed">
+                <span className="custom-card-value text-white">{stats.totalShots - stats.totalMade} <span className="text-red">↓</span></span>
+                <span className="custom-card-title">MISSED</span>
               </div>
             </div>
 
@@ -193,6 +328,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, onDelet
                       >
                         <span className="activity-result">{shot.made ? '✅' : '❌'}</span>
                         <span className="activity-zone">{shot.zone}</span>
+                        <span className="activity-player">👤 {shot.studentId ? `Player ${shot.studentId.substring(0,4)}` : 'Local Player'}</span>
                         <span className="activity-time">
                           {new Date(shot.timestamp).toLocaleTimeString([], {
                             hour: '2-digit',
@@ -204,11 +340,43 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, onDelet
                 </div>
               </div>
             )}
+
+            <div className="session-summary-panel">
+              <h3 className="panel-title">Session Summary</h3>
+              <div className="session-summary-pills">
+                <span className="summary-pill">🏀 Practice: 5 shots don't record</span>
+                <span className="summary-pill">📝 Goal: 20 recorded shots</span>
+              </div>
+            </div>
+            
           </div>
         )}
 
         {activeTab === 'court' && (
-          <div className="centered-tab"><CourtHeatmap shots={shots} stats={stats} /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', alignItems: 'center' }}>
+            <div className="summary-cards" style={{ width: '100%' }}>
+              <div className="summary-card custom-card-shots">
+                <span className="custom-card-title">SHOTS TAKEN</span>
+                <span className="custom-card-value text-yellow">{stats.totalShots}</span>
+                <span className="custom-card-sub">total attempts</span>
+              </div>
+              <div className="summary-card custom-card-points">
+                <span className="custom-card-title">POINTS Per shot</span>
+                <span className="custom-card-value text-red">
+                  {stats.totalShots > 0 ? (shots.reduce((total, shot) => total + (shot.made ? (shot.zone.includes('Outside') || shot.zone.includes('Top of Key') ? 3 : 2) : 0), 0) / stats.totalShots).toFixed(1) : '0.0'}
+                </span>
+                <span className="custom-card-sub">Points / attempts</span>
+              </div>
+              <div className="summary-card custom-card-fg">
+                <span className="custom-card-title">FIELD GOAL %</span>
+                <span className="custom-card-value text-blue">
+                  {stats.totalShots > 0 ? `${Math.round(stats.shootingPercentage)}%` : '0%'}
+                </span>
+                <span className="custom-card-sub">makes / attempts</span>
+              </div>
+            </div>
+            <div className="centered-tab"><CourtHeatmap shots={shots} stats={stats} /></div>
+          </div>
         )}
 
         {activeTab === 'stats' && (

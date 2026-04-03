@@ -242,17 +242,13 @@ function App() {
                 className="landing-btn student"
                 onClick={() => setPracticeSubMode('student')}
               >
-                <span className="landing-btn-icon">🎮</span>
                 <span className="landing-btn-label">Student</span>
-                <span className="landing-btn-sub">Record your shots</span>
               </button>
               <button
                 className="landing-btn teacher"
                 onClick={() => setPracticeSubMode('mentor')}
               >
-                <span className="landing-btn-icon">👨‍🏫</span>
                 <span className="landing-btn-label">Mentor View</span>
-                <span className="landing-btn-sub">Analyze performance</span>
               </button>
             </div>
             <button className="landing-back-btn" onClick={handleReturnHome}>

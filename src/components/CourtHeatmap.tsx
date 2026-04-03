@@ -68,6 +68,33 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
         <path d="M 200 470 A 30 30 0 0 1 300 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
         <path d="M 227 470 A 20 20 0 0 1 273 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
 
+        {/* Zone number watermarks */}
+        {Object.entries(ZONES).map(([zone, pos]) => {
+          const zoneNum = zone.split(':')[0].replace('Zone ', '');
+          let x = pos.x as number;
+          let y = (pos.y as number) - 8;
+          
+          if (zoneNum === '4') { x = 70; y = 380; }
+          if (zoneNum === '5') { x = 250; y = 425; } /* Pulled back further */
+          if (zoneNum === '6') { x = 430; y = 380; }
+
+          return (
+            <text
+              key={`watermark-${zone}`}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="rgba(255, 255, 255, 0.45)"
+              fontSize="72"
+              fontWeight="900"
+              pointerEvents="none"
+            >
+              {zoneNum}
+            </text>
+          );
+        })}
+
         {/* Shot markers */}
         {shots.map((shot) => (
           <circle

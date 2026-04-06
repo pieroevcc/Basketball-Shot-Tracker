@@ -22,13 +22,9 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
   shots,
   participants,
   sessionCode,
-  session,
   onReturnHome,
 }) => {
-  const isSoloOnly = session?.soloOnly === true;
-  const [activeTab, setActiveTab] = useState<'overview' | 'teams' | 'leaderboard'>(
-    isSoloOnly ? 'leaderboard' : 'overview'
-  );
+  const [activeTab, setActiveTab] = useState<'overview' | 'teams' | 'leaderboard'>('overview');
   const [isExporting, setIsExporting] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
@@ -188,15 +184,13 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
         <h1 className="ended-teacher-title">Session Complete!</h1>
         <p className="ended-teacher-code">Code: {sessionCode}</p>
         <div className="ended-teacher-actions">
-          {!isSoloOnly && (
-            <button
-              className="btn-export-pdf"
-              onClick={generatePDF}
-              disabled={isExporting}
-            >
-              {isExporting ? 'Exporting…' : 'Export to PDF'}
-            </button>
-          )}
+          <button
+            className="btn-export-pdf"
+            onClick={generatePDF}
+            disabled={isExporting}
+          >
+            {isExporting ? 'Exporting…' : 'Export to PDF'}
+          </button>
           <button className="btn-return-home small" onClick={onReturnHome}>
             End & Return Home
           </button>
@@ -204,22 +198,18 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
       </div>
 
       <div className="ended-tabs">
-        {!isSoloOnly && (
-          <button
-            className={`ended-tab ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            Class Overview
-          </button>
-        )}
-        {!isSoloOnly && (
-          <button
-            className={`ended-tab ${activeTab === 'teams' ? 'active' : ''}`}
-            onClick={() => setActiveTab('teams')}
-          >
-            Team Results
-          </button>
-        )}
+        <button
+          className={`ended-tab ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('overview')}
+        >
+          Class Overview
+        </button>
+        <button
+          className={`ended-tab ${activeTab === 'teams' ? 'active' : ''}`}
+          onClick={() => setActiveTab('teams')}
+        >
+          Team Results
+        </button>
         <button
           className={`ended-tab ${activeTab === 'leaderboard' ? 'active' : ''}`}
           onClick={() => setActiveTab('leaderboard')}

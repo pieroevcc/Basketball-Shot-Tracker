@@ -23,6 +23,7 @@ interface TeacherLobbyProps {
   calculateRound1Winner: UseSessionReturn['calculateRound1Winner'];
   saveShotAllocations: UseSessionReturn['saveShotAllocations'];
   saveSabotageActions: UseSessionReturn['saveSabotageActions'];
+  kickParticipant: UseSessionReturn['kickParticipant'];
   allocations: ShotAllocation[];
   sabotageActions: SabotageAction[];
   onReturnHome: () => void;
@@ -41,6 +42,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
   pairTeams,
   assignGroups,
   calculateRound1Winner,
+  kickParticipant,
   allocations: _allocations,
   sabotageActions: _sabotageActions,
   onReturnHome,
@@ -143,6 +145,13 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                 <div key={p.studentId} className="teacher-participant-row">
                   <span className="participant-name">{p.name}</span>
                   <span className="participant-joined">Joined</span>
+                  <button
+                    className="kick-btn"
+                    onClick={() => kickParticipant(sessionCode, p.studentId)}
+                    title="Remove student"
+                  >
+                    ×
+                  </button>
                 </div>
               ))
             )}
@@ -261,9 +270,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
             </div>
           )}
           <p className="teacher-section-subtitle">
-            {session.soloOnly
-              ? 'Students are reviewing their solo results. End the session to show the full leaderboard!'
-              : 'Students are reviewing their solo heatmaps. When ready, form teams of 4!'}
+            Students are reviewing their solo heatmaps. When ready, form teams of 4!
           </p>
 
           <div className="teacher-participant-list">
@@ -281,18 +288,9 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
               ))}
           </div>
 
-          {session.soloOnly ? (
-            <button
-              className="teacher-action-btn primary"
-              onClick={() => advanceSession(sessionCode, 'ended')}
-            >
-              End Session &amp; Show Leaderboard
-            </button>
-          ) : (
-            <button className="teacher-action-btn primary" onClick={handleStartTeamStrategy}>
-              Form Teams &amp; Start Strategy
-            </button>
-          )}
+          <button className="teacher-action-btn primary" onClick={handleStartTeamStrategy}>
+            Form Teams &amp; Start Strategy
+          </button>
         </div>
       )}
 

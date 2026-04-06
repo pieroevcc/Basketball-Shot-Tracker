@@ -3,6 +3,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
   getDoc,
   getDocs,
   collection,
@@ -62,7 +63,7 @@ async function generateUniqueCode(database: NonNullable<typeof db>): Promise<str
 /**
  * Creates a new session document and returns the generated session code.
  */
-export async function createSession(soloOnly?: boolean): Promise<string> {
+export async function createSession(): Promise<string> {
   const database = requireDb();
   try {
     const sessionCode = await generateUniqueCode(database);
@@ -72,7 +73,6 @@ export async function createSession(soloOnly?: boolean): Promise<string> {
       createdAt: Date.now(),
       teacherLastSeen: Date.now(),
       hostDeviceId: crypto.randomUUID(),
-      ...(soloOnly ? { soloOnly: true } : {}),
     };
     await setDoc(doc(database, 'sessions', sessionCode), sessionData);
     return sessionCode;
@@ -273,6 +273,17 @@ export async function updateParticipantName(
     console.warn('Failed to update participant name:', err);
     throw err;
   }
+}
+
+/**
+ * Removes a participant document from the session (teacher kick).
+ */
+export async function removeParticipant(
+  sessionCode: string,
+  studentId: string
+): Promise<void> {
+  const database = requireDb();
+  await deleteDoc(doc(database, 'sessions', sessionCode, 'participants', studentId));
 }
 
 // ---------------------------------------------------------------------------

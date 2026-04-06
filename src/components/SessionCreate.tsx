@@ -6,10 +6,9 @@ interface SessionCreateProps {
   onCreated: (sessionCode: string) => void;
   createSession: UseSessionReturn['createSession'];
   onBack: () => void;
-  soloOnly?: boolean;
 }
 
-const SessionCreate: React.FC<SessionCreateProps> = ({ onCreated, createSession, onBack, soloOnly }) => {
+const SessionCreate: React.FC<SessionCreateProps> = ({ onCreated, createSession, onBack }) => {
   const [sessionCode, setSessionCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +17,7 @@ const SessionCreate: React.FC<SessionCreateProps> = ({ onCreated, createSession,
     setError(null);
     setLoading(true);
     try {
-      const code = await createSession(soloOnly);
+      const code = await createSession();
       const hostDeviceId = crypto.randomUUID();
       localStorage.setItem('sessionCode', code);
       localStorage.setItem('hostDeviceId', hostDeviceId);
@@ -36,11 +35,8 @@ const SessionCreate: React.FC<SessionCreateProps> = ({ onCreated, createSession,
     <div className="session-create">
       {!sessionCode && <button className="back-btn" onClick={onBack}>← Back</button>}
       <div className="session-create-card">
-        <div className="session-create-icon">{soloOnly ? '🧪' : '👨‍🏫'}</div>
+        <div className="session-create-icon">👨‍🏫</div>
         <h1 className="session-create-title">Create Session</h1>
-        {soloOnly && (
-          <div className="solo-only-badge">🧪 Test Mode: Solo Only — No team phases</div>
-        )}
         <p className="session-create-subtitle">
           Start a new class session and share the code with your students.
         </p>

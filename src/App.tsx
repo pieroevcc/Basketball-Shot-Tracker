@@ -13,6 +13,7 @@ import TeamReview from './components/TeamReview';
 import SessionEnded from './components/SessionEnded';
 import ShotAllocationPanel from './components/ShotAllocationPanel';
 import SabotagePanel from './components/SabotagePanel';
+import TestMode from './components/TestMode';
 import { useShots } from './hooks/useShots';
 import { useSession } from './hooks/useSession';
 import { markTeacherDisconnected, updateTeacherHeartbeat } from './services/sessionService';
@@ -23,8 +24,8 @@ import './App.css';
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-type AppMode = 'session' | 'practice' | null;
-type AppRole = 'student' | 'teacher' | null;
+type AppMode = 'session' | 'practice' | 'test' | null;
+type AppRole = 'student' | 'teacher';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -61,8 +62,6 @@ function App() {
   );
 
   // ---- Practice mode state ----
-  const [soloOnly, setSoloOnly] = useState<boolean>(false);
-
   const [practiceSubMode, setPracticeSubMode] = useState<'student' | 'mentor' | null>(() => {
     // Only restore practice sub-mode when in practice mode
     const savedMode = localStorage.getItem('appMode');
@@ -95,6 +94,7 @@ function App() {
     calculateRound1Winner,
     saveShotAllocations,
     saveSabotageActions,
+    kickParticipant,
     joinSession,
     updateName,
     addShot,
@@ -112,8 +112,7 @@ function App() {
   }, [appMode]);
 
   useEffect(() => {
-    if (role) localStorage.setItem('appRole', role);
-    else localStorage.removeItem('appRole');
+    localStorage.setItem('appRole', role);
   }, [role]);
 
   useEffect(() => {
@@ -187,6 +186,14 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, session, sessionCode, role]);
 
+  // If a student is kicked by the teacher, their participant document is deleted.
+  // Detect that and redirect home.
+  useEffect(() => {
+    if (loading || role !== 'student' || !sessionCode || !studentId) return;
+    if (session?.status === 'lobby' && myParticipant === null) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, role, sessionCode, studentId, session?.status, myParticipant]);
+
   // When the teacher reloads, beforeunload has already written teacherDisconnected:true.
   // On reconnect, detect that flag and send the teacher home too.
   useEffect(() => {
@@ -214,7 +221,6 @@ function App() {
     setSessionCode(null);
     setStudentId(null);
     setPracticeSubMode(null);
-    setSoloOnly(false);
   };
 
   const handleStudentJoined = (code: string, sid: string, _name: string) => {
@@ -267,6 +273,13 @@ function App() {
   const myTeamShots = shots.filter(
     (s) => s.studentId === studentId && s.activity === 'team'
   );
+
+  // ---------------------------------------------------------------------------
+  // TEST MODE  (component browser — no Firebase needed)
+  // ---------------------------------------------------------------------------
+  if (appMode === 'test') {
+    return <TestMode onBack={handleReturnHome} />;
+  }
 
   // ---------------------------------------------------------------------------
   // PRACTICE MODE  (original student/mentor experience, preserved)
@@ -424,7 +437,6 @@ function App() {
             createSession={createSession}
             onCreated={handleSessionCreated}
             onBack={handleReturnHome}
-            soloOnly={soloOnly}
           />
         </div>
       );
@@ -460,6 +472,7 @@ function App() {
           calculateRound1Winner={calculateRound1Winner}
           saveShotAllocations={saveShotAllocations}
           saveSabotageActions={saveSabotageActions}
+          kickParticipant={kickParticipant}
           allocations={allocations}
           sabotageActions={sabotageActions}
           onReturnHome={handleReturnHome}
@@ -479,8 +492,8 @@ function App() {
             onJoined={handleStudentJoined}
             onBack={handleReturnHome}
             onGoToTeacher={() => { setAppMode('session'); setRole('teacher'); }}
-            onGoToPractice={() => { setAppMode('practice'); setRole(null); }}
-            onGoToTest={() => { setSoloOnly(true); setAppMode('session'); setRole('teacher'); }}
+            onGoToPractice={() => { setAppMode('practice');}}
+            onGoToTest={() => setAppMode('test')}
           />
         </div>
       );
@@ -667,34 +680,7 @@ function App() {
     }
   }
 
-  // Fallback — no role selected yet but appMode is 'session'
-  return (
-    <div className="app landing">
-      <div className="landing-content">
-        <div className="landing-ball">🏀</div>
-        <h1 className="landing-title">Basketball Shot Tracker</h1>
-        <div className="landing-buttons">
-          <button
-            className="landing-btn student"
-            onClick={() => setRole('student')}
-          >
-            <span className="landing-btn-icon">🎮</span>
-            <span className="landing-btn-label">Join Session</span>
-          </button>
-          <button
-            className="landing-btn teacher"
-            onClick={() => setRole('teacher')}
-          >
-            <span className="landing-btn-icon">👨‍🏫</span>
-            <span className="landing-btn-label">Create Session</span>
-          </button>
-        </div>
-        <button className="landing-back-btn" onClick={handleReturnHome}>
-          ← Back
-        </button>
-      </div>
-    </div>
-  );
+  
 }
 
 export default App;

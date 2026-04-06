@@ -16,6 +16,7 @@ import {
   assignRound1Groups as assignRound1GroupsService,
   joinSession as joinSessionService,
   updateParticipantName as updateParticipantNameService,
+  removeParticipant as removeParticipantService,
   addSessionShot as addSessionShotService,
   undoLastShot as undoLastShotService,
   saveShotAllocations as saveShotAllocationsService,
@@ -48,13 +49,14 @@ export interface UseSessionReturn {
   round1Leaderboard: Participant[];
 
   // Teacher actions
-  createSession: (soloOnly?: boolean) => Promise<string>;
+  createSession: () => Promise<string>;
   advanceSession: (code: string, newStatus: SessionStatus) => Promise<void>;
   pairTeams: (code: string) => Promise<void>;
   assignGroups: (code: string) => Promise<void>;
   calculateRound1Winner: (code: string) => Promise<void>;
   saveShotAllocations: (code: string, allocations: ShotAllocation[]) => Promise<void>;
   saveSabotageActions: (code: string, actions: SabotageAction[]) => Promise<void>;
+  kickParticipant: (code: string, studentId: string) => Promise<void>;
 
   // Student actions
   joinSession: (code: string, name: string, studentId: string) => Promise<void>;
@@ -72,8 +74,14 @@ export function useSession(
   const [shots, setShots] = useState<Shot[]>([]);
   const [allocations, setAllocations] = useState<ShotAllocation[]>([]);
   const [sabotageActions, setSabotageActions] = useState<SabotageAction[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  // loadedCode tracks the last sessionCode for which all three subscriptions
+  // have fired. `loading` is derived: true whenever sessionCode doesn't match
+  // loadedCode. This makes `loading` immediately true when sessionCode changes,
+  // with no effect-timing gap that could cause premature handleReturnHome() calls.
+  const [loadedCode, setLoadedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const loading = sessionCode !== null && loadedCode !== sessionCode;
 
   // Subscribe to Firestore real-time updates whenever sessionCode changes
   useEffect(() => {
@@ -83,10 +91,10 @@ export function useSession(
       setShots([]);
       setAllocations([]);
       setSabotageActions([]);
+      setLoadedCode(null);
       return;
     }
 
-    setLoading(true);
     setError(null);
 
     let sessionLoaded = false;
@@ -95,7 +103,7 @@ export function useSession(
 
     function checkAllLoaded() {
       if (sessionLoaded && participantsLoaded && shotsLoaded) {
-        setLoading(false);
+        setLoadedCode(sessionCode);
       }
     }
 
@@ -112,12 +120,12 @@ export function useSession(
         checkAllLoaded();
       }, (err) => {
         setError(err.message);
-        setLoading(false);
+        setLoadedCode(sessionCode);
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe to session.';
       setError(message);
-      setLoading(false);
+      setLoadedCode(sessionCode);
       return;
     }
 
@@ -130,7 +138,7 @@ export function useSession(
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe to participants.';
       setError(message);
-      setLoading(false);
+      setLoadedCode(sessionCode);
     }
 
     try {
@@ -142,7 +150,7 @@ export function useSession(
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe to shots.';
       setError(message);
-      setLoading(false);
+      setLoadedCode(sessionCode);
     }
 
     try {
@@ -230,9 +238,9 @@ export function useSession(
   // Teacher action callbacks
   // ---------------------------------------------------------------------------
 
-  const createSession = useCallback(async (soloOnly?: boolean): Promise<string> => {
+  const createSession = useCallback(async (): Promise<string> => {
     try {
-      const code = await createSessionService(soloOnly);
+      const code = await createSessionService();
       return code;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create session.';
@@ -309,6 +317,16 @@ export function useSession(
     },
     []
   );
+
+  const kickParticipant = useCallback(async (code: string, sid: string): Promise<void> => {
+    try {
+      await removeParticipantService(code, sid);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to kick participant.';
+      setError(message);
+      throw err;
+    }
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Student action callbacks
@@ -390,6 +408,7 @@ export function useSession(
     calculateRound1Winner: calculateRound1WinnerCb,
     saveShotAllocations,
     saveSabotageActions: saveSabotageActionsCb,
+    kickParticipant,
 
     // Student actions
     joinSession,

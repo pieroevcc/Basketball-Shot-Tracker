@@ -18,7 +18,7 @@ const ModeSelector: React.FC<ModeSelectorProps> = ({ onModeSelect }) => {
         >
           <div className="mode-icon">📊</div>
           <div className="mode-title">Student Mode</div>
-          <div className="mode-description">Track your shooting performance</div>
+          <div className="mode-description">Tracks your performance</div>
         </button>
         
         <button 

@@ -9,10 +9,9 @@ interface SessionJoinProps {
   onBack: () => void;
   onGoToTeacher: () => void;
   onGoToPractice: () => void;
-  onGoToTest: () => void;
 }
 
-const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack: _onBack, onGoToTeacher, onGoToPractice, onGoToTest }) => {
+const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack: _onBack, onGoToTeacher, onGoToPractice }) => {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +100,13 @@ const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack
                 onClick={handleGenerateName}
                 title="Generate a random name"
               >
-                🎲
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 20H6a2 2 0 0 1-2-2V6" />
+                  <path d="M1 9l3-3 3 3" />
+                  <path d="M16 4h2a2 2 0 0 1 2 2v12" />
+                  <path d="M17 15l3 3 3-3" />
+                  <text x="12" y="16.5" fill="red" stroke="none" fontSize="18" fontWeight="bold" textAnchor="middle">?</text>
+                </svg>
               </button>
             </div>
           </div>
@@ -118,9 +123,8 @@ const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack
         </form>
 
         <div className="session-join-alt-links">
-          <button className="alt-link" onClick={onGoToTeacher}>👨‍🏫 Teacher? Create a session</button>
-          <button className="alt-link" onClick={onGoToPractice}>🏋️ Practice offline</button>
-          <button className="alt-link" onClick={onGoToTest}>🧪 Test Mode</button>
+          <button className="alt-link" onClick={onGoToTeacher}>Create a Session</button>
+          <button className="alt-link" onClick={onGoToPractice}>Practice Mode</button>
         </div>
       </div>
     </div>

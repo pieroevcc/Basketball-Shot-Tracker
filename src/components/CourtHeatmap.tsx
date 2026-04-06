@@ -91,28 +91,40 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
         {Object.entries(stats.byZone).map(([zone, data]) => {
           const pos = ZONES[zone as keyof typeof ZONES];
           if (!pos || data.total === 0) return null;
+          const shortName = zone.split(': ')[1] ?? zone;
           return (
             <g key={zone}>
-              <rect x={pos.x - 28} y={pos.y - 18} width="56" height="34" rx="5" fill="rgba(0,0,0,0.6)" />
+              <rect x={pos.x - 36} y={pos.y - 24} width="72" height="46" rx="5" fill="rgba(0,0,0,0.65)" />
               <text
                 x={pos.x}
-                y={pos.y - 5}
+                y={pos.y - 13}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill="rgba(255,255,255,0.75)"
+                fontSize="9"
+                fontWeight="600"
+              >
+                {shortName}
+              </text>
+              <text
+                x={pos.x}
+                y={pos.y + 1}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="white"
-                fontSize="12"
+                fontSize="13"
                 fontWeight="bold"
               >
                 {data.percentage.toFixed(0)}%
               </text>
               <text
                 x={pos.x}
-                y={pos.y + 10}
+                y={pos.y + 16}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="#ffd700"
-                fontSize="10"
-                fontWeight="bold"
+                fontSize="9"
+                fontWeight="600"
               >
                 {data.points} pts
               </text>

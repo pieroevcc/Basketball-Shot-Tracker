@@ -13,6 +13,7 @@ import TeamReview from './components/TeamReview';
 import SessionEnded from './components/SessionEnded';
 import ShotAllocationPanel from './components/ShotAllocationPanel';
 import SabotagePanel from './components/SabotagePanel';
+import TopStats from './components/TopStats';
 import { useShots } from './hooks/useShots';
 import { useSession } from './hooks/useSession';
 import { Shot, calculateStats } from './types';
@@ -261,11 +262,13 @@ function App() {
       <div className="app student-mode">
         <header className="app-header">
           <h1>🏀 Basketball Shot Tracker</h1>
-          <p>Track your shooting performance with a visual heatmap</p>
+          <p>Tracks your performance with a visual heatmap</p>
           <button className="mode-switch-btn" onClick={() => setPracticeSubMode(null)}>
             Switch Mode
           </button>
         </header>
+
+        {activeTab === 'court' && <TopStats stats={practiceStats} />}
 
         <div className="nav-tabs">
           <button
@@ -407,7 +410,6 @@ function App() {
             onBack={handleReturnHome}
             onGoToTeacher={() => { setAppMode('session'); setRole('teacher'); }}
             onGoToPractice={() => { setAppMode('practice'); setRole(null); }}
-            onGoToTest={() => { setSoloOnly(true); setAppMode('session'); setRole('teacher'); }}
           />
         </div>
       );
@@ -435,27 +437,56 @@ function App() {
       return (
         <div className="app session-mode">
           <div className="session-activity-header">
-            <h2 className="activity-title">Solo Activity</h2>
+            <h2 className="activity-title">🏀 Live Session</h2>
             <p className="activity-subtitle">
-              Tap a zone on the court, then record if you made or missed!
+              Solo Activity — Tap a zone on the court, then record if you made or missed!
             </p>
           </div>
-          <div className="session-court-wrapper">
-            <BasketballCourt
-              onShotRecorded={handleSessionShot}
-              shots={mySoloShots}
-              maxShots={MAX_SOLO_SHOTS}
-              onUndo={handleUndoShot}
-            />
+
+          {activeTab === 'court' && <TopStats stats={soloStats} />}
+
+          <div className="nav-tabs">
+            <button
+              className={`tab ${activeTab === 'court' ? 'active' : ''}`}
+              onClick={() => setActiveTab('court')}
+            >
+              🏀 Court
+            </button>
+            <button
+              className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stats')}
+            >
+              📊 Stats
+            </button>
+            <button
+              className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+              onClick={() => setActiveTab('history')}
+            >
+              📝 History
+            </button>
           </div>
-          {mySoloShots.length > 0 && (
-            <div className="session-inline-stats">
-              <span>{mySoloShots.length} shots</span>
-              <span>{soloStats.totalMade} made</span>
-              <span>{soloStats.shootingPercentage.toFixed(0)}%</span>
-              <span>{soloStats.totalPoints} pts</span>
-            </div>
-          )}
+
+          <main className="app-content">
+            {activeTab === 'court' && (
+              <div className="session-court-wrapper">
+                <BasketballCourt
+                  onShotRecorded={handleSessionShot}
+                  shots={mySoloShots}
+                  maxShots={MAX_SOLO_SHOTS}
+                  onUndo={handleUndoShot}
+                />
+              </div>
+            )}
+            {activeTab === 'stats' && (
+              <div className="stats-tab-layout">
+                <CourtHeatmap shots={mySoloShots} stats={soloStats} />
+                <StatsDisplay stats={soloStats} />
+              </div>
+            )}
+            {activeTab === 'history' && (
+              <ShotHistory shots={mySoloShots} onClear={() => {}} onDelete={() => {}} />
+            )}
+          </main>
         </div>
       );
     }
@@ -532,9 +563,9 @@ function App() {
       return (
         <div className="app session-mode">
           <div className="session-activity-header">
-            <h2 className="activity-title">Team Activity 🤝</h2>
+            <h2 className="activity-title">🏀 Live Session</h2>
             <p className="activity-subtitle">
-              Shoot as a team! Use your strategy from the last round.
+              Team Activity — Shoot as a team! Use your strategy from the last round.
             </p>
             {blockedZones.length > 0 && (
               <p className="activity-warning">
@@ -542,23 +573,52 @@ function App() {
               </p>
             )}
           </div>
-          <div className="session-court-wrapper">
-            <BasketballCourt
-              onShotRecorded={handleSessionShot}
-              shots={myTeamShots}
-              maxShots={effectiveMaxShots}
-              onUndo={handleUndoShot}
-              blockedZones={blockedZones}
-            />
+
+          {activeTab === 'court' && <TopStats stats={teamStats} />}
+
+          <div className="nav-tabs">
+            <button
+              className={`tab ${activeTab === 'court' ? 'active' : ''}`}
+              onClick={() => setActiveTab('court')}
+            >
+              🏀 Court
+            </button>
+            <button
+              className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stats')}
+            >
+              📊 Stats
+            </button>
+            <button
+              className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+              onClick={() => setActiveTab('history')}
+            >
+              📝 History
+            </button>
           </div>
-          {myTeamShots.length > 0 && (
-            <div className="session-inline-stats">
-              <span>{myTeamShots.length} shots</span>
-              <span>{teamStats.totalMade} made</span>
-              <span>{teamStats.shootingPercentage.toFixed(0)}%</span>
-              <span>{teamStats.totalPoints} pts</span>
-            </div>
-          )}
+
+          <main className="app-content">
+            {activeTab === 'court' && (
+              <div className="session-court-wrapper">
+                <BasketballCourt
+                  onShotRecorded={handleSessionShot}
+                  shots={myTeamShots}
+                  maxShots={effectiveMaxShots}
+                  onUndo={handleUndoShot}
+                  blockedZones={blockedZones}
+                />
+              </div>
+            )}
+            {activeTab === 'stats' && (
+              <div className="stats-tab-layout">
+                <CourtHeatmap shots={myTeamShots} stats={teamStats} />
+                <StatsDisplay stats={teamStats} />
+              </div>
+            )}
+            {activeTab === 'history' && (
+              <ShotHistory shots={myTeamShots} onClear={() => {}} onDelete={() => {}} />
+            )}
+          </main>
         </div>
       );
     }

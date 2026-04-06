@@ -144,14 +144,16 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
               participants.map((p) => (
                 <div key={p.studentId} className="teacher-participant-row">
                   <span className="participant-name">{p.name}</span>
-                  <span className="participant-joined">Joined</span>
-                  <button
-                    className="kick-btn"
-                    onClick={() => kickParticipant(sessionCode, p.studentId)}
-                    title="Remove student"
-                  >
-                    ×
-                  </button>
+                  <div className="participant-actions">
+                    <span className="participant-joined">Joined</span>
+                    <button 
+                      className="kick-btn" 
+                      onClick={() => kickParticipant(sessionCode, p.studentId)}
+                      title="Kick student"
+                    >
+                      ❌
+                    </button>
+                  </div>
                 </div>
               ))
             )}

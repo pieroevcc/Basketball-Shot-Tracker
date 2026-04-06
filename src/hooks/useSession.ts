@@ -409,8 +409,6 @@ export function useSession(
     saveShotAllocations,
     saveSabotageActions: saveSabotageActionsCb,
     kickParticipant,
-
-    // Student actions
     joinSession,
     updateName,
     addShot,

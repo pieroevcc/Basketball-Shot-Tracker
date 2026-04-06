@@ -249,12 +249,40 @@
   box-sizing: border-box;
 }
 
+.ended-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .ended-panel-title {
   font-size: 22px;
   font-weight: 900;
   color: #1a1a2e;
-  margin: 0 0 20px 0;
-  text-align: center;
+  margin: 0;
+}
+
+/* ---- Stats Dropdown ---- */
+.stats-dropdown {
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.stats-dropdown:hover,
+.stats-dropdown:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 /* ---- Overview layout ---- */

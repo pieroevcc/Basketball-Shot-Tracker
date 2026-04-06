@@ -24,6 +24,10 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
   sessionCode,
   onReturnHome,
 }) => {
+<<<<<<< HEAD
+  const [activeTab, setActiveTab] = useState<'overview' | 'teams'>('overview');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
+=======
   const [activeTab, setActiveTab] = useState<'overview' | 'teams' | 'leaderboard'>('overview');
   const [isExporting, setIsExporting] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
@@ -71,6 +75,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
       </div>
     </div>
   );
+>>>>>>> 7f45a8aabb5c3607049fcb28542d0dae73cc52a1
 
   if (role === 'student') {
     return (
@@ -153,7 +158,44 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
 
   // Teacher view
   const allShots = shots;
-  const allStats = calculateStats(allShots);
+  
+  // Pre-calculate participant stats to find best and worst
+  const participantStats = participants.map((p) => {
+    const pShots = allShots.filter((s) => s.studentId === p.studentId);
+    const pStats = calculateStats(pShots);
+    return { ...p, stats: pStats, shotsCount: pShots.length };
+  });
+
+  const sortedByPct = [...participantStats]
+    .filter((p) => p.shotsCount > 0)
+    .sort((a, b) => b.stats.shootingPercentage - a.stats.shootingPercentage);
+
+  const bestId = sortedByPct.length > 0 ? sortedByPct[0].studentId : null;
+  const worstId = sortedByPct.length > 0 ? sortedByPct[sortedByPct.length - 1].studentId : null;
+
+  const filteredShots = selectedFilter === 'all' 
+    ? allShots 
+    : allShots.filter((s) => s.studentId === selectedFilter);
+
+  const filteredStats = calculateStats(filteredShots);
+
+  const renderDropdown = () => (
+    <select 
+      className="stats-dropdown" 
+      value={selectedFilter} 
+      onChange={(e) => setSelectedFilter(e.target.value)}
+    >
+      <option value="all">Whole Class</option>
+      {participantStats.map((p) => {
+        let label = p.name;
+        if (p.shotsCount > 0) {
+          if (p.studentId === bestId && p.studentId !== worstId) label += ' 🔥 (Best)';
+          else if (p.studentId === worstId && p.studentId !== bestId) label += ' ❄️ (Worst)';
+        }
+        return <option key={p.studentId} value={p.studentId}>{label}</option>;
+      })}
+    </select>
+  );
 
   // Build team groups
   const teamMap: Record<string, { members: Participant[]; shots: Shot[] }> = {};
@@ -202,7 +244,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
           className={`ended-tab ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
-          Class Overview
+          Student Stats
         </button>
         <button
           className={`ended-tab ${activeTab === 'teams' ? 'active' : ''}`}
@@ -220,13 +262,12 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
 
       {activeTab === 'overview' && (
         <div className="ended-panel">
-          <h2 className="ended-panel-title">All Shots — Class Overview</h2>
           <div className="ended-overview-layout">
             <div className="ended-heatmap-wrapper">
-              <CourtHeatmap shots={allShots} stats={allStats} />
+              <CourtHeatmap shots={filteredShots} stats={filteredStats} />
             </div>
             <div className="ended-stats-wrapper">
-              <StatsDisplay stats={allStats} />
+              <StatsDisplay stats={filteredStats} headerNode={renderDropdown()} />
             </div>
           </div>
         </div>

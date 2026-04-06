@@ -1,16 +1,4 @@
-.solo-only-badge {
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px dashed rgba(255, 255, 255, 0.6);
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 16px;
-  text-align: center;
-}
-
-.session-create {
+.create-session-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,7 +6,7 @@
   width: 100%;
 }
 
-.session-create-card {
+.create-session-card {
   background: white;
   border-radius: 24px;
   width: 100%;
@@ -51,7 +39,7 @@
   background: #1f2937;
 }
 
-.session-create-content {
+.create-session-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -59,18 +47,18 @@
   margin-bottom: 40px;
 }
 
-.session-create-icon {
+.create-session-icon {
   margin-bottom: 20px;
 }
 
-.session-create-title {
+.create-session-title {
   font-size: 36px;
   font-weight: 800;
   color: #111827;
   margin: 0 0 16px 0;
 }
 
-.session-create-subtitle {
+.create-session-subtitle {
   font-size: 18px;
   color: #4b5563;
   line-height: 1.5;
@@ -93,37 +81,4 @@
 .create-session-start-btn:hover {
   background: #1f2937;
   transform: translateY(-2px);
-}
-
-.session-created {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.created-label {
-  font-size: 16px;
-  color: #4b5563;
-  margin-bottom: 8px;
-}
-
-.code-display {
-  font-size: 48px;
-  font-weight: bold;
-  letter-spacing: 8px;
-  color: #111827;
-  margin-bottom: 16px;
-}
-
-.created-hint {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.qr-hint {
-  margin-top: 20px;
-  padding: 15px;
-  background: #f3f4f6;
-  border-radius: 12px;
-  font-size: 14px;
-  color: #374151;
 }

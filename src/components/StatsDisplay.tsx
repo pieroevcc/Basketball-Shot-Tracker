@@ -4,24 +4,34 @@ import './StatsDisplay.css';
 
 interface StatsDisplayProps {
   stats: Stats;
+  headerNode?: React.ReactNode;
 }
 
-const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
+const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, headerNode }) => {
   return (
     <div className="stats-container">
-      <div className="overall-stats">
-        <h2>📊 Overall Stats</h2>
-        <div className="stat-item">
-          <span>Total Shots:</span>
-          <strong>{stats.totalShots}</strong>
+      <div className="overall-stats-group">
+        <div className="overall-stats-header">
+          <h2>📊 OVERALL STATS</h2>
+          {headerNode && <div className="stats-actions">{headerNode}</div>}
         </div>
-        <div className="stat-item">
-          <span>Made Shots:</span>
-          <strong>{stats.totalMade}</strong>
-        </div>
-        <div className="stat-item">
-          <span>Shooting %:</span>
-          <strong>{stats.shootingPercentage.toFixed(1)}%</strong>
+        <div className="overall-stats">
+          <div className="stat-item">
+            <span>Total Shots</span>
+            <strong>{stats.totalShots}</strong>
+          </div>
+          <div className="stat-item">
+            <span>Made</span>
+            <strong>{stats.totalMade}</strong>
+          </div>
+          <div className="stat-item">
+            <span>Shoot %</span>
+            <strong>{stats.shootingPercentage.toFixed(1)}%</strong>
+          </div>
+          <div className="stat-item">
+            <span>PTS/Shot</span>
+            <strong>{stats.pointsPerShot.toFixed(1)}</strong>
+          </div>
         </div>
         <div className="stat-item">
           <span>Total Points:</span>
@@ -30,21 +40,18 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
       </div>
 
       <div className="zone-stats">
-        <h2>📍 Stats by Zone</h2>
-        <div className="zone-grid">
+        <h2>📍 ZONE BREAKDOWN</h2>
+        <div className="zone-list">
           {Object.entries(stats.byZone).map(([zone, data]) => (
-            <div key={zone} className="zone-card">
-              <h3>{zone}</h3>
-              <div className="zone-stat">
-                <span>Made:</span> <strong>{data.made}/{data.total}</strong>
+            <div key={zone} className="zone-row">
+              <div className="zone-row-header">
+                <div className="zone-name">{zone} <span className="zone-pct">({data.percentage.toFixed(0)}%)</span></div>
+                <div className="zone-metrics">{data.pointsPerShot.toFixed(1)} pts/shot | {data.made}/{data.total}</div>
               </div>
-              <div className="zone-stat">
-                <span>%:</span> <strong>{data.percentage.toFixed(1)}%</strong>
+              <div className="zone-bar-bg">
+                 <div className={`zone-bar-fill ${getHotColdClass(data.percentage)}`} style={{ width: `${data.percentage}%` }}></div>
               </div>
-              <div className="zone-stat">
-                <span>Pts:</span> <strong>{data.points}</strong>
-              </div>
-              <div className={`zone-indicator ${getHotColdClass(data.percentage)}`}></div>
+
             </div>
           ))}
         </div>

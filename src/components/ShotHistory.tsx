@@ -4,11 +4,12 @@ import './ShotHistory.css';
 
 interface ShotHistoryProps {
   shots: Shot[];
+  participants?: { studentId: string; name: string }[];
   onClear: () => void;
   onDelete: (id: string) => void;
 }
 
-const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear, onDelete }) => {
+const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, participants, onClear, onDelete }) => {
   const recentShots = [...shots].reverse().slice(0, 10);
 
   return (
@@ -26,10 +27,13 @@ const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear, onDelete }) =
         <p className="empty-message">No shots recorded yet. Click on the court to start!</p>
       ) : (
         <div className="shots-list">
-          {recentShots.map((shot, index) => (
+          {recentShots.map((shot, index) => {
+            const p = participants?.find(p => p.studentId === shot.studentId);
+            const label = p ? `${p.name} - ${shot.zone}` : shot.zone;
+            return (
             <div key={shot.id} className={`shot-item ${shot.made ? 'made' : 'missed'}`}>
               <span className="shot-number">{shots.length - index}</span>
-              <span className="shot-zone">{shot.zone}</span>
+              <span className="shot-zone">{label}</span>
               <span className={`shot-result ${shot.made ? 'made' : 'missed'}`}>
                 {shot.made ? '✅ Made' : '❌ Missed'}
               </span>
@@ -41,7 +45,8 @@ const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear, onDelete }) =
                 ✕
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

@@ -19,6 +19,7 @@ import { useSession } from './hooks/useSession';
 import { markTeacherDisconnected, updateTeacherHeartbeat } from './services/sessionService';
 import { Shot, calculateStats } from './types';
 
+import './components/ModeSelector.css';
 import './App.css';
 
 // ---------------------------------------------------------------------------
@@ -290,35 +291,38 @@ function App() {
     // Sub-mode selector
     if (!practiceSubMode) {
       return (
-        <div className="app landing">
-          <div className="landing-content">
-            <div className="landing-ball">🏀</div>
-            <h1 className="landing-title">Practice Mode</h1>
-            <p className="landing-subtitle">
-              Track shots locally — no internet connection required.
-            </p>
-            <div className="landing-buttons">
-              <button
-                className="landing-btn student"
-                onClick={() => setPracticeSubMode('student')}
-              >
-                <span className="landing-btn-icon">🎮</span>
-                <span className="landing-btn-label">Student</span>
-                <span className="landing-btn-sub">Record your shots</span>
-              </button>
-              <button
-                className="landing-btn teacher"
-                onClick={() => setPracticeSubMode('mentor')}
-              >
-                <span className="landing-btn-icon">👨‍🏫</span>
-                <span className="landing-btn-label">Mentor View</span>
-                <span className="landing-btn-sub">Analyze performance</span>
-              </button>
-            </div>
-            <button className="landing-back-btn" onClick={handleReturnHome}>
-              ← Back
+        <div className="practice-mode-container">
+          <div className="practice-mode-icon" style={{ fontSize: 64, marginBottom: 16 }}>🎯</div>
+          <h1 className="practice-title">Practice Mode</h1>
+          <p className="practice-subtitle" style={{ marginBottom: 40, fontSize: 18, color: 'rgba(255,255,255,0.8)' }}>
+            Practice your skills here, nothing's easy!
+          </p>
+          
+          <div className="practice-cards" style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
+            <button 
+              className="practice-card student-card"
+              onClick={() => setPracticeSubMode('student')}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', borderRadius: 20, width: 220, border: 'none', cursor: 'pointer', transition: 'transform 0.2s', background: '#f8f9fa' }}
+            >
+              <div style={{ fontSize: 32, marginBottom: 12 }}>🏀</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#3b5998', letterSpacing: 1, marginBottom: 8 }}>STUDENT</div>
+              <div style={{ fontSize: 14, color: '#888' }}>Record your shots</div>
+            </button>
+            
+            <button 
+              className="practice-card mentor-card"
+              onClick={() => setPracticeSubMode('mentor')}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', borderRadius: 20, width: 220, border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', transition: 'transform 0.2s', background: 'rgba(255,255,255,0.1)' }}
+            >
+              <div style={{ fontSize: 32, marginBottom: 12 }}>🏆</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 8 }}>Mentor View</div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)' }}>Analyze performance</div>
             </button>
           </div>
+
+          <button className="practice-back-btn" onClick={handleReturnHome}>
+            ←&nbsp;&nbsp;&nbsp;Back
+          </button>
         </div>
       );
     }
@@ -493,7 +497,6 @@ function App() {
             onBack={handleReturnHome}
             onGoToTeacher={() => { setAppMode('session'); setRole('teacher'); }}
             onGoToPractice={() => { setAppMode('practice');}}
-            onGoToTest={() => setAppMode('test')}
           />
         </div>
       );

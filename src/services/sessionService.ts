@@ -441,6 +441,7 @@ export function subscribeToShots(
 }
 
 /**
+/**
  * Subscribes to the allocations subcollection. Returns an unsubscribe function.
  */
 export function subscribeToAllocations(

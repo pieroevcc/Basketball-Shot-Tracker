@@ -65,21 +65,21 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, shots, participants 
         </select>
       </div>
       <div className="overall-stats-row">
-        <div className="overall-stat-cell">
+        <div className="overall-stat-cell card-orange">
           <div className="overall-stat-label">TOTAL SHOTS</div>
-          <div className="overall-stat-value" style={{ color: '#fb923c' }}>{activeStats.totalShots}</div>
+          <div className="overall-stat-value">{activeStats.totalShots}</div>
         </div>
-        <div className="overall-stat-cell">
+        <div className="overall-stat-cell card-green">
           <div className="overall-stat-label">MADE</div>
-          <div className="overall-stat-value" style={{ color: '#4ade80' }}>{activeStats.totalMade}</div>
+          <div className="overall-stat-value">{activeStats.totalMade}</div>
         </div>
-        <div className="overall-stat-cell">
+        <div className="overall-stat-cell card-blue">
           <div className="overall-stat-label">SHOOT %</div>
-          <div className="overall-stat-value" style={{ color: '#60a5fa' }}>{activeStats.shootingPercentage.toFixed(1)}%</div>
+          <div className="overall-stat-value">{activeStats.shootingPercentage.toFixed(1)}%</div>
         </div>
-        <div className="overall-stat-cell">
+        <div className="overall-stat-cell card-pink">
           <div className="overall-stat-label">PTS / SHOT</div>
-          <div className="overall-stat-value" style={{ color: '#f472b6' }}>{activeStats.totalShots > 0 ? (activeStats.totalPoints / activeStats.totalShots).toFixed(1) : '0.0'}</div>
+          <div className="overall-stat-value">{activeStats.totalShots > 0 ? (activeStats.totalPoints / activeStats.totalShots).toFixed(1) : '0.0'}</div>
         </div>
       </div>
 

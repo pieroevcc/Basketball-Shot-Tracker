@@ -1,0 +1,289 @@
+.sabotage-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 16px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* --- Tabs --- */
+.sabotage-tabs {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.sabotage-tab-btn {
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.sabotage-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: white;
+}
+
+.sabotage-tab-btn.active {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: white;
+  color: #1a1a2e;
+}
+
+/* --- Config container --- */
+.sabotage-config {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* --- Block Zone --- */
+.sabotage-block-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.sabotage-helper {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sabotage-helper strong {
+  color: #f59e0b;
+}
+
+.selected-zones-display {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.selected-zone-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.25);
+  border: 2px solid #f59e0b;
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #f59e0b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.deselect-zone {
+  background: none;
+  border: none;
+  color: #f59e0b;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.deselect-zone:hover {
+  opacity: 1;
+}
+
+.sabotage-court-wrapper {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* --- Shots Transfer --- */
+.shots-transfer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.shots-transfer-grid {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.transfer-column {
+  flex: 1 1 260px;
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.transfer-col-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #1a1a2e;
+  margin: 0;
+  text-align: center;
+}
+
+.remove-label {
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.add-label {
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.transfer-player-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 4px;
+  border-bottom: 1px solid #eee;
+}
+
+.transfer-player-row:last-of-type {
+  border-bottom: none;
+}
+
+.transfer-player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.transfer-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transfer-stats {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+}
+
+.transfer-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.transfer-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.transfer-btn.remove {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.transfer-btn.remove:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+}
+
+.transfer-btn.add {
+  background: #dcfce7;
+  color: #22c55e;
+}
+
+.transfer-btn.add:hover:not(:disabled) {
+  background: #22c55e;
+  color: white;
+}
+
+.transfer-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.transfer-value {
+  font-size: 16px;
+  font-weight: 900;
+  color: #1a1a2e;
+  min-width: 28px;
+  text-align: center;
+}
+
+.transfer-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  text-align: center;
+  padding-top: 6px;
+  border-top: 2px solid #eee;
+}
+
+.transfer-total.valid {
+  color: #22c55e;
+}
+
+.transfer-warning {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* --- Submit button --- */
+.sabotage-submit {
+  width: 100%;
+  max-width: 420px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 900;
+  border-radius: 16px;
+  margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .shots-transfer-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .transfer-column {
+    max-width: 100%;
+  }
+}

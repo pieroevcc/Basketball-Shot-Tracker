@@ -12,7 +12,7 @@ import SessionEnded from './components/SessionEnded';
 import ShotAllocationPanel from './components/ShotAllocationPanel';
 import SabotagePanel from './components/SabotagePanel';
 import TestMode from './components/TestMode';
-import TopStats from './components/TopStats';
+import ShotHistory from './components/ShotHistory';
 import PracticeMode from './components/PracticeMode';
 import { useSession } from './hooks/useSession';
 import { markTeacherDisconnected, updateTeacherHeartbeat } from './services/sessionService';
@@ -59,6 +59,7 @@ function App() {
   const [studentId, setStudentId] = useState<string | null>(
     () => readLocalStorage('studentId')
   );
+  const [activeTab, setActiveTab] = useState<'court' | 'stats' | 'history'>('court');
 
   // ---- Session mode state ----
   const {
@@ -389,8 +390,6 @@ function App() {
             </p>
           </div>
 
-          {activeTab === 'court' && <TopStats stats={soloStats} />}
-
           <div className="nav-tabs">
             <button
               className={`tab ${activeTab === 'court' ? 'active' : ''}`}
@@ -420,6 +419,7 @@ function App() {
                   shots={mySoloShots}
                   maxShots={MAX_SOLO_SHOTS}
                   onUndo={handleUndoShot}
+                  stats={soloStats}
                 />
               </div>
             )}
@@ -521,8 +521,6 @@ function App() {
             )}
           </div>
 
-          {activeTab === 'court' && <TopStats stats={teamStats} />}
-
           <div className="nav-tabs">
             <button
               className={`tab ${activeTab === 'court' ? 'active' : ''}`}
@@ -553,6 +551,7 @@ function App() {
                   maxShots={effectiveMaxShots}
                   onUndo={handleUndoShot}
                   blockedZones={blockedZones}
+                  stats={teamStats}
                 />
               </div>
             )}

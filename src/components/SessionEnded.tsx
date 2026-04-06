@@ -264,7 +264,8 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
               <CourtHeatmap shots={filteredShots} stats={filteredStats} />
             </div>
             <div className="ended-stats-wrapper">
-              <StatsDisplay stats={filteredStats} headerNode={renderDropdown()} />
+              {renderDropdown()}
+              <StatsDisplay stats={filteredStats} />
             </div>
           </div>
         </div>

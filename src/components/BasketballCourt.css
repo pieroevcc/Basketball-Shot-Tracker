@@ -1,3 +1,45 @@
+.top-stats-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.top-stat-card {
+  background: rgba(30, 20, 60, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: center;
+  width: 160px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-top: 4px solid #fff;
+}
+.card-yellow { border-top-color: #ffb700; }
+.card-yellow .stat-value { color: #ffb700; }
+.card-green { border-top-color: #00e676; }
+.card-green .stat-value { color: #00e676; }
+.card-blue { border-top-color: #40c4ff; }
+.card-blue .stat-value { color: #40c4ff; }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.stat-value {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-sub {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .court-container {
   display: flex;
   flex-direction: column;
@@ -10,7 +52,7 @@
   border: 4px solid #fff;
   border-radius: 8px;
   cursor: pointer;
-  max-width: 420px; /* Reduced from 100% (500px max) to make it shorter vertically */
+  max-width: 100%;
   height: auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease;

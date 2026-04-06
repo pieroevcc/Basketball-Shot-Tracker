@@ -3,6 +3,7 @@ import BasketballCourt from './BasketballCourt';
 import CourtHeatmap from './CourtHeatmap';
 import Lobby from './Lobby';
 import MentorDashboard from './MentorDashboard';
+import PracticeMode from './PracticeMode';
 import SabotagePanel from './SabotagePanel';
 import SessionCreate from './SessionCreate';
 import SessionEnded from './SessionEnded';
@@ -96,6 +97,7 @@ const VIEWS: ViewDef[] = [
   { id: 'ShotHistory',           label: 'Shot History',           category: 'Shared' },
   { id: 'CourtHeatmapStats',     label: 'Heatmap + Stats',        category: 'Shared' },
   { id: 'MentorDashboard',       label: 'Mentor Dashboard',       category: 'Practice' },
+  { id: 'PracticeMode',          label: 'Practice Mode',          category: 'Practice' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -111,6 +113,7 @@ function renderView(id: string): React.ReactNode {
           shots={MOCK_SHOTS.filter((s) => s.studentId === 'p1')}
           maxShots={20}
           onUndo={noop}
+          stats={MOCK_STATS}
         />
       );
 
@@ -152,6 +155,7 @@ function renderView(id: string): React.ReactNode {
           participants={MOCK_PARTICIPANTS}
           myParticipant={MOCK_PARTICIPANTS[0]}
           sabotageActions={MOCK_SABOTAGE_ACTIONS}
+          shots={MOCK_SHOTS}
           saveSabotageActions={noopAsync}
         />
       );
@@ -238,6 +242,7 @@ function renderView(id: string): React.ReactNode {
           calculateRound1Winner={noopAsync}
           saveShotAllocations={noopAsync}
           saveSabotageActions={noopAsync}
+          kickParticipant={noopAsync}
           allocations={MOCK_ALLOCATIONS}
           sabotageActions={MOCK_SABOTAGE_ACTIONS}
           onReturnHome={noop}
@@ -264,6 +269,9 @@ function renderView(id: string): React.ReactNode {
           studentId="p1"
         />
       );
+
+    case 'PracticeMode':
+      return <PracticeMode onBack={noop} />;
 
     default:
       return <div className="test-mode-error">Unknown view: {id}</div>;

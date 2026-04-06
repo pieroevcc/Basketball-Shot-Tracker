@@ -1,24 +1,42 @@
 import React, { useState, useMemo } from 'react';
-import { Participant, SabotageAction, ZONES } from '../types';
+import { Participant, SabotageAction, ShotTransfer, Shot, calculateStats } from '../types';
+import CourtHeatmap from './CourtHeatmap';
+import './SabotagePanel.css';
 
 interface SabotagePanelProps {
   sessionCode: string;
   participants: Participant[];
   myParticipant: Participant | null;
   sabotageActions: SabotageAction[];
+  shots: Shot[];
   saveSabotageActions: (code: string, actions: SabotageAction[]) => Promise<void>;
 }
 
-type SabotageType = 'block_zone' | 'remove_shots' | 'add_shots';
+type SabotageTab = 'block_zone' | 'shots_transfer';
+
+const EMPTY_STATS = {
+  totalShots: 0,
+  totalMade: 0,
+  totalPoints: 0,
+  pointsPerShot: 0,
+  shootingPercentage: 0,
+  byZone: {} as Record<string, { made: number; total: number; percentage: number; points: number; pointsPerShot: number }>,
+};
 
 const SabotagePanel: React.FC<SabotagePanelProps> = ({
   sessionCode,
   participants,
   myParticipant,
   sabotageActions,
+  shots,
   saveSabotageActions,
 }) => {
   const myTeamId = myParticipant?.teamId;
+
+  const myTeamMembers = useMemo(
+    () => participants.filter((p) => p.teamId === myTeamId),
+    [participants, myTeamId]
+  );
 
   const opponents = useMemo(
     () => participants.filter((p) => p.teamId !== null && p.teamId !== myTeamId),
@@ -27,49 +45,108 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
 
   const opponentTeamId = opponents.length > 0 ? opponents[0].teamId : null;
 
-  const [sabotageType, setSabotageType] = useState<SabotageType>('block_zone');
-  const [selectedZone, setSelectedZone] = useState<string>('');
-  const [targetStudentId, setTargetStudentId] = useState<string>('');
-  const [shotDelta, setShotDelta] = useState<number>(5);
+  const [activeTab, setActiveTab] = useState<SabotageTab>('block_zone');
+  const [selectedZones, setSelectedZones] = useState<string[]>([]);
+  const [shotAdjustments, setShotAdjustments] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Check if this team already submitted a sabotage
   const alreadySubmitted = sabotageActions.some((a) => a.actingTeamId === myTeamId);
 
+  // --- Block zone helpers ---
+  const handleZoneClick = (zone: string) => {
+    setSelectedZones((prev) => {
+      if (prev.includes(zone)) return prev.filter((z) => z !== zone);
+      if (prev.length >= 2) return prev; // max 2
+      return [...prev, zone];
+    });
+  };
+
+  // --- Shots +/- helpers ---
+  const totalRemoved = useMemo(
+    () =>
+      Object.entries(shotAdjustments)
+        .filter(([id]) => opponents.some((p) => p.studentId === id))
+        .reduce((sum, [, d]) => sum + Math.min(0, d), 0),
+    [shotAdjustments, opponents]
+  );
+
+  const totalAdded = useMemo(
+    () =>
+      Object.entries(shotAdjustments)
+        .filter(([id]) => myTeamMembers.some((p) => p.studentId === id))
+        .reduce((sum, [, d]) => sum + Math.max(0, d), 0),
+    [shotAdjustments, myTeamMembers]
+  );
+
+  const adjustShots = (studentId: string, delta: number, isOpponent: boolean) => {
+    setShotAdjustments((prev) => {
+      const current = prev[studentId] ?? 0;
+      let next = current + delta;
+
+      if (isOpponent) {
+        next = Math.min(0, next);
+        const otherRemovals = Object.entries(prev)
+          .filter(([id]) => id !== studentId && opponents.some((p) => p.studentId === id))
+          .reduce((sum, [, d]) => sum + Math.min(0, d), 0);
+        if (next + otherRemovals < -2) next = -2 - otherRemovals;
+      } else {
+        next = Math.max(0, next);
+        const otherAdditions = Object.entries(prev)
+          .filter(([id]) => id !== studentId && myTeamMembers.some((p) => p.studentId === id))
+          .reduce((sum, [, d]) => sum + Math.max(0, d), 0);
+        const maxAdd = Math.abs(
+          Object.entries(prev)
+            .filter(([id]) => opponents.some((p) => p.studentId === id))
+            .reduce((sum, [, d]) => sum + Math.min(0, d), 0)
+        );
+        if (next + otherAdditions > maxAdd) next = maxAdd - otherAdditions;
+      }
+
+      return { ...prev, [studentId]: next };
+    });
+  };
+
+  // --- Validation ---
+  const blockZoneValid = selectedZones.length > 0;
+  const transferValid = Math.abs(totalRemoved) > 0 && totalAdded === Math.abs(totalRemoved);
+  const isValid = activeTab === 'block_zone' ? blockZoneValid : transferValid;
+
+  // --- Submit ---
   const handleSubmit = async () => {
-    if (!myTeamId || !opponentTeamId) return;
+    if (!myTeamId || !opponentTeamId || !isValid) return;
     setSaving(true);
 
-    const action: SabotageAction = {
-      id: `sabotage-${myTeamId}-${Date.now()}`,
-      actingTeamId: myTeamId,
-      targetTeamId: opponentTeamId,
-      type: sabotageType,
-      timestamp: Date.now(),
-    };
+    let action: SabotageAction;
 
-    if (sabotageType === 'block_zone' && selectedZone) {
-      action.blockedZone = selectedZone;
-    } else if (sabotageType === 'remove_shots' && targetStudentId) {
-      action.targetStudentId = targetStudentId;
-      action.shotDelta = -Math.abs(shotDelta);
-    } else if (sabotageType === 'add_shots' && targetStudentId) {
-      action.targetStudentId = targetStudentId;
-      action.shotDelta = Math.abs(shotDelta);
+    if (activeTab === 'block_zone') {
+      action = {
+        id: `sabotage-${myTeamId}-${Date.now()}`,
+        actingTeamId: myTeamId,
+        targetTeamId: opponentTeamId,
+        type: 'block_zone',
+        blockedZones: selectedZones,
+        timestamp: Date.now(),
+      };
+    } else {
+      const transfers: ShotTransfer[] = Object.entries(shotAdjustments)
+        .filter(([, d]) => d !== 0)
+        .map(([studentId, delta]) => ({ studentId, delta }));
+
+      action = {
+        id: `sabotage-${myTeamId}-${Date.now()}`,
+        actingTeamId: myTeamId,
+        targetTeamId: opponentTeamId,
+        type: 'shots_transfer',
+        shotTransfers: transfers,
+        timestamp: Date.now(),
+      };
     }
 
     await saveSabotageActions(sessionCode, [action]);
     setSubmitted(true);
     setSaving(false);
   };
-
-  const isValid = (() => {
-    if (sabotageType === 'block_zone') return selectedZone !== '';
-    if (sabotageType === 'remove_shots' || sabotageType === 'add_shots')
-      return targetStudentId !== '' && shotDelta > 0;
-    return false;
-  })();
 
   if (submitted || alreadySubmitted) {
     return (
@@ -86,80 +163,147 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
     <div className="sabotage-panel">
       <div className="session-activity-header">
         <h2 className="activity-title">Sabotage Round 💣</h2>
-        <p className="activity-subtitle">
-          Choose one sabotage action against the opposing team!
-        </p>
+        <p className="activity-subtitle">Choose one sabotage action against the opposing team!</p>
       </div>
 
-      <div className="sabotage-type-selector">
+      <div className="sabotage-tabs">
         <button
-          className={`sabotage-type-btn ${sabotageType === 'block_zone' ? 'active' : ''}`}
-          onClick={() => setSabotageType('block_zone')}
+          className={`sabotage-tab-btn ${activeTab === 'block_zone' ? 'active' : ''}`}
+          onClick={() => setActiveTab('block_zone')}
         >
           🚫 Block Zone
         </button>
         <button
-          className={`sabotage-type-btn ${sabotageType === 'remove_shots' ? 'active' : ''}`}
-          onClick={() => setSabotageType('remove_shots')}
+          className={`sabotage-tab-btn ${activeTab === 'shots_transfer' ? 'active' : ''}`}
+          onClick={() => setActiveTab('shots_transfer')}
         >
-          ➖ Remove Shots
-        </button>
-        <button
-          className={`sabotage-type-btn ${sabotageType === 'add_shots' ? 'active' : ''}`}
-          onClick={() => setSabotageType('add_shots')}
-        >
-          ➕ Force Extra Shots
+          ➕➖ Shots +/−
         </button>
       </div>
 
       <div className="sabotage-config">
-        {sabotageType === 'block_zone' && (
-          <div className="sabotage-zone-select">
-            <label>Select a zone to block for the opponent:</label>
-            <div className="zone-buttons">
-              {Object.keys(ZONES).map((zone) => (
-                <button
-                  key={zone}
-                  className={`zone-btn ${selectedZone === zone ? 'selected' : ''}`}
-                  onClick={() => setSelectedZone(zone)}
-                >
-                  {zone}
-                </button>
-              ))}
+        {activeTab === 'block_zone' && (
+          <div className="sabotage-block-zone">
+            <p className="sabotage-helper">
+              Tap up to <strong>2 zones</strong> on the court to block them for the opponent.
+            </p>
+            {selectedZones.length > 0 && (
+              <div className="selected-zones-display">
+                {selectedZones.map((z) => (
+                  <span key={z} className="selected-zone-chip">
+                    {z.split(': ')[1]}
+                    <button className="deselect-zone" onClick={() => handleZoneClick(z)}>✕</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="sabotage-court-wrapper">
+              <CourtHeatmap
+                shots={[]}
+                stats={EMPTY_STATS}
+                onZoneClick={handleZoneClick}
+                selectedZones={selectedZones}
+              />
             </div>
           </div>
         )}
 
-        {(sabotageType === 'remove_shots' || sabotageType === 'add_shots') && (
-          <div className="sabotage-player-select">
-            <label>
-              {sabotageType === 'remove_shots'
-                ? 'Remove shots from an opponent:'
-                : 'Force extra shots on an opponent (weaker shooter):'}
-            </label>
-            <div className="opponent-buttons">
-              {opponents.map((p) => (
-                <button
-                  key={p.studentId}
-                  className={`opponent-btn ${targetStudentId === p.studentId ? 'selected' : ''}`}
-                  onClick={() => setTargetStudentId(p.studentId)}
-                >
-                  {p.name}
-                  {p.round1Score !== undefined && (
-                    <span className="opponent-score"> ({p.round1Score} pts)</span>
+        {activeTab === 'shots_transfer' && (
+          <div className="shots-transfer-section">
+            <p className="sabotage-helper">
+              Remove up to <strong>2 shots</strong> from opponents, then give the same number to your team.
+            </p>
+            <div className="shots-transfer-grid">
+              <div className="transfer-column">
+                <h3 className="transfer-col-title">
+                  Opponents <span className="remove-label">(remove shots)</span>
+                </h3>
+                {opponents.map((p) => {
+                  const pStats = calculateStats(
+                    shots.filter((s) => s.studentId === p.studentId && s.activity === 'solo')
+                  );
+                  const adj = shotAdjustments[p.studentId] ?? 0;
+                  return (
+                    <div key={p.studentId} className="transfer-player-row">
+                      <div className="transfer-player-info">
+                        <span className="transfer-name">{p.name}</span>
+                        <span className="transfer-stats">
+                          {p.round1Score ?? 0} pts · {pStats.shootingPercentage.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="transfer-controls">
+                        <button
+                          className="transfer-btn remove"
+                          onClick={() => adjustShots(p.studentId, -1, true)}
+                          disabled={Math.abs(totalRemoved) >= 2 && adj >= 0}
+                        >
+                          −
+                        </button>
+                        <span className="transfer-value">{adj}</span>
+                        <button
+                          className="transfer-btn add"
+                          onClick={() => adjustShots(p.studentId, 1, true)}
+                          disabled={adj >= 0}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="transfer-total">
+                  Removed: <strong>{Math.abs(totalRemoved)}</strong> / 2
+                </div>
+              </div>
+
+              <div className="transfer-column">
+                <h3 className="transfer-col-title">
+                  Your Team <span className="add-label">(add shots)</span>
+                </h3>
+                {myTeamMembers.map((p) => {
+                  const pStats = calculateStats(
+                    shots.filter((s) => s.studentId === p.studentId && s.activity === 'solo')
+                  );
+                  const adj = shotAdjustments[p.studentId] ?? 0;
+                  const otherAdditions = Object.entries(shotAdjustments)
+                    .filter(([id]) => id !== p.studentId && myTeamMembers.some((m) => m.studentId === id))
+                    .reduce((sum, [, d]) => sum + Math.max(0, d), 0);
+                  const maxAdd = Math.abs(totalRemoved);
+                  return (
+                    <div key={p.studentId} className="transfer-player-row">
+                      <div className="transfer-player-info">
+                        <span className="transfer-name">{p.name}</span>
+                        <span className="transfer-stats">
+                          {p.round1Score ?? 0} pts · {pStats.shootingPercentage.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="transfer-controls">
+                        <button
+                          className="transfer-btn remove"
+                          onClick={() => adjustShots(p.studentId, -1, false)}
+                          disabled={adj <= 0}
+                        >
+                          −
+                        </button>
+                        <span className="transfer-value">+{adj}</span>
+                        <button
+                          className="transfer-btn add"
+                          onClick={() => adjustShots(p.studentId, 1, false)}
+                          disabled={adj + otherAdditions >= maxAdd}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className={`transfer-total ${totalAdded === Math.abs(totalRemoved) && totalAdded > 0 ? 'valid' : ''}`}>
+                  Added: <strong>{totalAdded}</strong> / {Math.abs(totalRemoved)}
+                  {totalAdded !== Math.abs(totalRemoved) && totalRemoved < 0 && (
+                    <span className="transfer-warning"> — distribute all removed shots</span>
                   )}
-                </button>
-              ))}
-            </div>
-            <div className="shot-delta-input">
-              <label>Number of shots:</label>
-              <input
-                type="number"
-                value={shotDelta}
-                onChange={(e) => setShotDelta(Math.max(1, parseInt(e.target.value) || 1))}
-                min={1}
-                max={10}
-              />
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -170,7 +314,7 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
         onClick={handleSubmit}
         disabled={!isValid || saving}
       >
-        {saving ? 'Saving...' : 'Confirm Sabotage'}
+        {saving ? 'Saving...' : 'Confirm Sabotage 💣'}
       </button>
     </div>
   );

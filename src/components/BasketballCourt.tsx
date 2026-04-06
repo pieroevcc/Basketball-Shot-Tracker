@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shot, ZONES, ZONE_POINTS, COURT_WIDTH, COURT_HEIGHT } from '../types';
+import { Shot, Stats, ZONES, ZONE_POINTS, COURT_WIDTH, COURT_HEIGHT } from '../types';
 import './BasketballCourt.css';
 
 interface BasketballCourtProps {
@@ -8,6 +8,7 @@ interface BasketballCourtProps {
   maxShots?: number;
   onUndo?: () => void;
   blockedZones?: string[];
+  stats?: Stats;
 }
 
 const BasketballCourt: React.FC<BasketballCourtProps> = ({
@@ -16,6 +17,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
   maxShots,
   onUndo,
   blockedZones = [],
+  stats,
 }) => {
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
 
@@ -143,6 +145,26 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
 
   return (
     <div className="court-container">
+      {stats && (
+        <div className="top-stats-container">
+          <div className="top-stat-card card-yellow">
+            <div className="stat-label">SHOTS TAKEN</div>
+            <div className="stat-value">{stats.totalShots}</div>
+            <div className="stat-sub">total attempts</div>
+          </div>
+          <div className="top-stat-card card-green">
+            <div className="stat-label">POINTS</div>
+            <div className="stat-value">{stats.totalPoints}</div>
+            <div className="stat-sub">total scored</div>
+          </div>
+          <div className="top-stat-card card-blue">
+            <div className="stat-label">FIELD GOAL %</div>
+            <div className="stat-value">{stats.shootingPercentage.toFixed(0)}%</div>
+            <div className="stat-sub">makes / attempts</div>
+          </div>
+        </div>
+      )}
+
       {maxShots !== undefined && (
         <div className="shot-counter">
           {shots.length} / {maxShots} shots

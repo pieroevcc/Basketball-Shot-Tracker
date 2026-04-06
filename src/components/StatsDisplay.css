@@ -56,13 +56,25 @@
 }
 
 .overall-stat-cell {
-  background: rgba(255,255,255,0.07);
-  border-radius: 10px;
+  background: rgba(30, 20, 60, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
   padding: 10px 12px;
   flex: 1;
   text-align: center;
   min-width: 0;
+  border-top: 4px solid #fff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
+
+.overall-stat-cell.card-orange { border-top-color: #fb923c; }
+.overall-stat-cell.card-orange .overall-stat-value { color: #fb923c; }
+.overall-stat-cell.card-green { border-top-color: #00e676; }
+.overall-stat-cell.card-green .overall-stat-value { color: #00e676; }
+.overall-stat-cell.card-blue { border-top-color: #40c4ff; }
+.overall-stat-cell.card-blue .overall-stat-value { color: #40c4ff; }
+.overall-stat-cell.card-pink { border-top-color: #f472b6; }
+.overall-stat-cell.card-pink .overall-stat-value { color: #f472b6; }
 
 .overall-stat-label {
   font-size: 10px;

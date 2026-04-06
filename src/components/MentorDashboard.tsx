@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import StatsDisplay from './StatsDisplay';
 import ShotHistory from './ShotHistory';
 import CourtHeatmap from './CourtHeatmap';
-import { Shot, Stats, calculateStats } from '../types';
+import { Shot, Stats } from '../types';
 import './MentorDashboard.css';
 
 interface MentorDashboardProps {
@@ -15,17 +15,10 @@ interface MentorDashboardProps {
 
 function generateInsights(shots: Shot[], stats: Stats): string[] {
   if (shots.length === 0) {
-    return ['No shots recorded yet. Collect data to generate insights.'];
+    return ['No shots recorded yet. Have the student start a session to collect data.'];
   }
 
   const insights: string[] = [];
-
-  const mostEfficientZone = Object.entries(stats.byZone)
-    .filter(([, z]) => z.total > 0)
-    .sort((a, b) => b[1].pointsPerShot - a[1].pointsPerShot)[0];
-  if (mostEfficientZone) {
-    insights.push(`Different zones yield different shot scores — ${mostEfficientZone[0]} is highly efficient, generating ${mostEfficientZone[1].pointsPerShot.toFixed(1)} points per shot.`);
-  }
 
   if (shots.length < 10) {
     insights.push(
@@ -62,48 +55,54 @@ function generateInsights(shots: Shot[], stats: Stats): string[] {
     );
   });
 
-  return insights;
-}
-
-function calculateRecentStreak(shots: Shot[]): string {
-  if (shots.length === 0) return '0 Makes';
-  const reversed = [...shots].reverse();
-  const firstMade = reversed[0].made;
-  let count = 0;
-  for (const shot of reversed) {
-    if (shot.made === firstMade) count++;
-    else break;
-  }
-  return `${count} ${firstMade ? 'Makes' : 'Misses'}`;
-}
-
-const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, participants, onDelete, onClear }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'court' | 'stats' | 'history'>('overview');
-  const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
-
-  let topPlayer = null;
-  let topPlayerStats = null;
-  if (participants && participants.length > 0 && shots.length > 0) {
-    const bestDetails = participants.map(p => {
-       const pShots = shots.filter(s => s.studentId === p.studentId);
-       const pStats = calculateStats(pShots);
-       return { p, stats: pStats };
-    }).reduce((best, curr) => (curr.stats.totalPoints > best.stats.totalPoints ? curr : best), { p: participants[0], stats: calculateStats(shots.filter(s => s.studentId === participants[0].studentId)) });
-    if (bestDetails.stats.totalShots > 0) {
-      topPlayer = bestDetails.p;
-      topPlayerStats = bestDetails.stats;
+  if (shots.length >= 10) {
+    const mid = Math.floor(shots.length / 2);
+    const firstPct = (shots.slice(0, mid).filter((s) => s.made).length / mid) * 100;
+    const secondPct =
+      (shots.slice(mid).filter((s) => s.made).length / (shots.length - mid)) * 100;
+    const diff = secondPct - firstPct;
+    if (diff > 10) {
+      insights.push(
+        `Positive trend: shooting improved by ${diff.toFixed(0)}% over the second half of the session.`
+      );
+    } else if (diff < -10) {
+      insights.push(
+        `Fatigue may be a factor: accuracy dropped ${Math.abs(diff).toFixed(0)}% in the second half — consider rest intervals.`
+      );
     }
   }
 
-  const filteredShots = selectedStudentId === 'all' 
-    ? shots 
-    : shots.filter(s => s.studentId === selectedStudentId);
-    
-  const localStats = selectedStudentId === 'all' 
-    ? stats 
-    : calculateStats(filteredShots);
+  const zoneScores = Object.entries(stats.byZone).map(([zone, z]) => {
+    const ptsPerMake = (zone.includes('Outside') || zone.includes('Top of Key')) ? 3 : 2;
+    return { zone, score: z.made * ptsPerMake };
+  });
+  if (zoneScores.length > 0) {
+    const highestScoringZone = zoneScores.reduce((a, b) => a.score > b.score ? a : b);
+    if (highestScoringZone.score > 0) {
+      insights.push(`Different zones have different shot scores: ${highestScoringZone.zone} generated the most points (${highestScoringZone.score} pts).`);
+    }
+  }
 
-  const insights = generateInsights(filteredShots, localStats);
+  return insights;
+}
+
+
+const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, onDelete, onClear }) => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'court' | 'stats' | 'history'>(
+    'overview'
+  );
+
+  const insights = generateInsights(shots, stats);
+
+  const zoneEntries = Object.entries(stats.byZone).filter(([, z]) => z.total > 0);
+  const bestZone =
+    zoneEntries.length > 0
+      ? zoneEntries.reduce((a, b) => (a[1].percentage >= b[1].percentage ? a : b))
+      : null;
+  const worstZone =
+    zoneEntries.length > 1
+      ? zoneEntries.reduce((a, b) => (a[1].percentage <= b[1].percentage ? a : b))
+      : null;
 
   const tabs = [
     { id: 'overview' as const, label: '📋 Overview' },
@@ -112,150 +111,189 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, partici
     { id: 'history' as const, label: '📝 History' },
   ];
 
+  const studentStats: Record<string, { made: number, total: number, score: number }> = {};
+  shots.forEach(shot => {
+    const sid = shot.studentId || 'Local Player';
+    if (!studentStats[sid]) studentStats[sid] = { made: 0, total: 0, score: 0 };
+    studentStats[sid].total += 1;
+    if (shot.made) studentStats[sid].made += 1;
+    studentStats[sid].score += (shot.made ? (shot.zone.includes('Outside') || shot.zone.includes('Top of Key') ? 3 : 2) : 0);
+  });
+
+  let topPlayerName = 'N/A';
+  let topPlayerStats = { made: 0, total: 0, score: 0 };
+  if (Object.keys(studentStats).length > 0) {
+    const topSid = Object.keys(studentStats).reduce((a, b) => studentStats[a].score > studentStats[b].score ? a : b);
+    topPlayerName = topSid === 'Local Player' ? 'Player 1' : `Player ${topSid.substring(0, 4)}`;
+    topPlayerStats = studentStats[topSid];
+  }
+
+  let currentStreak = 0;
+  for (let i = shots.length - 1; i >= 0; i--) {
+    if (shots[i].made) currentStreak++;
+    else break;
+  }
+
+  const renderSparkline = (shots: Shot[]) => {
+    if (shots.length < 2) {
+      return (
+        <svg className="sparkline-svg" viewBox="-2 -2 104 44" preserveAspectRatio="none">
+           <defs>
+             <linearGradient id="gradient-blue" x1="0" x2="0" y1="0" y2="1">
+               <stop offset="0%" stopColor="rgba(96, 165, 250, 0.4)" />
+               <stop offset="100%" stopColor="rgba(96, 165, 250, 0)" />
+             </linearGradient>
+           </defs>
+           <path d="M0,35 L20,25 L40,30 L60,15 L80,20 L100,5 L100,40 L0,40 Z" fill="url(#gradient-blue)"/>
+           <path d="M0,35 L20,25 L40,30 L60,15 L80,20 L100,5" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+           <circle cx="20" cy="25" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="40" cy="30" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="60" cy="15" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="80" cy="20" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+           <circle cx="100" cy="5" r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+         </svg>
+      );
+    }
+
+    const numPoints = Math.min(6, shots.length);
+    const points: {x: number, y: number}[] = [];
+
+    for (let i = 0; i < numPoints; i++) {
+      const sliceEnd = Math.floor(((i + 1) / numPoints) * shots.length);
+      const chunkOptions = shots.slice(0, sliceEnd);
+      const makes = chunkOptions.filter(s => s.made).length;
+      const rate = makes / chunkOptions.length;
+      points.push({
+        x: (i / (numPoints - 1)) * 100,
+        y: 35 - (rate * 30),
+      });
+    }
+
+    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+    const fillD = `${pathD} L100,40 L0,40 Z`;
+
+    return (
+      <svg className="sparkline-svg" viewBox="-2 -2 104 44" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="gradient-blue" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="rgba(96, 165, 250, 0.4)" />
+            <stop offset="100%" stopColor="rgba(96, 165, 250, 0)" />
+          </linearGradient>
+        </defs>
+        <path d={fillD} fill="url(#gradient-blue)"/>
+        <path d={pathD} fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="#fff" stroke="#60A5FA" strokeWidth="1.5" />
+        ))}
+      </svg>
+    );
+  };
+
   return (
     <div className="mentor-dashboard">
-      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 24, flexWrap: 'wrap', maxWidth: 800, margin: '0 auto 24px' }}>
-        <div style={{ background: 'rgba(255,255,255,0.1)', padding: 16, borderRadius: 12, textAlign: 'center', flex: '1 1 120px', border: '1px solid rgba(255,255,255,0.2)' }}>
-          <div style={{ fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, color: '#aaa', marginBottom: 8 }}>Shots Taken</div>
-          <div style={{ fontSize: 32, fontWeight: 900, color: '#FFB84C' }}>{localStats.totalShots}</div>
-          <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>total attempts</div>
-        </div>
-        <div style={{ background: 'rgba(255,255,255,0.1)', padding: 16, borderRadius: 12, textAlign: 'center', flex: '1 1 120px', border: '1px solid rgba(255,255,255,0.2)' }}>
-          <div style={{ fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, color: '#aaa', marginBottom: 8 }}>Points Per Shot</div>
-          <div style={{ fontSize: 32, fontWeight: 900, color: '#FF7F50' }}>{localStats.pointsPerShot.toFixed(1)}</div>
-          <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>points/attempts</div>
-        </div>
-        <div style={{ background: 'rgba(255,255,255,0.1)', padding: 16, borderRadius: 12, textAlign: 'center', flex: '1 1 120px', border: '1px solid rgba(255,255,255,0.2)' }}>
-          <div style={{ fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1, color: '#aaa', marginBottom: 8 }}>Field Goal %</div>
-          <div style={{ fontSize: 32, fontWeight: 900, color: '#00D1FF' }}>{localStats.shootingPercentage.toFixed(0)}%</div>
-          <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>makes / attempts</div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20, flexWrap: 'wrap', gap: 16 }}>
-        {topPlayer && topPlayerStats ? (
-          <div style={{ border: '2px dashed rgba(255,255,255,0.4)', padding: '12px 20px', borderRadius: 12, background: 'rgba(0,0,0,0.2)', flex: '1 1 200px', maxWidth: 280 }}>
-             <div style={{ fontSize: 12, color: '#aaa', textTransform: 'uppercase', marginBottom: 6 }}>
-               Top Player: <strong style={{ color: '#fff' }}>{topPlayer.name}</strong>
-             </div>
-             <div style={{ fontSize: 16, color: '#FFB84C', fontWeight: 800 }}>
-               Score: {topPlayerStats.totalPoints}
-             </div>
-             <div style={{ fontSize: 11, color: '#888', marginTop: 4, fontWeight: 'bold' }}>
-               MADE {topPlayerStats.totalMade} / ATTEMPTS {topPlayerStats.totalShots}
-             </div>
-          </div>
-        ) : <div style={{ flex: '1 1 200px', maxWidth: 280 }} />}
-
-        <div className="mentor-tabs" style={{ marginBottom: 0, flex: '1 1 auto', justifyContent: 'center' }}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`mentor-tab ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        
-        {/* Empty spacer spacer to balance out the top player box on large screens */}
-        <div style={{ flex: '1 1 200px', maxWidth: 280 }} className="desktop-spacer" />
-      </div>
-
-      {participants && participants.length > 0 && (
-        <div className="mentor-filter" style={{ textAlign: 'center', marginBottom: 20 }}>
-          <select 
-            value={selectedStudentId} 
-            onChange={e => setSelectedStudentId(e.target.value)} 
-            className="stats-dropdown"
+      <div className="mentor-tabs">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`mentor-tab ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
           >
-            <option value="all">All Students</option>
-            {participants.map(p => (
-              <option key={p.studentId} value={p.studentId}>{p.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       <div className="mentor-content">
         {activeTab === 'overview' && (
           <div className="overview-panel">
-          
-            {/* Recent Streak Card */}
-            <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, border: '1px solid rgba(255,255,255,0.1)' }}>
-               <div>
-                  <div style={{ fontSize: 13, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 'bold' }}>Recent Streak</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: '#00D1FF', marginTop: 4 }}>{calculateRecentStreak(filteredShots)}</div>
-               </div>
-               <div style={{ background: 'rgba(0,255,0,0.15)', color: '#00ff00', padding: '6px 16px', borderRadius: 20, fontWeight: 'bold', border: '1px solid rgba(0,255,0,0.3)' }}>
-                 🔥 Monitoring
-               </div>
-            </div>
 
-            {/* Restored Summary Cards */}
-            <div className="summary-cards">
-              <div className="summary-card">
-                <span className="card-value">{localStats.totalShots}</span>
-                <span className="card-label">Total Shots</span>
-              </div>
-              <div className="summary-card">
-                <span className="card-value">
-                  {localStats.totalShots > 0 ? `${localStats.shootingPercentage.toFixed(1)}%` : '—'}
-                </span>
-                <span className="card-label">Make Rate</span>
-              </div>
-              <div className="summary-card made">
-                <span className="card-value">{localStats.totalMade}</span>
-                <span className="card-label">Made</span>
-              </div>
-              <div className="summary-card missed">
-                <span className="card-value">{localStats.totalShots - localStats.totalMade}</span>
-                <span className="card-label">Missed</span>
-              </div>
-            </div>
-
-            {/* Restored Zone Highlights */}
-            {(() => {
-              const zoneEntries = Object.entries(localStats.byZone).filter(([, z]) => z.total > 0);
-              const bestZone = zoneEntries.length > 0
-                ? zoneEntries.reduce((a, b) => (a[1].percentage >= b[1].percentage ? a : b))
-                : null;
-              const worstZone = zoneEntries.length > 1
-                ? zoneEntries.reduce((a, b) => (a[1].percentage <= b[1].percentage ? a : b))
-                : null;
-
-              if (!bestZone && !worstZone) return null;
-
-              return (
-                <div className="zone-highlights">
-                  {bestZone && (
-                    <div className="zone-highlight hot">
-                      <span className="highlight-icon">🔥</span>
-                      <div className="highlight-info">
-                        <span className="highlight-label">Best Zone</span>
-                        <span className="highlight-zone">{bestZone[0]}</span>
-                        <span className="highlight-pct">
-                          {bestZone[1].percentage.toFixed(0)}% ({bestZone[1].made}/{bestZone[1].total})
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  {worstZone && bestZone && worstZone[0] !== bestZone[0] && (
-                    <div className="zone-highlight cold">
-                      <span className="highlight-icon">🎯</span>
-                      <div className="highlight-info">
-                        <span className="highlight-label">Needs Work</span>
-                        <span className="highlight-zone">{worstZone[0]}</span>
-                        <span className="highlight-pct">
-                          {worstZone[1].percentage.toFixed(0)}% ({worstZone[1].made}/{worstZone[1].total})
-                        </span>
-                      </div>
-                    </div>
-                  )}
+            <div className="top-stats-row">
+              <div className="top-stat-card">
+                <div className="top-stat-header">
+                   <span className="top-stat-title">Top player: {topPlayerName}</span>
                 </div>
-              );
-            })()}
+                <div className="top-player-data">
+                  <div className="tp-stat">
+                    <span className="tp-label">MADE</span>
+                    <span className="tp-val">{topPlayerStats.made}</span>
+                  </div>
+                  <div className="tp-stat">
+                    <span className="tp-label">ATTEMPTS</span>
+                    <span className="tp-val">{topPlayerStats.total}</span>
+                  </div>
+                  <div className="tp-stat">
+                    <span className="tp-label">SCORE:</span>
+                    <span className="tp-val text-yellow score-val">{topPlayerStats.score}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="top-stat-card streak-card">
+                <span className="top-stat-title">Recent Streak</span>
+                <span className="streak-val">{currentStreak} Makes</span>
+                <div className="streak-cont">
+                  <div className="streak-bar-bg">
+                    <div className="streak-bar-fill" style={{ width: `${Math.min(100, (currentStreak / 5) * 100)}%` }} />
+                  </div>
+                  <span className="streak-target">/ 5</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="summary-cards four-cols">
+              <div className="summary-card stat-standard">
+                <span className="custom-card-value text-white">{stats.totalShots}</span>
+                <span className="custom-card-title">TOTAL SHOTS</span>
+              </div>
+              <div className="summary-card stat-standard make-rate-card">
+                <span className="custom-card-value text-white z-index-1">
+                  {stats.totalShots > 0 ? <>{stats.shootingPercentage.toFixed(1)}% <span className="text-green">↑</span></> : '—'}
+                </span>
+                <span className="custom-card-title z-index-1">MAKE RATE</span>
+                <div className="make-rate-graphic">
+                  {renderSparkline(shots)}
+                </div>
+              </div>
+              <div className="summary-card stat-standard made">
+                <span className="custom-card-value text-white">{stats.totalMade} <span className="text-green">↑</span></span>
+                <span className="custom-card-title">MADE</span>
+              </div>
+              <div className="summary-card stat-standard missed">
+                <span className="custom-card-value text-white">{stats.totalShots - stats.totalMade} <span className="text-red">↓</span></span>
+                <span className="custom-card-title">MISSED</span>
+              </div>
+            </div>
+
+            {(bestZone || worstZone) && (
+              <div className="zone-highlights">
+                {bestZone && (
+                  <div className="zone-highlight hot">
+                    <span className="highlight-icon">🔥</span>
+                    <div className="highlight-info">
+                      <span className="highlight-label">Best Zone</span>
+                      <span className="highlight-zone">{bestZone[0]}</span>
+                      <span className="highlight-pct">
+                        {bestZone[1].percentage.toFixed(0)}% ({bestZone[1].made}/
+                        {bestZone[1].total})
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {worstZone && bestZone && worstZone[0] !== bestZone[0] && (
+                  <div className="zone-highlight cold">
+                    <span className="highlight-icon">🎯</span>
+                    <div className="highlight-info">
+                      <span className="highlight-label">Needs Work</span>
+                      <span className="highlight-zone">{worstZone[0]}</span>
+                      <span className="highlight-pct">
+                        {worstZone[1].percentage.toFixed(0)}% ({worstZone[1].made}/
+                        {worstZone[1].total})
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="insights-panel">
               <h3 className="panel-title">Coaching Insights</h3>
@@ -268,76 +306,38 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, partici
               </ul>
             </div>
 
-            {filteredShots.length > 0 && (
+            {shots.length > 0 && (
               <div className="recent-activity">
                 <h3 className="panel-title">Recent Activity</h3>
                 <div className="activity-list">
-                  {[...filteredShots]
-                    .slice(-10)
+                  {[...shots]
+                    .slice(-5)
                     .reverse()
-                    .map((shot) => {
-                      const p = participants?.find(p => p.studentId === shot.studentId);
-                      const zoneLabel = p ? `${p.name} - ${shot.zone}` : shot.zone;
-                      return (
-                        <div
-                          key={shot.id}
-                          className={`activity-item ${shot.made ? 'made' : 'missed'}`}
-                        >
-                          <span className="activity-result">{shot.made ? '✅' : '❌'}</span>
-                          <span className="activity-zone">{zoneLabel}</span>
-                          <span className="activity-time">
-                            {new Date(shot.timestamp).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
-                          <button className="delete-btn" onClick={() => onDelete(shot.id)} title="Delete Data Point">✕</button>
-                        </div>
-                      );
-                    })}
+                    .map((shot) => (
+                      <div
+                        key={shot.id}
+                        className={`activity-item ${shot.made ? 'made' : 'missed'}`}
+                      >
+                        <span className="activity-result">{shot.made ? '✅' : '❌'}</span>
+                        <span className="activity-zone">{shot.zone}</span>
+                        <span className="activity-player">👤 {shot.studentId ? `Player ${shot.studentId.substring(0,4)}` : 'Local Player'}</span>
+                        <span className="activity-time">
+                          {new Date(shot.timestamp).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
 
-            <div className="historical-comparison" style={{ marginTop: '30px' }}>
-              <h3 className="panel-title">Historical Comparison</h3>
-              <p className="panel-subtitle" style={{ color: '#666', fontSize: 14, marginBottom: 15 }}>Individual vs Team Rounds</p>
-              
-              {(() => {
-                 const soloShots = filteredShots.filter(s => s.activity === 'solo');
-                 const teamShots = filteredShots.filter(s => s.activity === 'team');
-                 const soloStats = calculateStats(soloShots);
-                 const teamStats = calculateStats(teamShots);
-                 
-                 return (
-                   <div style={{ display: 'flex', gap: 16 }}>
-                     <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid #ddd', padding: 16, borderRadius: 12, textAlign: 'center' }}>
-                       <h4 style={{ margin: '0 0 10px 0', color: '#1a1a2e' }}>Solo Play</h4>
-                       <p style={{ margin: '5px 0' }}><strong>{soloStats.totalShots}</strong> Shots</p>
-                       <p style={{ margin: '5px 0' }}><strong>{soloStats.shootingPercentage.toFixed(1)}%</strong> Accuracy</p>
-                       <p style={{ margin: '5px 0' }}><strong>{soloStats.pointsPerShot.toFixed(1)}</strong> PTS/Shot</p>
-                     </div>
-                     <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid #ddd', padding: 16, borderRadius: 12, textAlign: 'center' }}>
-                       <h4 style={{ margin: '0 0 10px 0', color: '#1a1a2e' }}>Team Play</h4>
-                       <p style={{ margin: '5px 0' }}><strong>{teamStats.totalShots}</strong> Shots</p>
-                       <p style={{ margin: '5px 0' }}><strong>{teamStats.shootingPercentage.toFixed(1)}%</strong> Accuracy</p>
-                       <p style={{ margin: '5px 0' }}><strong>{teamStats.pointsPerShot.toFixed(1)}</strong> PTS/Shot</p>
-                     </div>
-                   </div>
-                 );
-              })()}
-            </div>
-
-            {/* Session Summary at the bottom */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%)', borderRadius: 24, padding: 24, marginTop: 40, border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)', position: 'relative' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: 18, color: '#fff', textAlign: 'center' }}>Session Summary</h3>
-              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <div style={{ background: 'rgba(255,107,53,0.15)', color: '#FF6B35', padding: '12px 24px', borderRadius: 12, fontWeight: 800, border: '1px solid rgba(255,107,53,0.3)', flex: '1 1 200px', textAlign: 'center' }}>
-                   🎯 Practice 5 shots don't record
-                </div>
-                <div style={{ background: 'rgba(0,209,255,0.15)', color: '#00D1FF', padding: '12px 24px', borderRadius: 12, fontWeight: 800, border: '1px solid rgba(0,209,255,0.3)', flex: '1 1 200px', textAlign: 'center' }}>
-                   🏆 Goal: 20 made shots
-                </div>
+            <div className="session-summary-panel">
+              <h3 className="panel-title">Session Summary</h3>
+              <div className="session-summary-pills">
+                <span className="summary-pill">🏀 Practice: 5 shots don't record</span>
+                <span className="summary-pill">📝 Goal: 20 recorded shots</span>
               </div>
             </div>
 
@@ -345,16 +345,38 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, partici
         )}
 
         {activeTab === 'court' && (
-          <div className="centered-tab"><CourtHeatmap shots={filteredShots} stats={localStats} /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', alignItems: 'center' }}>
+            <div className="summary-cards" style={{ width: '100%' }}>
+              <div className="summary-card custom-card-shots">
+                <span className="custom-card-title">SHOTS TAKEN</span>
+                <span className="custom-card-value text-yellow">{stats.totalShots}</span>
+                <span className="custom-card-sub">total attempts</span>
+              </div>
+              <div className="summary-card custom-card-points">
+                <span className="custom-card-title">POINTS Per shot</span>
+                <span className="custom-card-value text-red">
+                  {stats.totalShots > 0 ? (shots.reduce((total, shot) => total + (shot.made ? (shot.zone.includes('Outside') || shot.zone.includes('Top of Key') ? 3 : 2) : 0), 0) / stats.totalShots).toFixed(1) : '0.0'}
+                </span>
+                <span className="custom-card-sub">Points / attempts</span>
+              </div>
+              <div className="summary-card custom-card-fg">
+                <span className="custom-card-title">FIELD GOAL %</span>
+                <span className="custom-card-value text-blue">
+                  {stats.totalShots > 0 ? `${Math.round(stats.shootingPercentage)}%` : '0%'}
+                </span>
+                <span className="custom-card-sub">makes / attempts</span>
+              </div>
+            </div>
+            <div className="centered-tab"><CourtHeatmap shots={shots} stats={stats} /></div>
+          </div>
         )}
 
         {activeTab === 'stats' && (
-          <div className="centered-tab"><StatsDisplay stats={localStats} /></div>
+          <div className="centered-tab"><StatsDisplay stats={stats} /></div>
         )}
-
         {activeTab === 'history' && (
           <div className="centered-tab">
-            <ShotHistory shots={filteredShots} participants={participants} onDelete={onDelete} onClear={onClear} />
+            <ShotHistory shots={shots} onDelete={onDelete} onClear={onClear} />
           </div>
         )}
       </div>

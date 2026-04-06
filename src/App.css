@@ -369,3 +369,168 @@
     width: 100%;
   }
 }
+
+/* =========================================================================
+   LANDING PAGE & PRACTICE MODE OVERHAUL
+   ========================================================================= */
+
+.landing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: calc(100vh - 80px); /* Center nicely in viewport */
+}
+
+/* Add a fun bounce animation to the ball */
+.landing-ball {
+  font-size: 64px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
+}
+
+.landing-title {
+  color: #ffffff;
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-weight: 800;
+  margin: 0;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  letter-spacing: -1px;
+}
+
+.landing-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.15rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.landing-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: center; /* Center items vertically */
+  width: 100%;
+}
+
+/* Base button styling - Glassmorphism */
+.landing-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 32px;
+  border-radius: 20px;
+  border: none;
+  background: #ffffff;
+  color: #4F46E5;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  min-width: 240px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.landing-btn:hover {
+  transform: translateY(-4px);
+  background: #f0f0ff;
+  box-shadow: 0 16px 40px 0 rgba(255, 255, 255, 0.3);
+}
+
+.landing-btn:active {
+  transform: translateY(-2px);
+}
+
+/* High-contrast primary button style */
+.landing-btn.student {
+  background: #ffffff;
+  color: #4F46E5;
+  border: none;
+}
+
+.landing-btn.student .landing-btn-label {
+  color: #4F46E5; /* Dark indigo for text */
+}
+
+.landing-btn.student .landing-btn-sub {
+  color: rgba(79, 70, 229, 0.7);
+}
+
+.landing-btn.student:hover {
+  background: #f8faff;
+  box-shadow: 0 16px 40px 0 rgba(255, 255, 255, 0.3);
+}
+
+.landing-btn-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.landing-btn-label {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #4F46E5;
+}
+
+.landing-btn-sub {
+  font-size: 0.9rem;
+  color: rgba(79, 70, 229, 0.65);
+  font-weight: 400;
+}
+
+/* Secondary Back Button */
+.landing-back-btn {
+  margin-top: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  padding: 10px 24px;
+  border-radius: 9999px; /* Absolute pill shape */
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.landing-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  transform: scale(1.05);
+}
+
+.firebase-notice {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 80, 80, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  backdrop-filter: blur(8px);
+}
+
+/* Responsive Overrides */
+@media (max-width: 600px) {
+  .landing-title { font-size: 2.5rem; }
+  .landing-subtitle { font-size: 1rem; }
+  .landing-btn { min-width: 100%; }
+}

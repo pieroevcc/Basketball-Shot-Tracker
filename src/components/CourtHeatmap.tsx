@@ -5,6 +5,8 @@ import './CourtHeatmap.css';
 interface CourtHeatmapProps {
   shots: Shot[];
   stats: Stats;
+  onZoneClick?: (zone: string) => void;
+  selectedZones?: string[];
 }
 
 function getHeatmapColor(percentage: number, total: number): string {
@@ -47,7 +49,7 @@ const ZONE_PATHS: Record<string, React.ReactElement> = {
   ),
 };
 
-const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
+const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats, onZoneClick, selectedZones }) => (
   <div className="court-heatmap">
     <div className="court-svg-wrapper">
       <svg
@@ -59,12 +61,25 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
 
         {Object.entries(ZONE_PATHS).map(([zone, shape]) => {
           const data = stats.byZone[zone] ?? { percentage: 0, total: 0 };
-          return React.cloneElement(shape, {
-            key: zone,
-            fill: getHeatmapColor(data.percentage, data.total),
-            stroke: '#fff',
-            strokeWidth: 3,
-          });
+          const isSelected = selectedZones?.includes(zone);
+          return (
+            <g
+              key={zone}
+              onClick={onZoneClick ? () => onZoneClick(zone) : undefined}
+              style={onZoneClick ? { cursor: 'pointer' } : undefined}
+            >
+              {React.cloneElement(shape, {
+                fill: getHeatmapColor(data.percentage, data.total),
+                stroke: isSelected ? '#f59e0b' : '#fff',
+                strokeWidth: isSelected ? 6 : 3,
+              })}
+              {isSelected && React.cloneElement(shape, {
+                fill: 'rgba(245, 158, 11, 0.25)',
+                stroke: 'none',
+                strokeWidth: 0,
+              })}
+            </g>
+          );
         })}
 
         {/* Paint/Key rectangle outline */}
@@ -80,6 +95,33 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
         <line x1="460" y1="300" x2="500" y2="300" stroke="#fff" strokeWidth="3" />
         <path d="M 200 470 A 30 30 0 0 1 300 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
         <path d="M 227 470 A 20 20 0 0 1 273 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
+
+        {/* Zone number watermarks */}
+        {Object.entries(ZONES).map(([zone, pos]) => {
+          const zoneNum = zone.split(':')[0].replace('Zone ', '');
+          let x = pos.x as number;
+          let y = (pos.y as number) - 8;
+          
+          if (zoneNum === '4') { x = 70; y = 380; }
+          if (zoneNum === '5') { x = 250; y = 425; } /* Pulled back further */
+          if (zoneNum === '6') { x = 430; y = 380; }
+
+          return (
+            <text
+              key={`watermark-${zone}`}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="rgba(255, 255, 255, 0.45)"
+              fontSize="72"
+              fontWeight="900"
+              pointerEvents="none"
+            >
+              {zoneNum}
+            </text>
+          );
+        })}
 
         {/* Shot markers */}
         {shots.map((shot) => {

@@ -1,29 +1,80 @@
 .shot-history {
-  background: white;
-  border-radius: 12px;
+  background: rgba(30, 50, 100, 0.55);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
   padding: 20px;
-  max-width: 500px;
+  max-width: 560px;
   width: 100%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
+/* Filter Dropdown */
+.filter-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.filter-dropdown {
+  padding: 10px 36px 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  min-width: 200px;
+  transition: all 0.2s ease;
+}
+
+.filter-dropdown:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.filter-dropdown option {
+  background: #2a3a6e;
+  color: #fff;
+}
+
+/* Header */
 .history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .history-header h3 {
-  color: #667eea;
+  color: #fff;
   font-size: 18px;
   margin: 0;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auto-update-note {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  font-style: italic;
+  text-align: right;
+  line-height: 1.3;
+}
+
 .clear-btn {
-  background: #ff6b6b;
+  background: rgba(255, 100, 100, 0.8);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -39,15 +90,17 @@
   transform: translateY(-2px);
 }
 
+/* Empty state */
 .empty-message {
   text-align: center;
-  color: #999;
+  color: rgba(255, 255, 255, 0.5);
   padding: 40px 20px;
   font-size: 14px;
 }
 
+/* Shots list */
 .shots-list {
-  max-height: 300px;
+  max-height: 380px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -57,87 +110,100 @@
 .shot-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  background: #f9f9f9;
-  border-left: 4px solid #999;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 4px solid rgba(255, 255, 255, 0.2);
   transition: all 0.2s ease;
 }
 
 .shot-item.made {
-  background: #f0fff0;
-  border-left-color: #00cc00;
+  background: rgba(0, 200, 0, 0.08);
+  border-left-color: #4ade80;
 }
 
 .shot-item.missed {
-  background: #fff0f0;
-  border-left-color: #ff0000;
+  background: rgba(255, 60, 60, 0.08);
+  border-left-color: #ef4444;
 }
 
 .shot-item:hover {
   transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .shot-number {
   font-weight: bold;
-  color: #667eea;
-  min-width: 30px;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 26px;
   text-align: center;
   font-size: 14px;
 }
 
 .shot-zone {
   flex: 1;
-  color: #333;
-  font-size: 14px;
+  color: #fff;
+  font-size: 13px;
   font-weight: 500;
 }
 
-.shot-result {
-  font-size: 13px;
+/* Made / Missed badge */
+.shot-result-badge {
+  font-size: 12px;
   font-weight: bold;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
-.shot-result.made {
-  background: #00ff00;
-  color: #000;
+.shot-result-badge.made {
+  background: #4ade80;
+  color: #064e22;
 }
 
-.shot-result.missed {
-  background: #ff0000;
+.shot-result-badge.missed {
+  background: #ef4444;
   color: #fff;
 }
 
+/* Shot Type label */
+.shot-type {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 42px;
+  text-align: center;
+}
+
+/* Edit and Delete buttons */
+.edit-btn,
 .delete-btn {
   background: none;
   border: none;
-  color: #ccc;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 2px 4px;
   border-radius: 4px;
   line-height: 1;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: transform 0.15s ease;
   flex-shrink: 0;
+  opacity: 0.7;
 }
 
+.edit-btn:hover,
 .delete-btn:hover {
-  color: #ff4444;
-  background: rgba(255, 68, 68, 0.1);
+  opacity: 1;
+  transform: scale(1.2);
 }
 
+/* Footer */
 .history-footer {
   text-align: center;
-  padding-top: 15px;
-  border-top: 2px solid #f0f0f0;
-  color: #999;
-  font-size: 12px;
-  margin-top: 15px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin-top: 14px;
 }
 
 /* Scrollbar styling */
@@ -146,15 +212,15 @@
 }
 
 .shots-list::-webkit-scrollbar-track {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
 }
 
 .shots-list::-webkit-scrollbar-thumb {
-  background: #667eea;
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 10px;
 }
 
 .shots-list::-webkit-scrollbar-thumb:hover {
-  background: #764ba2;
+  background: rgba(255, 255, 255, 0.4);
 }

@@ -9,6 +9,8 @@
 | **@testing-library/user-event** | Simulates real user interactions |
 | **@testing-library/jest-dom** | Custom DOM matchers (`.toBeInTheDocument()`, etc.) |
 | **jsdom** | Browser-like DOM environment for Node |
+| **Playwright** | E2E browser testing with multiple contexts |
+| **tsx** | TypeScript execution for bot simulation scripts |
 
 ### Configuration
 
@@ -23,117 +25,226 @@ test: {
 }
 ```
 
-**`tests/setup.ts`** — runs before every test file:
+**`vitest.config.emulator.ts`** — separate config for Firebase Emulator integration tests:
+
+```ts
+test: {
+  environment: 'node',    // no browser DOM needed
+  globals: true,
+  setupFiles: ['./tests/setup-emulator.ts'],
+  include: ['tests/emulator/**/*.test.ts'],
+  testTimeout: 30000,
+}
+```
+
+**`tests/setup.ts`** — runs before every unit test:
 - Imports `@testing-library/jest-dom` for DOM matchers
-- Replaces `window.localStorage` with a fully functional in-memory mock (Vitest v4 + jsdom doesn't expose a real localStorage implementation)
+- Replaces `window.localStorage` with a fully functional in-memory mock
+
+**`tests/setup-emulator.ts`** — runs before emulator integration tests:
+- Initializes Firebase client SDK against the local emulator
+- Clears all Firestore data between tests
+- Exports `db` instance for test files
 
 ---
 
 ## Running Tests
 
+| Command | What it runs | Prerequisites |
+|---------|-------------|---------------|
+| `npm test` | All Vitest tests (watch mode) | None |
+| `npm run test:unit` | Multi-user Vitest tests only | None |
+| `npm run test:emulator:start` | Start Firestore emulator | `firebase-tools` installed |
+| `npm run test:emulator` | Emulator integration tests | Emulator running |
+| `npm run test:emulator:ci` | Start emulator + run tests | `firebase-tools` installed |
+| `npm run test:e2e` | Playwright E2E tests | Emulator + dev server |
+| `npm run test:e2e:ui` | Playwright in UI mode | Emulator + dev server |
+| `npm run test:bots` | Bot simulation (25 bots) | Emulator running |
+| `npm run test:all` | Unit + emulator + E2E | All prerequisites |
+
+### Quick start
+
 ```bash
-npm test           # run all tests (watch mode)
-npx vitest run     # single run, no watch
+# Unit tests only (no setup needed)
+npm test
+
+# Emulator integration tests
+npm run test:emulator:start    # Terminal 1
+npm run test:emulator          # Terminal 2
+
+# Bot simulation
+npm run test:emulator:start    # Terminal 1
+npm run test:bots              # Terminal 2
+
+# E2E tests
+npm run test:emulator:start    # Terminal 1 (if using emulator)
+npm run test:e2e               # Terminal 2 (auto-starts dev server)
 ```
 
 ---
 
-## Test Files
+## Test Suites
 
-### `tests/App.test.tsx` (8 tests)
+### 1. Vitest Unit Tests (Mocked)
 
-Integration tests for the root `App` component, covering the full mode-switching flow.
+Located in `tests/` and `tests/multi-user/`. These mock Firebase and use snapshot callbacks to test React component behavior.
+
+**Shared helpers** (`tests/helpers.ts`):
+- `setupSubscribeMocks()` — captures onSnapshot callbacks, returns `pushSession`, `pushParticipants`, `pushShots`, `hydrate`
+- `createMockParticipant()`, `createMockShot()`, `sessionSnapshot()` — fixture generators
+- `setStudentLocalStorage()`, `setTeacherLocalStorage()` — localStorage setup
+
+#### `tests/session-transition.test.tsx` (3 tests)
 
 | Test | What it verifies |
 |------|-----------------|
-| Shows ModeSelector when no mode stored | Default landing state |
-| Enters student mode on click | Mode transition to student |
-| Enters mentor mode on click | Mode transition to mentor |
-| Shows Court/Stats/History tabs in student mode | Student tab navigation rendered |
-| Does not show Court tab in mentor mode | Mentor tabs are different |
-| Switches to Stats tab | Tab navigation works |
-| Switches to History tab | Tab navigation works, empty state shown |
-| Returns to ModeSelector on Switch Mode | Mode reset works |
-| Restores mode from localStorage | Persistence survives mount |
+| Shows Lobby when status is lobby | Lobby component renders |
+| Transitions from Lobby to Solo Activity | Status change via onSnapshot |
+| Shows BasketballCourt with maxShots=15 | Solo activity shot counter |
 
-**Setup:** `localStorage.clear()` before each test; `window.confirm` is mocked to return `true`.
+#### `tests/multi-user/full-lifecycle.test.tsx` (8 tests)
+
+Full session state machine with 5 participants through all 7 states:
+LOBBY → SOLO_ACTIVE → SOLO_REVIEW → TEAM_STRATEGY → TEAM_ACTIVE → TEAM_REVIEW → ENDED
+
+#### `tests/multi-user/shot-limits.test.tsx` (6 tests)
+
+| Test | What it verifies |
+|------|-----------------|
+| Solo shot counter | Shows current/max (e.g., "5 / 15 shots") |
+| Approaching limit | 14/15 display |
+| At limit | 15/15 display (court locked) |
+| Only own shots count | Other students' shots filtered |
+| Team shot counter | Shows x/20 during team_active |
+| Team limit | 20/20 display |
+
+#### `tests/multi-user/concurrent-join.test.tsx` (5 tests)
+
+Tests teacher lobby updating as 3→5→20→30 participants join via snapshot updates.
+
+#### `tests/multi-user/concurrent-shots.test.tsx` (5 tests)
+
+Tests shot filtering when multiple students' shots arrive interleaved. Includes 25-student × 15-shot (375 total) stress test.
+
+#### `tests/multi-user/team-pairing.test.tsx` (5 tests)
+
+Tests Team Strategy and Team Review components with team assignments, including trio teams and 24-student scenarios.
+
+#### `tests/multi-user/realtime-sync.test.tsx` (5 tests)
+
+Tests snapshot replacement, mixed solo/team shots, empty snapshots, and performance with 375 shot documents.
 
 ---
 
-### `tests/BasketballCourt.test.tsx` (9 tests)
+### 2. Firebase Emulator Integration Tests
 
-Tests the interactive SVG court component, including coordinate-to-zone mapping and shot recording.
+Located in `tests/emulator/`. These run against a real Firestore emulator (no mocking) to test actual database operations.
 
-| Test | What it verifies |
-|------|-----------------|
-| Renders the SVG court | SVG element is present |
-| Does not show shot buttons initially | Buttons hidden before zone click |
-| Renders circle marker for each shot | Shot markers drawn per shot |
-| Colors made shot markers green | `fill="#00ff00"` for made |
-| Colors missed shot markers red | `fill="#ff0000"` for missed |
-| Shows Made/Missed/Cancel after clicking valid zone | Zone selection flow |
-| Calls onShotRecorded with made=true | Made button fires callback correctly |
-| Calls onShotRecorded with made=false | Missed button fires callback correctly |
-| Hides shot buttons after Cancel | Cancel clears selection |
+#### `tests/emulator/session-lifecycle.test.ts`
 
-**Technique:** `svg.getBoundingClientRect` is mocked to return a `500×470` bounding box so `fireEvent.click(svg, { clientX: 250, clientY: 95 })` maps exactly to Zone 1: Paint.
+- Creates session, verifies document exists
+- 5 parallel joins, verifies participant count
+- Advances through all states
+- Complete 5-student session with shot recording and counter verification
 
----
+#### `tests/emulator/concurrent-writes.test.ts`
 
-### `tests/ModeSelector.test.tsx` (5 tests)
+- 10 simultaneous shots from different students
+- 5 sequential shots from same student
+- **Documents race condition**: simultaneous same-student shots can lose counter increments
+- Mixed solo and team shots
 
-Tests the landing screen component.
+#### `tests/emulator/join-race.test.ts`
 
-| Test | What it verifies |
-|------|-----------------|
-| Renders app title | Title text present |
-| Renders Student Mode button | Button rendered |
-| Renders Mentor Mode button | Button rendered |
-| Calls onModeSelect with "student" | Click fires correct argument |
-| Calls onModeSelect with "mentor" | Click fires correct argument |
+- 10 simultaneous joins with unique names
+- Sequential duplicate name rejection
+- **Documents TOCTOU race**: simultaneous joins with same name may both succeed
+- Late join rejection (team_active, team_review, non-existent session)
+- 25-student sequential join
 
----
+#### `tests/emulator/team-pairing.test.ts`
 
-### `tests/StatsDisplay.test.tsx` (9 tests)
-
-Tests the stats panel with both empty and populated stats fixtures.
-
-| Test | What it verifies |
-|------|-----------------|
-| Renders Overall Stats heading | Section header present |
-| Renders Stats by Zone heading | Section header present |
-| Renders Heat Map Legend | Legend section present |
-| Displays total shots count | Numeric value rendered |
-| Displays made shots count | Numeric value rendered |
-| Displays shooting percentage | Formatted % rendered |
-| Displays zone names | Zone labels in DOM |
-| Displays made/total for a zone | Fraction display (`5/6`) |
-| Shows legend labels | All 4 color categories labeled |
-
-**Fixtures:**
-- `emptyStats` — all zeros, all 6 zones at 0%
-- `populatedStats` — 10 shots, 70% overall, data in zones 1 and 2
+- 2 participants → 1 team
+- 4 participants → 2 teams of 2
+- 7 participants → 2 pairs + 1 trio
+- 1 participant → solo team
+- 25 participants → 12 teams (11 pairs + 1 trio)
+- Status advances to team_strategy
 
 ---
 
-### `tests/ShotHistory.test.tsx` (9 tests)
+### 3. Bot Simulation Script
 
-Tests the shot history list component.
+Located at `scripts/bot-simulation.ts`. Spawns 25 bots that play through the full session lifecycle.
 
-| Test | What it verifies |
-|------|-----------------|
-| Shows empty state message | Empty list renders a hint |
-| Does not show Clear All when empty | Button hidden when no shots |
-| Shows Clear All when shots exist | Button appears with shots |
-| Calls onClear when Clear All clicked | Callback fired |
-| Renders zone name for each shot | Zone label in each row |
-| Shows Made label for made shot | Result label correct |
-| Shows Missed label for missed shot | Result label correct |
-| Displays total shot count in footer | Footer count accurate |
-| Only shows up to 10 most recent shots | Slice cap enforced |
-| Displays most recent shot first | Reverse chronological order |
+**Lifecycle:**
+1. Teacher creates session
+2. Bots join with staggered delays (50-300ms)
+3. Solo phase: 15 shots each with 50-200ms intervals
+4. Solo review: 1s pause
+5. Team pairing (Fisher-Yates shuffle)
+6. Team phase: 20 shots each
+7. Team review → ended
 
-**Note:** The `ShotHistory` component's `onDelete` prop is required by TypeScript but not tested here (it's implicitly tested in `App.test.tsx`). The `ShotHistory.test.tsx` file passes `onClear` only; `onDelete` handling is covered by the component's delete button wiring.
+**Verification report:**
+- Session final status = ended
+- Participant count matches bot count
+- Shot counts (solo + team)
+- Team assignments (all have teamIds)
+- Counter consistency (soloShotsComplete/teamShotsComplete match actual shot docs)
+- Per-bot summary table
+
+**Edge cases tested:**
+- 2 bots intentionally share a name → "Name taken" error → auto-retry with suffix
+- 10% of bots undo one shot mid-round
+
+---
+
+### 4. Playwright E2E Tests
+
+Located in `e2e/`. Use multiple browser contexts to simulate teacher + students.
+
+#### `e2e/multi-user-session.spec.ts`
+
+**Full lifecycle test** (1 teacher + 4 students):
+- Teacher creates session
+- 4 students join in separate browser contexts
+- Teacher sees all students in lobby
+- Teacher starts solo → students record shots → teacher ends solo
+- Students see solo review heatmap
+- Teacher pairs teams → students see team strategy
+- Team shots → team review → session ended
+
+**Edge case tests:**
+- Duplicate name rejection
+
+---
+
+## Known Race Conditions
+
+The test suite documents (but does not fix) these concurrency issues:
+
+| Issue | Where | Impact |
+|-------|-------|--------|
+| **TOCTOU name check** | `joinSession()` reads then writes | Two simultaneous joins with same name can both succeed |
+| **Counter increment** | `addSessionShot()` getDoc → batch.update | Two simultaneous shots from same student can lose an increment |
+| **Client-only shot limit** | `BasketballCourt.tsx` | Nothing at Firestore level prevents >15 or >20 shots |
+
+**Recommended fixes:**
+- Use `FieldValue.increment(1)` for atomic counter updates
+- Use Firestore transactions for name uniqueness checks
+
+---
+
+## Legacy Test Files
+
+| File | Status | Notes |
+|------|--------|-------|
+| `tests/App.test.tsx` | Outdated | References removed ModeSelector component |
+| `tests/ModeSelector.test.tsx` | Outdated | Component no longer exists |
+| `tests/BasketballCourt.test.tsx` | Active | SVG court rendering and interaction |
+| `tests/StatsDisplay.test.tsx` | Active | Stats panel display |
+| `tests/ShotHistory.test.tsx` | Active | Shot history list |
 
 ---
 
@@ -141,25 +252,15 @@ Tests the shot history list component.
 
 | Area | Covered by |
 |------|-----------|
-| Mode selection UI | ModeSelector.test, App.test |
-| Mode persistence (localStorage) | App.test |
-| Student tab navigation | App.test |
-| Mentor tab layout | App.test |
+| Session state machine (all 7 states) | full-lifecycle, session-transition |
+| Multi-user concurrent joins | concurrent-join, join-race (emulator) |
+| Shot recording and filtering | concurrent-shots, shot-limits |
+| Team pairing (2/4/7/25 participants) | team-pairing (mocked + emulator) |
+| Real-time sync with large data | realtime-sync |
+| Counter atomicity | concurrent-writes (emulator) |
+| Full lifecycle (real Firestore) | session-lifecycle (emulator) |
+| 25-bot stress test | bot-simulation script |
+| Multi-browser E2E | Playwright tests |
 | Court SVG rendering | BasketballCourt.test |
-| Zone click → shot recording flow | BasketballCourt.test |
-| Shot marker colors | BasketballCourt.test |
-| Stats calculations (displayed values) | StatsDisplay.test |
-| Shot history display and sorting | ShotHistory.test |
-| Clear/delete controls | ShotHistory.test, App.test |
-
-## Not Currently Covered
-
-| Area | Notes |
-|------|-------|
-| `useShots` hook | No dedicated hook test |
-| `shotsService` | No unit tests for localStorage/Firestore logic |
-| `calculateStats` | No pure-function unit tests |
-| `MentorDashboard` | No dedicated component tests |
-| `CourtHeatmap` | No dedicated component tests |
-| Firebase integration | Not tested (would require mocking Firestore) |
-| Zone boundary detection | Not directly unit tested (covered indirectly by BasketballCourt.test) |
+| Stats calculations | StatsDisplay.test |
+| Shot history display | ShotHistory.test |

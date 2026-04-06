@@ -172,8 +172,9 @@
 .alt-link {
   background: none;
   border: none;
-  color: #888;
+  color: #454545;
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   padding: 4px 0;
 }

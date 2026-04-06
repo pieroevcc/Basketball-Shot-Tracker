@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shot, ZONES, COURT_WIDTH, COURT_HEIGHT } from '../types';
+import { Shot, ZONES, ZONE_POINTS, COURT_WIDTH, COURT_HEIGHT } from '../types';
 import './BasketballCourt.css';
 
 interface BasketballCourtProps {
@@ -7,6 +7,7 @@ interface BasketballCourtProps {
   shots: Shot[];
   maxShots?: number;
   onUndo?: () => void;
+  blockedZones?: string[];
 }
 
 const BasketballCourt: React.FC<BasketballCourtProps> = ({
@@ -14,6 +15,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
   shots,
   maxShots,
   onUndo,
+  blockedZones = [],
 }) => {
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
 
@@ -106,7 +108,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
     const y = ((e.clientY - rect.top) / rect.height) * COURT_HEIGHT;
 
     const zone = getZoneAtCoordinates(x, y);
-    if (zone) {
+    if (zone && !blockedZones.includes(zone)) {
       setSelectedZone(zone);
     }
   };
@@ -120,6 +122,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         made,
         timestamp: Date.now(),
         zone: selectedZone,
+        points: made ? (ZONE_POINTS[selectedZone] ?? 0) : 0,
       };
       onShotRecorded(shot, selectedZone);
       setSelectedZone(null);
@@ -230,6 +233,18 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
           <line x1="460" y1="300" x2="500" y2="300" stroke="#fff" strokeWidth="3" />
           <path d="M 200 470 A 30 30 0 0 1 300 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
           <path d="M 227 470 A 20 20 0 0 1 273 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
+
+          {/* Blocked zone indicators */}
+          {blockedZones.map((zone) => {
+            const zoneCenter = ZONES[zone as keyof typeof ZONES];
+            if (!zoneCenter) return null;
+            return (
+              <g key={`blocked-${zone}`}>
+                <circle cx={zoneCenter.x} cy={zoneCenter.y} r="35" fill="rgba(255,0,0,0.3)" stroke="#ff0000" strokeWidth="3" />
+                <text x={zoneCenter.x} y={zoneCenter.y + 5} textAnchor="middle" fill="#ff0000" fontSize="28" fontWeight="bold">✕</text>
+              </g>
+            );
+          })}
 
           {/* Shot markers */}
           {shots.map((shot) => (

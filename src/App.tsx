@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BasketballCourt from './components/BasketballCourt';
 import StatsDisplay from './components/StatsDisplay';
 import ShotHistory from './components/ShotHistory';
@@ -11,18 +11,22 @@ import TeacherLobby from './components/TeacherLobby';
 import TeamStrategy from './components/TeamStrategy';
 import TeamReview from './components/TeamReview';
 import SessionEnded from './components/SessionEnded';
+import ShotAllocationPanel from './components/ShotAllocationPanel';
+import SabotagePanel from './components/SabotagePanel';
+import TestMode from './components/TestMode';
 import { useShots } from './hooks/useShots';
 import { useSession } from './hooks/useSession';
+import { markTeacherDisconnected, updateTeacherHeartbeat } from './services/sessionService';
 import { Shot, calculateStats } from './types';
-import { isFirebaseConfigured } from './firebase';
+
 import './components/ModeSelector.css';
 import './App.css';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-type AppMode = 'session' | 'practice' | null;
-type AppRole = 'student' | 'teacher' | null;
+type AppMode = 'session' | 'practice' | 'test' | null;
+type AppRole = 'student' | 'teacher';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -45,10 +49,18 @@ function clearSessionStorage() {
 // ---------------------------------------------------------------------------
 function App() {
   // ---- App-level state (persisted in localStorage) ----
-  const [appMode, setAppMode] = useState<AppMode>('session');
-  const [role, setRole] = useState<AppRole>('student');
-  const [sessionCode, setSessionCode] = useState<string | null>(null);
-  const [studentId, setStudentId] = useState<string | null>(null);
+  const [appMode, setAppMode] = useState<AppMode>(
+    () => (readLocalStorage('appMode') as AppMode) ?? 'session'
+  );
+  const [role, setRole] = useState<AppRole>(
+    () => (readLocalStorage('appRole') as AppRole) ?? 'student'
+  );
+  const [sessionCode, setSessionCode] = useState<string | null>(
+    () => readLocalStorage('sessionCode')
+  );
+  const [studentId, setStudentId] = useState<string | null>(
+    () => readLocalStorage('studentId')
+  );
 
   // ---- Practice mode state ----
   const [practiceSubMode, setPracticeSubMode] = useState<'student' | 'mentor' | null>(() => {
@@ -69,31 +81,135 @@ function App() {
     myParticipant,
     shots,
     teammateShots,
+    allocations,
+    sabotageActions,
     loading,
     error,
+    blockedZones,
+    myAllocatedShots,
+    round1Leaderboard: _round1Leaderboard,
     createSession,
     advanceSession,
     pairTeams,
-    removeParticipant,
+    assignGroups,
+    calculateRound1Winner,
+    saveShotAllocations,
+    saveSabotageActions,
+    kickParticipant,
     joinSession,
     updateName,
     addShot,
     undoLastShot,
   } = useSession(appMode === 'session' ? sessionCode : null, studentId);
 
-  const firebaseOk = isFirebaseConfigured();
+  // Ref so interval callbacks always see the latest session without resetting the timer.
+  const sessionRef = useRef(session);
+  useEffect(() => { sessionRef.current = session; }, [session]);
 
-  // Sync appMode changes to localStorage
+  // Sync state to localStorage
   useEffect(() => {
     if (appMode) localStorage.setItem('appMode', appMode);
     else localStorage.removeItem('appMode');
   }, [appMode]);
 
-  // Sync practiceSubMode to localStorage
+  useEffect(() => {
+    localStorage.setItem('appRole', role);
+  }, [role]);
+
+  useEffect(() => {
+    if (sessionCode) localStorage.setItem('sessionCode', sessionCode);
+    else localStorage.removeItem('sessionCode');
+  }, [sessionCode]);
+
+  useEffect(() => {
+    if (studentId) localStorage.setItem('studentId', studentId);
+    else localStorage.removeItem('studentId');
+  }, [studentId]);
+
   useEffect(() => {
     if (practiceSubMode) localStorage.setItem('practiceSubMode', practiceSubMode);
     else localStorage.removeItem('practiceSubMode');
   }, [practiceSubMode]);
+
+  // When teacher closes or reloads the page, mark session as disconnected so
+  // students are kicked out via the onSnapshot listener.
+  useEffect(() => {
+    if (role !== 'teacher' || !sessionCode) return;
+    const handleBeforeUnload = () => markTeacherDisconnected(sessionCode);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [role, sessionCode]);
+
+  // Teacher heartbeat — writes teacherLastSeen to Firestore every 30 s so
+  // students can detect a dead session even if beforeunload didn't fire.
+  useEffect(() => {
+    if (role !== 'teacher' || !sessionCode) return;
+    updateTeacherHeartbeat(sessionCode);
+    const id = setInterval(() => updateTeacherHeartbeat(sessionCode), 30_000);
+    return () => clearInterval(id);
+  }, [role, sessionCode]);
+
+  const TEACHER_TIMEOUT_MS = 60_000; // 2× heartbeat interval
+
+  // Fires on every session snapshot — catches reload-into-dead-session immediately.
+  useEffect(() => {
+    if (role !== 'student' || !session) return;
+    const gone =
+      !!session.teacherDisconnected ||
+      (session.teacherLastSeen !== undefined &&
+        Date.now() - session.teacherLastSeen > TEACHER_TIMEOUT_MS);
+    if (gone) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, session?.teacherDisconnected, session?.teacherLastSeen]);
+
+  // Fires every 15 s — catches the case where session stops updating
+  // (teacher gone, no more snapshots to drive the effect above).
+  useEffect(() => {
+    if (role !== 'student' || !sessionCode) return;
+    const id = setInterval(() => {
+      const s = sessionRef.current;
+      if (!s) return;
+      const gone =
+        !!s.teacherDisconnected ||
+        (s.teacherLastSeen !== undefined &&
+          Date.now() - s.teacherLastSeen > TEACHER_TIMEOUT_MS);
+      if (gone) handleReturnHome();
+    }, 15_000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, sessionCode]);
+
+  // If a student reloads into a session that no longer exists in Firestore,
+  // redirect home instead of showing a stale join form.
+  useEffect(() => {
+    if (loading || !sessionCode || role !== 'student') return;
+    if (session === null) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, session, sessionCode, role]);
+
+  // If a student is kicked by the teacher, their participant document is deleted.
+  // Detect that and redirect home.
+  useEffect(() => {
+    if (loading || role !== 'student' || !sessionCode || !studentId) return;
+    if (session?.status === 'lobby' && myParticipant === null) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, role, sessionCode, studentId, session?.status, myParticipant]);
+
+  // When the teacher reloads, beforeunload has already written teacherDisconnected:true.
+  // On reconnect, detect that flag and send the teacher home too.
+  useEffect(() => {
+    if (role !== 'teacher' || !session) return;
+    if (session.teacherDisconnected) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, session?.teacherDisconnected]);
+
+  // If teacher reloads into a session that no longer exists, go home instead
+  // of landing on the "Create Session" screen with stale localStorage.
+  useEffect(() => {
+    if (loading || !sessionCode || role !== 'teacher') return;
+    if (session === null) handleReturnHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, session, sessionCode, role]);
 
   // ---------------------------------------------------------------------------
   // Action handlers
@@ -101,8 +217,8 @@ function App() {
 
   const handleReturnHome = () => {
     clearSessionStorage();
-    setAppMode(null);
-    setRole(null);
+    setAppMode('session');
+    setRole('student');
     setSessionCode(null);
     setStudentId(null);
     setPracticeSubMode(null);
@@ -133,8 +249,7 @@ function App() {
   };
 
   // Session shot recording
-  const MAX_SOLO_SHOTS = 15;
-  const MAX_TEAM_SHOTS = 20;
+  const MAX_SOLO_SHOTS = 20;
 
   const handleSessionShot = async (shot: Shot, _zone: string) => {
     if (!sessionCode || !studentId || !session) return;
@@ -161,66 +276,10 @@ function App() {
   );
 
   // ---------------------------------------------------------------------------
-  // LANDING PAGE
+  // TEST MODE  (component browser — no Firebase needed)
   // ---------------------------------------------------------------------------
-  if (!appMode) {
-    return (
-      <div className="app landing">
-        <div className="landing-content">
-          <div className="landing-ball">🏀</div>
-          <h1 className="landing-title">Basketball Shot Tracker</h1>
-          <p className="landing-subtitle">
-            Track your shots, see your heat map, and learn from your data!
-          </p>
-
-          <div className="landing-buttons">
-            {firebaseOk ? (
-              <>
-                <button
-                  className="landing-btn student"
-                  onClick={() => {
-                    setAppMode('session');
-                    setRole('student');
-                  }}
-                >
-                  <span className="landing-btn-icon">🎮</span>
-                  <span className="landing-btn-label">Join Session</span>
-                  <span className="landing-btn-sub">Enter your class code</span>
-                </button>
-
-                <button
-                  className="landing-btn teacher"
-                  onClick={() => {
-                    setAppMode('session');
-                    setRole('teacher');
-                  }}
-                >
-                  <span className="landing-btn-icon">👨‍🏫</span>
-                  <span className="landing-btn-label">Create Session</span>
-                  <span className="landing-btn-sub">Start a class session</span>
-                </button>
-              </>
-            ) : (
-              <div className="firebase-notice">
-                Configure Firebase to enable live sessions
-              </div>
-            )}
-
-            <button
-              className="landing-btn practice"
-              onClick={() => {
-                setAppMode('practice');
-                setRole(null);
-              }}
-            >
-              <span className="landing-btn-icon">🏋️</span>
-              <span className="landing-btn-label">Practice Mode</span>
-              <span className="landing-btn-sub">No Firebase needed</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  if (appMode === 'test') {
+    return <TestMode onBack={handleReturnHome} />;
   }
 
   // ---------------------------------------------------------------------------
@@ -337,10 +396,6 @@ function App() {
             <ShotHistory shots={practiceShots} onDelete={deleteShot} onClear={handleClearPractice} />
           )}
         </main>
-
-        <footer className="app-footer">
-          <p>💡 Tip: Click on different zones to record shots. Green = Hot, Red = Cold</p>
-        </footer>
       </div>
     );
   }
@@ -400,6 +455,7 @@ function App() {
             shots={shots}
             participants={participants}
             sessionCode={sessionCode}
+            session={session}
             onReturnHome={handleReturnHome}
           />
         </div>
@@ -416,7 +472,13 @@ function App() {
           sessionCode={sessionCode}
           advanceSession={advanceSession}
           pairTeams={pairTeams}
-          removeParticipant={removeParticipant}
+          assignGroups={assignGroups}
+          calculateRound1Winner={calculateRound1Winner}
+          saveShotAllocations={saveShotAllocations}
+          saveSabotageActions={saveSabotageActions}
+          kickParticipant={kickParticipant}
+          allocations={allocations}
+          sabotageActions={sabotageActions}
           onReturnHome={handleReturnHome}
         />
       </div>
@@ -434,7 +496,7 @@ function App() {
             onJoined={handleStudentJoined}
             onBack={handleReturnHome}
             onGoToTeacher={() => { setAppMode('session'); setRole('teacher'); }}
-            onGoToPractice={() => { setAppMode('practice'); setRole(null); }}
+            onGoToPractice={() => { setAppMode('practice');}}
           />
         </div>
       );
@@ -480,6 +542,7 @@ function App() {
               <span>{mySoloShots.length} shots</span>
               <span>{soloStats.totalMade} made</span>
               <span>{soloStats.shootingPercentage.toFixed(0)}%</span>
+              <span>{soloStats.totalPoints} pts</span>
             </div>
           )}
         </div>
@@ -520,9 +583,41 @@ function App() {
       );
     }
 
+    // Shot Allocation
+    if (status === 'shot_allocation') {
+      return (
+        <div className="app session-mode">
+          <ShotAllocationPanel
+            sessionCode={sessionCode}
+            participants={participants}
+            myParticipant={myParticipant}
+            shots={shots}
+            allocations={allocations}
+            saveShotAllocations={saveShotAllocations}
+          />
+        </div>
+      );
+    }
+
+    // Sabotage
+    if (status === 'sabotage') {
+      return (
+        <div className="app session-mode">
+          <SabotagePanel
+            sessionCode={sessionCode}
+            participants={participants}
+            myParticipant={myParticipant}
+            sabotageActions={sabotageActions}
+            saveSabotageActions={saveSabotageActions}
+          />
+        </div>
+      );
+    }
+
     // Team Active
     if (status === 'team_active') {
       const teamStats = calculateStats(myTeamShots);
+      const effectiveMaxShots = myAllocatedShots;
       return (
         <div className="app session-mode">
           <div className="session-activity-header">
@@ -530,13 +625,19 @@ function App() {
             <p className="activity-subtitle">
               Shoot as a team! Use your strategy from the last round.
             </p>
+            {blockedZones.length > 0 && (
+              <p className="activity-warning">
+                Blocked zones: {blockedZones.join(', ')}
+              </p>
+            )}
           </div>
           <div className="session-court-wrapper">
             <BasketballCourt
               onShotRecorded={handleSessionShot}
               shots={myTeamShots}
-              maxShots={MAX_TEAM_SHOTS}
+              maxShots={effectiveMaxShots}
               onUndo={handleUndoShot}
+              blockedZones={blockedZones}
             />
           </div>
           {myTeamShots.length > 0 && (
@@ -544,6 +645,7 @@ function App() {
               <span>{myTeamShots.length} shots</span>
               <span>{teamStats.totalMade} made</span>
               <span>{teamStats.shootingPercentage.toFixed(0)}%</span>
+              <span>{teamStats.totalPoints} pts</span>
             </div>
           )}
         </div>
@@ -573,6 +675,7 @@ function App() {
             shots={shots}
             participants={participants}
             sessionCode={sessionCode}
+            session={session}
             onReturnHome={handleReturnHome}
           />
         </div>
@@ -580,34 +683,7 @@ function App() {
     }
   }
 
-  // Fallback — no role selected yet but appMode is 'session'
-  return (
-    <div className="app landing">
-      <div className="landing-content">
-        <div className="landing-ball">🏀</div>
-        <h1 className="landing-title">Basketball Shot Tracker</h1>
-        <div className="landing-buttons">
-          <button
-            className="landing-btn student"
-            onClick={() => setRole('student')}
-          >
-            <span className="landing-btn-icon">🎮</span>
-            <span className="landing-btn-label">Join Session</span>
-          </button>
-          <button
-            className="landing-btn teacher"
-            onClick={() => setRole('teacher')}
-          >
-            <span className="landing-btn-icon">👨‍🏫</span>
-            <span className="landing-btn-label">Create Session</span>
-          </button>
-        </div>
-        <button className="landing-back-btn" onClick={handleReturnHome}>
-          ← Back
-        </button>
-      </div>
-    </div>
-  );
+  
 }
 
 export default App;

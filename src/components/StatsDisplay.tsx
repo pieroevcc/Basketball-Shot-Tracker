@@ -33,6 +33,10 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, headerNode }) => {
             <strong>{stats.pointsPerShot.toFixed(1)}</strong>
           </div>
         </div>
+        <div className="stat-item">
+          <span>Total Points:</span>
+          <strong>{stats.totalPoints}</strong>
+        </div>
       </div>
 
       <div className="zone-stats">
@@ -47,10 +51,12 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, headerNode }) => {
               <div className="zone-bar-bg">
                  <div className={`zone-bar-fill ${getHotColdClass(data.percentage)}`} style={{ width: `${data.percentage}%` }}></div>
               </div>
+
             </div>
           ))}
         </div>
       </div>
+
     </div>
   );
 };

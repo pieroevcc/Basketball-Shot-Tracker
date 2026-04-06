@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
@@ -25,8 +25,15 @@ let db: Firestore | null = null;
 if (isFirebaseConfigured()) {
   const app: FirebaseApp = initializeApp(firebaseConfig);
   db = getFirestore(app);
-  getAnalytics(app);
-  console.log('[Firebase] Connected to project:', firebaseConfig.projectId);
+
+  // Connect to Firestore Emulator when VITE_USE_EMULATOR is set
+  if (import.meta.env.VITE_USE_EMULATOR === 'true') {
+    connectFirestoreEmulator(db, '127.0.0.1', 8080);
+    console.log('[Firebase] Connected to Firestore Emulator on port 8080');
+  } else {
+    getAnalytics(app);
+    console.log('[Firebase] Connected to project:', firebaseConfig.projectId);
+  }
 } else {
   console.log('[Firebase] Not configured — using localStorage only.');
 }

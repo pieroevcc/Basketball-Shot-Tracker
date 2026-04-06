@@ -144,16 +144,14 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
               participants.map((p) => (
                 <div key={p.studentId} className="teacher-participant-row">
                   <span className="participant-name">{p.name}</span>
-                  <div className="participant-actions">
-                    <span className="participant-joined">Joined</span>
-                    <button 
-                      className="kick-btn" 
-                      onClick={() => kickParticipant(sessionCode, p.studentId)}
-                      title="Kick student"
-                    >
-                      ❌
-                    </button>
-                  </div>
+                  <span className="participant-joined">Joined</span>
+                  <button
+                    className="teacher-kick-btn"
+                    onClick={() => kickParticipant(sessionCode, p.studentId)}
+                    title={`Remove ${p.name}`}
+                  >
+                    ✕
+                  </button>
                 </div>
               ))
             )}
@@ -195,6 +193,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                       <th>Score</th>
                       <th>Progress</th>
                       <th>Status</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -216,6 +215,15 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                           <td className="td-status">
                             {done ? <span className="status-done">Done ✅</span> : <span className="status-going">Shooting...</span>}
                           </td>
+                          <td>
+                            <button
+                              className="teacher-kick-btn"
+                              onClick={() => kickParticipant(sessionCode, p.studentId)}
+                              title={`Remove ${p.name}`}
+                            >
+                              ✕
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
@@ -228,7 +236,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
           {!Object.keys(groupMap).some((k) => k !== '__ungrouped__') && (
             <table className="teacher-progress-table">
               <thead>
-                <tr><th>Name</th><th>Shots</th><th>Score</th><th>Progress</th><th>Status</th></tr>
+                <tr><th>Name</th><th>Shots</th><th>Score</th><th>Progress</th><th>Status</th><th></th></tr>
               </thead>
               <tbody>
                 {participants.map((p) => {
@@ -248,6 +256,15 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                       </td>
                       <td className="td-status">
                         {done ? <span className="status-done">Done ✅</span> : <span className="status-going">Shooting...</span>}
+                      </td>
+                      <td>
+                        <button
+                          className="teacher-kick-btn"
+                          onClick={() => kickParticipant(sessionCode, p.studentId)}
+                          title={`Remove ${p.name}`}
+                        >
+                          ✕
+                        </button>
                       </td>
                     </tr>
                   );
@@ -272,7 +289,9 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
             </div>
           )}
           <p className="teacher-section-subtitle">
-            Students are reviewing their solo heatmaps. When ready, form teams of 4!
+            {session.soloOnly
+              ? 'Students are reviewing their solo results. End the session to show the full leaderboard!'
+              : 'Students are reviewing their solo heatmaps. When ready, form teams of 4!'}
           </p>
 
           <div className="teacher-participant-list">
@@ -290,9 +309,18 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
               ))}
           </div>
 
-          <button className="teacher-action-btn primary" onClick={handleStartTeamStrategy}>
-            Form Teams &amp; Start Strategy
-          </button>
+          {session.soloOnly ? (
+            <button
+              className="teacher-action-btn primary"
+              onClick={() => advanceSession(sessionCode, 'ended')}
+            >
+              End Session &amp; Show Leaderboard
+            </button>
+          ) : (
+            <button className="teacher-action-btn primary" onClick={handleStartTeamStrategy}>
+              Form Teams &amp; Start Strategy
+            </button>
+          )}
         </div>
       )}
 

@@ -29,6 +29,7 @@ export interface Session {
   round1Winner?: string; // studentId of Round 1 individual winner
   teacherDisconnected?: boolean; // set when teacher closes/reloads page
   teacherLastSeen?: number;      // Unix ms, updated by teacher heartbeat every 30 s
+  soloOnly?: boolean;            // skip all team phases
 }
 
 export interface Participant {
@@ -58,14 +59,21 @@ export interface ShotAllocation {
   allocatedShots: number;
 }
 
+export interface ShotTransfer {
+  studentId: string;
+  delta: number; // negative = shots removed, positive = shots added
+}
+
 export interface SabotageAction {
   id: string;
   actingTeamId: string;
   targetTeamId: string;
-  type: 'block_zone' | 'remove_shots' | 'add_shots';
-  blockedZone?: string;
+  type: 'block_zone' | 'remove_shots' | 'add_shots' | 'shots_transfer';
+  blockedZone?: string;       // legacy single zone
+  blockedZones?: string[];    // up to 2 zones
   targetStudentId?: string;
   shotDelta?: number;
+  shotTransfers?: ShotTransfer[]; // for shots_transfer type
   timestamp: number;
 }
 
@@ -147,9 +155,16 @@ export const calculateScore = (shots: Shot[]): number => {
 };
 
 export const getBlockedZones = (teamId: string, sabotageActions: SabotageAction[]): string[] => {
-  return sabotageActions
-    .filter((a) => a.targetTeamId === teamId && a.type === 'block_zone' && a.blockedZone)
-    .map((a) => a.blockedZone!);
+  const zones: string[] = [];
+  for (const a of sabotageActions) {
+    if (a.targetTeamId !== teamId || a.type !== 'block_zone') continue;
+    if (a.blockedZones && a.blockedZones.length > 0) {
+      zones.push(...a.blockedZones);
+    } else if (a.blockedZone) {
+      zones.push(a.blockedZone);
+    }
+  }
+  return zones;
 };
 
 export const getEffectiveMaxShots = (
@@ -158,12 +173,19 @@ export const getEffectiveMaxShots = (
   defaultMax: number = 20
 ): number => {
   const allocated = participant.allocatedShots ?? defaultMax;
-  const delta = sabotageActions
+  // Legacy remove/add_shots actions
+  const legacyDelta = sabotageActions
     .filter(
       (a) =>
         a.targetStudentId === participant.studentId &&
         (a.type === 'remove_shots' || a.type === 'add_shots')
     )
     .reduce((sum, a) => sum + (a.shotDelta ?? 0), 0);
-  return Math.max(0, allocated + delta);
+  // New shots_transfer actions
+  const transferDelta = sabotageActions
+    .filter((a) => a.type === 'shots_transfer' && a.shotTransfers)
+    .flatMap((a) => a.shotTransfers!)
+    .filter((t) => t.studentId === participant.studentId)
+    .reduce((sum, t) => sum + t.delta, 0);
+  return Math.max(0, allocated + legacyDelta + transferDelta);
 };

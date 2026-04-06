@@ -15,7 +15,7 @@ interface SessionEndedProps {
   onReturnHome: () => void;
 }
 
-const GOOGLE_FORM_URL = 'GOOGLE_FORM_URL_HERE';
+const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSe86_wurZ-wqFbSnLn37tnQlIvttJcHv3gXQcsqV93Cce1flw/viewform';
 
 const SessionEnded: React.FC<SessionEndedProps> = ({
   role,
@@ -30,7 +30,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setShowFeedbackPopup(true), 5000);
+    const t = setTimeout(() => setShowFeedbackPopup(true), 3000);
     return () => clearTimeout(t);
   }, []);
   const pdfReportRef = useRef<HTMLDivElement>(null);
@@ -154,6 +154,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
 
   // Teacher view
   const allShots = shots;
+  const allStats = calculateStats(allShots);
   
   // Pre-calculate participant stats to find best and worst
   const participantStats = participants.map((p) => {

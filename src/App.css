@@ -1,105 +1,3 @@
-/* ---- Landing Page ---- */
-.landing {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.landing-content {
-  text-align: center;
-  padding: 32px 24px;
-  max-width: 520px;
-  width: 100%;
-  background : #fff;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  border-radius: 20px;
-}
-
-.landing-ball {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.landing-title {
-  font-size: 36px;
-  font-weight: 900;
-  color: #000;
-  margin-bottom: 10px;
-}
-
-.landing-subtitle {
-  font-size: 16px;
-  color: #000;
-  margin-bottom: 32px;
-  line-height: 1.5;
-}
-
-.landing-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: center;
-}
-
-.landing-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  max-width: 340px;
-  padding: 18px 24px;
-  border: none;
-  border-radius: 18px;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-}
-
-.landing-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
-}
-
-.landing-btn.student {
-  background: linear-gradient(135deg, #11998e, #38ef7d);
-}
-
-.landing-btn.teacher {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-}
-
-.landing-btn-icon {
-  font-size: 32px;
-}
-
-.landing-btn-label {
-  font-size: 18px;
-  font-weight: 800;
-  color: #fff;
-}
-
-.landing-btn-sub {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.landing-back-btn {
-  margin-top: 24px;
-  background: none;
-  border: none;
-  color: #000;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.landing-back-btn:hover {
-  color: #fff;
-}
-
 /* Session loading / error */
 .session-loading,
 .session-error {
@@ -188,7 +86,6 @@
   font-size: 15px;
 }
 
-/* ---- Shared back button used across session screens ---- */
 /* Shared back button used across session screens */
 .back-btn {
   align-self: flex-start;
@@ -214,7 +111,7 @@
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;
-  color : black;
+  color: black;
   background: transparent;
 }
 
@@ -295,6 +192,7 @@
   flex: 1;
   min-height: auto;
 }
+
 
 .stats-tab-layout {
   display: flex;

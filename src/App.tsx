@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import BasketballCourt from './components/BasketballCourt';
 import StatsDisplay from './components/StatsDisplay';
-import ShotHistory from './components/ShotHistory';
-import MentorDashboard from './components/MentorDashboard';
 import CourtHeatmap from './components/CourtHeatmap';
 import SessionJoin from './components/SessionJoin';
 import SessionCreate from './components/SessionCreate';
@@ -15,7 +13,7 @@ import ShotAllocationPanel from './components/ShotAllocationPanel';
 import SabotagePanel from './components/SabotagePanel';
 import TestMode from './components/TestMode';
 import TopStats from './components/TopStats';
-import { useShots } from './hooks/useShots';
+import PracticeMode from './components/PracticeMode';
 import { useSession } from './hooks/useSession';
 import { markTeacherDisconnected, updateTeacherHeartbeat } from './services/sessionService';
 import { Shot, calculateStats } from './types';
@@ -61,18 +59,6 @@ function App() {
   const [studentId, setStudentId] = useState<string | null>(
     () => readLocalStorage('studentId')
   );
-
-  // ---- Practice mode state ----
-  const [practiceSubMode, setPracticeSubMode] = useState<'student' | 'mentor' | null>(() => {
-    // Only restore practice sub-mode when in practice mode
-    const savedMode = localStorage.getItem('appMode');
-    if (savedMode === 'practice') {
-      return readLocalStorage('practiceSubMode') as 'student' | 'mentor' | null;
-    }
-    return null;
-  });
-  const [activeTab, setActiveTab] = useState<'court' | 'stats' | 'history'>('court');
-  const { shots: practiceShots, addShot: addPracticeShot, deleteShot, clearShots } = useShots();
 
   // ---- Session mode state ----
   const {
@@ -125,11 +111,6 @@ function App() {
     if (studentId) localStorage.setItem('studentId', studentId);
     else localStorage.removeItem('studentId');
   }, [studentId]);
-
-  useEffect(() => {
-    if (practiceSubMode) localStorage.setItem('practiceSubMode', practiceSubMode);
-    else localStorage.removeItem('practiceSubMode');
-  }, [practiceSubMode]);
 
   // When teacher closes or reloads the page, mark session as disconnected so
   // students are kicked out via the onSnapshot listener.
@@ -221,7 +202,6 @@ function App() {
     setRole('student');
     setSessionCode(null);
     setStudentId(null);
-    setPracticeSubMode(null);
   };
 
   const handleStudentJoined = (code: string, sid: string, _name: string) => {
@@ -235,17 +215,6 @@ function App() {
     setSessionCode(code);
     setRole('teacher');
     setAppMode('session');
-  };
-
-  // Practice shot recording
-  const handlePracticeShot = (shot: Shot) => {
-    addPracticeShot(shot);
-  };
-
-  const handleClearPractice = () => {
-    if (window.confirm('Are you sure you want to clear all shots? This cannot be undone.')) {
-      clearShots();
-    }
   };
 
   // Session shot recording
@@ -283,116 +252,10 @@ function App() {
   }
 
   // ---------------------------------------------------------------------------
-  // PRACTICE MODE  (original student/mentor experience, preserved)
+  // PRACTICE MODE
   // ---------------------------------------------------------------------------
   if (appMode === 'practice') {
-    const practiceStats = calculateStats(practiceShots);
-
-    // Sub-mode selector
-    if (!practiceSubMode) {
-      return (
-        <div className="app landing">
-          <div className="landing-content">
-            <div className="landing-ball">🏀</div>
-            <h1 className="landing-title">Practice Mode</h1>
-            <p className="landing-subtitle">
-              Track shots locally — no internet connection required.
-            </p>
-            <div className="landing-buttons">
-              <button
-                className="landing-btn student"
-                onClick={() => setPracticeSubMode('student')}
-              >
-                <span className="landing-btn-label">Student</span>
-              </button>
-              <button
-                className="landing-btn teacher"
-                onClick={() => setPracticeSubMode('mentor')}
-              >
-                <span className="landing-btn-label">Mentor View</span>
-              </button>
-            </div>
-            <button className="landing-back-btn" onClick={handleReturnHome}>
-              ← Back
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    // Mentor dashboard
-    if (practiceSubMode === 'mentor') {
-      return (
-        <div className="app mentor-mode">
-          <header className="app-header">
-            <h1>👨‍🏫 Mentor Dashboard</h1>
-            <p>Monitor and analyze student shooting performance</p>
-            <button className="mode-switch-btn" onClick={() => setPracticeSubMode(null)}>
-              Switch Mode
-            </button>
-          </header>
-          <main className="app-content" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-            <MentorDashboard
-              shots={practiceShots}
-              stats={practiceStats}
-              onDelete={deleteShot}
-              onClear={handleClearPractice}
-            />
-          </main>
-        </div>
-      );
-    }
-
-    // Student practice mode
-    return (
-      <div className="app student-mode">
-        <header className="app-header">
-          <h1>🏀 Basketball Shot Tracker</h1>
-          <p>Tracks your performance with a visual heatmap</p>
-          <button className="mode-switch-btn" onClick={() => setPracticeSubMode(null)}>
-            Switch Mode
-          </button>
-        </header>
-
-        {activeTab === 'court' && <TopStats stats={practiceStats} />}
-
-        <div className="nav-tabs">
-          <button
-            className={`tab ${activeTab === 'court' ? 'active' : ''}`}
-            onClick={() => setActiveTab('court')}
-          >
-            🏀 Court
-          </button>
-          <button
-            className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
-            onClick={() => setActiveTab('stats')}
-          >
-            📊 Stats
-          </button>
-          <button
-            className={`tab ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
-          >
-            📝 History
-          </button>
-        </div>
-
-        <main className="app-content">
-          {activeTab === 'court' && (
-            <BasketballCourt onShotRecorded={handlePracticeShot} shots={practiceShots} />
-          )}
-          {activeTab === 'stats' && (
-            <div className="stats-tab-layout">
-              <CourtHeatmap shots={practiceShots} stats={practiceStats} />
-              <StatsDisplay stats={practiceStats} />
-            </div>
-          )}
-          {activeTab === 'history' && (
-            <ShotHistory shots={practiceShots} onDelete={deleteShot} onClear={handleClearPractice} />
-          )}
-        </main>
-      </div>
-    );
+    return <PracticeMode onBack={handleReturnHome} />;
   }
 
   // ---------------------------------------------------------------------------
@@ -491,7 +354,8 @@ function App() {
             onJoined={handleStudentJoined}
             onBack={handleReturnHome}
             onGoToTeacher={() => { setAppMode('session'); setRole('teacher'); }}
-            onGoToPractice={() => { setAppMode('practice');}}
+            onGoToPractice={() => { setAppMode('practice'); }}
+            onGoToTest={() => { setAppMode('test'); }}
           />
         </div>
       );
@@ -632,6 +496,7 @@ function App() {
             participants={participants}
             myParticipant={myParticipant}
             sabotageActions={sabotageActions}
+            shots={shots}
             saveSabotageActions={saveSabotageActions}
           />
         </div>
@@ -735,8 +600,6 @@ function App() {
       );
     }
   }
-
-  
 }
 
 export default App;

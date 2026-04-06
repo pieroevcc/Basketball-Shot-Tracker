@@ -82,7 +82,7 @@ interface ViewDef {
 const VIEWS: ViewDef[] = [
   { id: 'BasketballCourt',       label: 'Basketball Court',       category: 'Student' },
   { id: 'CourtHeatmap',          label: 'Court Heatmap',          category: 'Student' },
-  { id: 'Lobby',                 label: 'Lobby',                  category: 'Student' },
+  { id: 'Lobby',                 label: 'Waiting Lobby',                  category: 'Student' },
   { id: 'TeamStrategy',          label: 'Team Strategy',          category: 'Student' },
   { id: 'ShotAllocationPanel',   label: 'Shot Allocation Panel',  category: 'Student' },
   { id: 'SabotagePanel',         label: 'Sabotage Panel',         category: 'Student' },
@@ -238,7 +238,6 @@ function renderView(id: string): React.ReactNode {
           calculateRound1Winner={noopAsync}
           saveShotAllocations={noopAsync}
           saveSabotageActions={noopAsync}
-          kickParticipant={noopAsync}
           allocations={MOCK_ALLOCATIONS}
           sabotageActions={MOCK_SABOTAGE_ACTIONS}
           onReturnHome={noop}

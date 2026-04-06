@@ -15,6 +15,19 @@ function getHeatmapColor(percentage: number, total: number): string {
   return 'rgba(220, 30, 30, 0.35)';
 }
 
+function calculateStreak(shots: Shot[], zone: string): string {
+  const zoneShots = shots.filter(s => s.zone === zone);
+  if (zoneShots.length === 0) return '';
+  const reversed = [...zoneShots].reverse();
+  const firstMade = reversed[0].made;
+  let count = 0;
+  for (const shot of reversed) {
+    if (shot.made === firstMade) count++;
+    else break;
+  }
+  return `Streak: ${count} ${firstMade ? 'Makes' : 'Misses'}`;
+}
+
 const ZONE_PATHS: Record<string, React.ReactElement> = {
   'Zone 1: Paint': <rect x="175" y="0" width="150" height="220" />,
   'Zone 2: Left Mid-Range': (
@@ -86,19 +99,44 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
         {Object.entries(stats.byZone).map(([zone, data]) => {
           const pos = ZONES[zone as keyof typeof ZONES];
           if (!pos || data.total === 0) return null;
+          
+          const zoneName = zone.split(': ')[1] || zone;
+          const streakText = calculateStreak(shots, zone);
+
           return (
             <g key={zone}>
-              <rect x={pos.x - 22} y={pos.y - 12} width="44" height="22" rx="5" fill="rgba(0,0,0,0.6)" />
               <text
                 x={pos.x}
-                y={pos.y + 1}
+                y={pos.y - 10}
                 textAnchor="middle"
-                dominantBaseline="middle"
                 fill="white"
-                fontSize="12"
-                fontWeight="bold"
+                fontSize="16"
+                fontWeight="900"
+                style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
               >
                 {data.percentage.toFixed(0)}%
+              </text>
+              <text
+                x={pos.x}
+                y={pos.y + 6}
+                textAnchor="middle"
+                fill="rgba(255,255,255,0.9)"
+                fontSize="11"
+                fontWeight="700"
+                style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)' }}
+              >
+                {zoneName}
+              </text>
+              <text
+                x={pos.x}
+                y={pos.y + 20}
+                textAnchor="middle"
+                fill="rgba(255,255,255,0.7)"
+                fontSize="10"
+                fontWeight="600"
+                style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)' }}
+              >
+                {streakText}
               </text>
             </g>
           );
@@ -106,11 +144,14 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
       </svg>
     </div>
 
-    <div className="heatmap-legend">
-      <span className="legend-item hot">≥70% Hot</span>
-      <span className="legend-item warm">50–69% Warm</span>
-      <span className="legend-item cool">30–49% Cool</span>
-      <span className="legend-item cold">&lt;30% Cold</span>
+    <div className="heatmap-legend-container">
+      <h3>🔥 HEATMAP LEGEND</h3>
+      <div className="heatmap-legend">
+        <span className="legend-item hot">≥70% Hot</span>
+        <span className="legend-item warm">50–69% Warm</span>
+        <span className="legend-item cool">30–49% Cool</span>
+        <span className="legend-item cold">&lt;30% Cold</span>
+      </div>
     </div>
   </div>
 );

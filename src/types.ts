@@ -37,8 +37,10 @@ export interface Participant {
 export interface Stats {
   totalShots: number;
   totalMade: number;
+  totalPoints: number;
+  pointsPerShot: number;
   shootingPercentage: number;
-  byZone: Record<string, { made: number; total: number; percentage: number }>;
+  byZone: Record<string, { made: number; total: number; percentage: number; points: number; pointsPerShot: number }>;
 }
 
 export const COURT_WIDTH = 500;
@@ -65,6 +67,8 @@ export const calculateStats = (shots: Shot[]): Stats => {
   const stats: Stats = {
     totalShots: shots.length,
     totalMade: shots.filter((s) => s.made).length,
+    totalPoints: 0,
+    pointsPerShot: 0,
     shootingPercentage: 0,
     byZone: {},
   };
@@ -76,12 +80,24 @@ export const calculateStats = (shots: Shot[]): Stats => {
   Object.keys(ZONES).forEach((zone) => {
     const zoneShots = shots.filter((s) => s.zone === zone);
     const madeShotsInZone = zoneShots.filter((s) => s.made).length;
+    
+    // Zones 4, 5, 6 are 3-pointers; others are 2-pointers
+    const is3Pt = ['Zone 4: Left Outside', 'Zone 5: Top of Key', 'Zone 6: Right Outside'].includes(zone);
+    const ptsValue = is3Pt ? 3 : 2;
+    const zonePoints = madeShotsInZone * ptsValue;
+    
+    stats.totalPoints += zonePoints;
+
     stats.byZone[zone] = {
       made: madeShotsInZone,
       total: zoneShots.length,
       percentage: zoneShots.length > 0 ? (madeShotsInZone / zoneShots.length) * 100 : 0,
+      points: zonePoints,
+      pointsPerShot: zoneShots.length > 0 ? (zonePoints / zoneShots.length) : 0,
     };
   });
+  
+  stats.pointsPerShot = stats.totalShots > 0 ? (stats.totalPoints / stats.totalShots) : 0;
 
   return stats;
 };

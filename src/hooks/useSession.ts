@@ -11,6 +11,7 @@ import {
   subscribeToSession,
   subscribeToParticipants,
   subscribeToShots,
+  removeParticipant as removeParticipantService,
 } from '../services/sessionService';
 
 export interface UseSessionReturn {
@@ -26,6 +27,7 @@ export interface UseSessionReturn {
   createSession: () => Promise<string>;
   advanceSession: (code: string, newStatus: SessionStatus) => Promise<void>;
   pairTeams: (code: string) => Promise<void>;
+  removeParticipant: (code: string, studentId: string) => Promise<void>;
 
   // Student actions
   joinSession: (code: string, name: string, studentId: string) => Promise<void>;
@@ -170,6 +172,16 @@ export function useSession(
     }
   }, []);
 
+  const removeParticipant = useCallback(async (code: string, studentId: string): Promise<void> => {
+    try {
+      await removeParticipantService(code, studentId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to remove participant.';
+      setError(message);
+      throw err;
+    }
+  }, []);
+
   // ---------------------------------------------------------------------------
   // Student action callbacks
   // ---------------------------------------------------------------------------
@@ -234,6 +246,7 @@ export function useSession(
     createSession,
     advanceSession,
     pairTeams,
+    removeParticipant,
     joinSession,
     updateName,
     addShot,

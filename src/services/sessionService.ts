@@ -11,6 +11,7 @@ import {
   query,
   where,
   orderBy,
+  deleteDoc,
 } from 'firebase/firestore';
 import { Shot, Session, Participant, SessionStatus } from '../types';
 
@@ -381,4 +382,18 @@ export function subscribeToShots(
     const shots = snap.docs.map((d) => d.data() as Shot);
     callback(shots);
   });
+}
+
+/**
+ * Removes a participant from the session.
+ */
+export async function removeParticipant(sessionCode: string, studentId: string): Promise<void> {
+  const database = requireDb();
+  try {
+    const participantRef = doc(database, 'sessions', sessionCode, 'participants', studentId);
+    await deleteDoc(participantRef);
+  } catch (err) {
+    console.warn('Failed to remove participant:', err);
+    throw err;
+  }
 }

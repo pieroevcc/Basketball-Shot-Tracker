@@ -33,10 +33,7 @@ const SessionCreate: React.FC<SessionCreateProps> = ({ onCreated, createSession,
 
   return (
     <div className="session-create">
-<<<<<<< HEAD
-=======
-      {!sessionCode && <button className="back-btn" onClick={onBack}>← Back</button>}
->>>>>>> 7f45a8aabb5c3607049fcb28542d0dae73cc52a1
+
       <div className="session-create-card">
         <div className="create-session-header">
           <button className="create-session-back-btn" onClick={onBack}>

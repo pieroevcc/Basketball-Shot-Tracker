@@ -149,7 +149,7 @@
 /* Session activity header */
 .session-activity-header {
   text-align: center;
-  padding: 20px 16px 8px;
+  padding: 10px 16px 8px;
   color: #fff;
 }
 
@@ -225,12 +225,12 @@
 .app-header {
   text-align: center;
   color: white;
-  padding: 20px;
+  padding: 10px 20px;
 }
 
 .app-header h1 {
-  font-size: 40px;
-  margin: 0 0 10px 0;
+  font-size: 32px;
+  margin: 0 0 6px 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -291,9 +291,9 @@
 .app-content {
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding: 10px 20px;
   flex: 1;
-  min-height: 500px;
+  min-height: auto;
 }
 
 .stats-tab-layout {
@@ -311,6 +311,12 @@
   flex: 1 1 300px;
   width: auto;
   max-width: 500px;
+}
+
+.stats-solo-layout {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .app-footer {

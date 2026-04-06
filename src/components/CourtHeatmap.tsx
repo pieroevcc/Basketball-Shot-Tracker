@@ -104,12 +104,13 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats }) => (
         {Object.entries(stats.byZone).map(([zone, data]) => {
           const pos = ZONES[zone as keyof typeof ZONES];
           if (!pos || data.total === 0) return null;
-          
+
           const zoneName = zone.split(': ')[1] || zone;
           const streakText = calculateStreak(shots, zone);
 
           return (
             <g key={zone}>
+              <rect x={pos.x - 36} y={pos.y - 24} width="72" height="56" rx="5" fill="rgba(0,0,0,0.65)" />
               <text
                 x={pos.x}
                 y={pos.y - 10}

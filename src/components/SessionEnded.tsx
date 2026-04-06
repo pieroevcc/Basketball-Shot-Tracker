@@ -24,11 +24,8 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
   sessionCode,
   onReturnHome,
 }) => {
-<<<<<<< HEAD
-  const [activeTab, setActiveTab] = useState<'overview' | 'teams'>('overview');
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
-=======
   const [activeTab, setActiveTab] = useState<'overview' | 'teams' | 'leaderboard'>('overview');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
@@ -75,7 +72,6 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
       </div>
     </div>
   );
->>>>>>> 7f45a8aabb5c3607049fcb28542d0dae73cc52a1
 
   if (role === 'student') {
     return (

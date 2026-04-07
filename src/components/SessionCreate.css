@@ -60,7 +60,10 @@
 }
 
 .session-create-icon {
+  font-size: 64px;
+  line-height: 1;
   margin-bottom: 20px;
+  animation: bounce 1.2s infinite alternate;
 }
 
 .session-create-title {

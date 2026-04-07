@@ -50,7 +50,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ onBack }) => {
             className="practice-card student-card"
             onClick={() => setPracticeSubMode('student')}
           >
-            <div className="practice-card-label">STUDENT</div>
+            <div className="practice-card-label">Student</div>
             <div className="practice-card-sub">Record your shots</div>
           </button>
 

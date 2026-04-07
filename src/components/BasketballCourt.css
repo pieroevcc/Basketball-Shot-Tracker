@@ -131,20 +131,6 @@
   transform: translateY(-2px);
 }
 
-/* Shot counter (used when maxShots is set) */
-.shot-counter {
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: 12px;
-  padding: 8px 20px;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-.shot-counter-done {
-  color: #4ade80;
-}
 
 /* Wrapper for the SVG + overlay stacking */
 .court-svg-wrapper-interactive {

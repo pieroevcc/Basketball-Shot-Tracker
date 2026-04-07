@@ -92,6 +92,7 @@ export function useSession(
       setAllocations([]);
       setSabotageActions([]);
       setLoadedCode(null);
+      setError(null);
       return;
     }
 

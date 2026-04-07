@@ -169,24 +169,25 @@
   align-items: center;
   gap: 12px;
   margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+  padding-top: 15px;
+  border-top: 2px solid #eee;
 }
 
 .alt-link {
-  background: none;
-  border: none;
-  color: #454545;
-  font-size: 0.9rem;
-  font-weight: 600;
+  background: #fff;
+  border: 2px solid ;
+  border-radius: 12px;
+  color: #FF6B35;
+  font-size: 1em;
+  font-weight: 550;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 4px 20px;
   text-align: center;
 }
 
 .alt-link:hover {
-  color: #FF6B35;
-  text-decoration: underline;
+  color: #000;
+  text-decoration: none;
 }
 
 @media (max-width: 480px) {

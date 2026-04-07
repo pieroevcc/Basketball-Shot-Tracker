@@ -103,13 +103,14 @@
 .zone-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  padding: 2px 12px;
 }
 
 .zone-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .zone-row-top {

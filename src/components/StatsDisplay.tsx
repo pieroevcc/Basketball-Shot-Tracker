@@ -74,7 +74,7 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, shots, participants 
           <div className="overall-stat-value">{activeStats.totalMade}</div>
         </div>
         <div className="overall-stat-cell card-blue">
-          <div className="overall-stat-label">SHOOT %</div>
+          <div className="overall-stat-label">SHOT %</div>
           <div className="overall-stat-value">{activeStats.shootingPercentage.toFixed(1)}%</div>
         </div>
         <div className="overall-stat-cell card-pink">

@@ -29,6 +29,19 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
     [participants, myTeamId]
   );
 
+  // Deterministically pick one player per team as the designated allocator.
+  // All clients compute the same result without any extra network write.
+  const designatedPlayer = useMemo(() => {
+    if (teamMembers.length === 0) return null;
+    const sorted = [...teamMembers].sort((a, b) => a.studentId.localeCompare(b.studentId));
+    const hash = (sessionCode + (myTeamId ?? ''))
+      .split('')
+      .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return sorted[hash % sorted.length];
+  }, [teamMembers, sessionCode, myTeamId]);
+
+  const isDesignated = myParticipant?.studentId === designatedPlayer?.studentId;
+
   // Spread 30 shots evenly, distribute remainder to first players
   const defaultAllocs = useMemo<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
@@ -83,6 +96,24 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
     setSubmitted(true);
     setSaving(false);
   };
+
+  if (!isDesignated && designatedPlayer) {
+    return (
+      <div className="allocation-panel">
+        <div className="session-activity-header">
+          <h2 className="activity-title">Shot Allocation 🎯</h2>
+          <p className="activity-subtitle">
+            Your team's shot allocation is being decided by one person.
+          </p>
+        </div>
+        <div className="allocation-waiting">
+          <span className="allocation-waiting-name">{designatedPlayer.name}</span>
+          <p className="allocation-waiting-msg">is choosing how to allocate your team's shots.</p>
+          <p className="allocation-waiting-cta">Look at their screen to help decide!</p>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

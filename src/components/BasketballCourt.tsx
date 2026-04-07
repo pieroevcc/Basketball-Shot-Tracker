@@ -165,12 +165,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         </div>
       )}
 
-      {maxShots !== undefined && (
-        <div className="shot-counter">
-          {shots.length} / {maxShots} shots
-          {isLocked && <span className="shot-counter-done"> — Done!</span>}
-        </div>
-      )}
+    
 
       <div className="court-svg-wrapper-interactive">
         <svg

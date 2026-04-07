@@ -120,6 +120,40 @@
   font-weight: 600;
 }
 
+/* --- Waiting (non-designated player) --- */
+.allocation-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  text-align: center;
+}
+
+.allocation-waiting-name {
+  font-size: 28px;
+  font-weight: 900;
+  color: #3730a3;
+}
+
+.allocation-waiting-msg {
+  font-size: 16px;
+  font-weight: 600;
+  color: #444;
+  margin: 0;
+}
+
+.allocation-waiting-cta {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f59e0b;
+  margin: 0;
+}
+
 /* --- Submit --- */
 .allocation-submit {
   width: 100%;

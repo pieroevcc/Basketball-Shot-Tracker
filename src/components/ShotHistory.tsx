@@ -11,8 +11,6 @@ interface ShotHistoryProps {
 
 const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear, onDelete }) => {
   const [filterStudent, setFilterStudent] = useState<string>('all');
-  const [editingId, setEditingId] = useState<string | null>(null);
-
   const studentIds = Array.from(new Set(shots.map(s => s.studentId || 'local')));
 
   const filteredShots = filterStudent === 'all'
@@ -48,7 +46,6 @@ const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear, onDelete }) =
       <div className="history-header">
         <h3>📝 Recent Shots</h3>
         <div className="header-right">
-          <span className="auto-update-note">*Data edits auto-update<br/>the Court Page.*</span>
           {shots.length > 0 && onClear && (
             <button onClick={onClear} className="clear-btn">
               Clear All
@@ -69,14 +66,7 @@ const ShotHistory: React.FC<ShotHistoryProps> = ({ shots, onClear, onDelete }) =
                 {shot.made ? '✅ Made' : 'Missed'}
               </span>
               <span className="shot-type">{getShotType(shot.zone)}</span>
-              <button
-                className="edit-btn"
-                onClick={() => setEditingId(editingId === shot.id ? null : shot.id)}
-                title="Edit this shot"
-              >
-                ✏️
-              </button>
-              {onDelete && (
+{onDelete && (
                 <button
                   className="delete-btn"
                   onClick={() => onDelete(shot.id)}

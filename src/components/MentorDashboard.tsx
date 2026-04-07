@@ -249,7 +249,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, onDelet
                 <span className="custom-card-value text-white z-index-1">
                   {stats.totalShots > 0 ? <>{stats.shootingPercentage.toFixed(1)}% <span className="text-green">↑</span></> : '—'}
                 </span>
-                <span className="custom-card-title z-index-1">MAKE RATE</span>
+                <span className="custom-card-title z-index-1">FIELD GOAL %</span>
                 <div className="make-rate-graphic">
                   {renderSparkline(shots)}
                 </div>

@@ -275,7 +275,7 @@ function App() {
     );
   }
 
-  if (error) {
+  if (error && sessionCode) {
     return (
       <div className="app session-error">
         <div className="session-error-card">

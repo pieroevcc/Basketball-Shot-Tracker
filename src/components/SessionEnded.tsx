@@ -5,6 +5,7 @@ import { Shot, Participant, Session, calculateStats, calculateScore } from '../t
 import CourtHeatmap from './CourtHeatmap';
 import StatsDisplay from './StatsDisplay';
 import './SessionEnded.css';
+import './FeedbackPopup.css';
 
 interface SessionEndedProps {
   role: 'student' | 'teacher';

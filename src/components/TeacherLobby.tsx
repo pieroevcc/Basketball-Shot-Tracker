@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { buildTeamAssignments } from '../services/sessionService';
 import {
   Session,
   Participant,
@@ -48,6 +49,33 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
   onReturnHome,
 }) => {
   const status: SessionStatus = session.status;
+  const [kickError, setKickError] = useState<string | null>(null);
+  const [pendingAssignments, setPendingAssignments] = useState<Record<string, string> | null>(null);
+
+  const generatePendingTeams = useCallback(() => {
+    const shuffled = [...participants];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setPendingAssignments(buildTeamAssignments(shuffled));
+  }, [participants]);
+
+  // Auto-generate pending team preview when entering solo_review
+  useEffect(() => {
+    if (status === 'solo_review' && pendingAssignments === null && participants.length > 0) {
+      generatePendingTeams();
+    }
+  }, [status, pendingAssignments, participants.length, generatePendingTeams]);
+
+  const handleKick = async (sid: string) => {
+    try {
+      setKickError(null);
+      await kickParticipant(sessionCode, sid);
+    } catch {
+      setKickError('Could not remove student. Please try again.');
+    }
+  };
 
   const getSoloCount = (p: Participant) =>
     shots.filter((s) => s.studentId === p.studentId && s.activity === 'solo').length;
@@ -71,7 +99,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
   };
 
   const handleStartTeamStrategy = async () => {
-    await pairTeams(sessionCode);
+    await pairTeams(sessionCode, pendingAssignments ?? undefined);
   };
 
   const handleStartShotAllocation = async () => {
@@ -94,9 +122,12 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
     await advanceSession(sessionCode, 'ended');
   };
 
+  // Active (non-kicked) participants only for game phases
+  const activeParticipants = participants.filter((p) => !p.kicked);
+
   // Group by team for team phases
   const teamMap: Record<string, Participant[]> = {};
-  participants.forEach((p) => {
+  activeParticipants.forEach((p) => {
     const key = p.teamId ?? '__unmatched__';
     if (!teamMap[key]) teamMap[key] = [];
     teamMap[key].push(p);
@@ -104,7 +135,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
 
   // Group by Round 1 groups
   const groupMap: Record<string, Participant[]> = {};
-  participants.forEach((p) => {
+  activeParticipants.forEach((p) => {
     const key = p.groupId ?? '__ungrouped__';
     if (!groupMap[key]) groupMap[key] = [];
     groupMap[key].push(p);
@@ -123,14 +154,19 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
         <span className="teacher-code-label">Session Code</span>
         <span className="teacher-code-value">{sessionCode}</span>
       </div>
+      {kickError && (
+        <div className="teacher-kick-error" onClick={() => setKickError(null)}>
+          ⚠️ {kickError}
+        </div>
+      )}
 
       {/* ---- LOBBY ---- */}
       {status === 'lobby' && (
         <div className="teacher-section">
           <h2 className="teacher-section-title">
             Waiting Room
-            <span className="participant-badge">{participants.length} joined</span>
-            {participants.length > MAX_PLAYERS && (
+            <span className="participant-badge">{activeParticipants.length} joined</span>
+            {activeParticipants.length > MAX_PLAYERS && (
               <span className="participant-badge" style={{ background: '#e74c3c' }}>
                 Max {MAX_PLAYERS}!
               </span>
@@ -138,16 +174,16 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
           </h2>
 
           <div className="teacher-participant-list">
-            {participants.length === 0 ? (
+            {activeParticipants.length === 0 ? (
               <p className="teacher-empty">No students yet — share the code above!</p>
             ) : (
-              participants.map((p) => (
+              activeParticipants.map((p) => (
                 <div key={p.studentId} className="teacher-participant-row">
                   <span className="participant-name">{p.name}</span>
                   <span className="participant-joined">Joined</span>
                   <button
                     className="teacher-kick-btn"
-                    onClick={() => kickParticipant(sessionCode, p.studentId)}
+                    onClick={() => handleKick(p.studentId)}
                     title={`Remove ${p.name}`}
                   >
                     ✕
@@ -157,15 +193,27 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
             )}
           </div>
 
+          {participants.some((p) => p.kicked) && (
+            <div className="teacher-removed-section">
+              <h3 className="teacher-removed-title">Removed Students</h3>
+              {participants.filter((p) => p.kicked).map((p) => (
+                <div key={p.studentId} className="teacher-participant-row removed">
+                  <span className="participant-name removed-name">{p.name}</span>
+                  <span className="participant-joined" style={{ color: '#e74c3c' }}>Removed</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <button
             className="teacher-action-btn primary"
             onClick={handleStartSolo}
-            disabled={participants.length < 1 || participants.length > MAX_PLAYERS}
+            disabled={activeParticipants.length < 1 || activeParticipants.length > MAX_PLAYERS}
           >
-            {participants.length < 1
-              ? `Need at least 1 student (${participants.length}/1)`
-              : participants.length > MAX_PLAYERS
-                ? `Too many players (${participants.length}/${MAX_PLAYERS})`
+            {activeParticipants.length < 1
+              ? `Need at least 1 student (${activeParticipants.length}/1)`
+              : activeParticipants.length > MAX_PLAYERS
+                ? `Too many players (${activeParticipants.length}/${MAX_PLAYERS})`
                 : '▶ Start Round 1 (Solo)'}
           </button>
         </div>
@@ -175,9 +223,6 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
       {status === 'solo_active' && (
         <div className="teacher-section">
           <h2 className="teacher-section-title">Round 1: Solo Activity</h2>
-          <p className="teacher-section-subtitle">
-            Each student takes up to {MAX_SOLO_SHOTS} shots individually.
-          </p>
 
           {/* Show groups of 4 */}
           {Object.entries(groupMap)
@@ -193,7 +238,6 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                       <th>Score</th>
                       <th>Progress</th>
                       <th>Status</th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -215,15 +259,6 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                           <td className="td-status">
                             {done ? <span className="status-done">Done ✅</span> : <span className="status-going">Shooting...</span>}
                           </td>
-                          <td>
-                            <button
-                              className="teacher-kick-btn"
-                              onClick={() => kickParticipant(sessionCode, p.studentId)}
-                              title={`Remove ${p.name}`}
-                            >
-                              ✕
-                            </button>
-                          </td>
                         </tr>
                       );
                     })}
@@ -236,10 +271,10 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
           {!Object.keys(groupMap).some((k) => k !== '__ungrouped__') && (
             <table className="teacher-progress-table">
               <thead>
-                <tr><th>Name</th><th>Shots</th><th>Score</th><th>Progress</th><th>Status</th><th></th></tr>
+                <tr><th>Name</th><th>Shots</th><th>Score</th><th>Progress</th><th>Status</th></tr>
               </thead>
               <tbody>
-                {participants.map((p) => {
+                {activeParticipants.map((p) => {
                   const count = getSoloCount(p);
                   const score = getSoloScore(p);
                   const pct = Math.min(100, (count / MAX_SOLO_SHOTS) * 100);
@@ -256,15 +291,6 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                       </td>
                       <td className="td-status">
                         {done ? <span className="status-done">Done ✅</span> : <span className="status-going">Shooting...</span>}
-                      </td>
-                      <td>
-                        <button
-                          className="teacher-kick-btn"
-                          onClick={() => kickParticipant(sessionCode, p.studentId)}
-                          title={`Remove ${p.name}`}
-                        >
-                          ✕
-                        </button>
                       </td>
                     </tr>
                   );
@@ -291,22 +317,74 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
           <p className="teacher-section-subtitle">
             {session.soloOnly
               ? 'Students are reviewing their solo results. End the session to show the full leaderboard!'
-              : 'Students are reviewing their solo heatmaps. When ready, form teams of 4!'}
+              : 'Students are reviewing their solo heatmaps. Adjust teams below, then start!'}
           </p>
 
-          <div className="teacher-participant-list">
-            {[...participants]
-              .sort((a, b) => (b.round1Score ?? 0) - (a.round1Score ?? 0))
-              .map((p, i) => (
-                <div key={p.studentId} className="teacher-participant-row">
-                  <span className="participant-name">
-                    {i + 1}. {p.name}
-                  </span>
-                  <span className="td-shots">
-                    {p.round1Score ?? getSoloScore(p)} pts | {getSoloCount(p)} shots
-                  </span>
+          <div className="teacher-review-layout">
+            {/* Left: leaderboard */}
+            <div className="teacher-leaderboard-col">
+              <h3 className="teacher-col-title">Leaderboard</h3>
+              <div className="teacher-participant-list">
+                {[...participants]
+                  .sort((a, b) => (b.round1Score ?? 0) - (a.round1Score ?? 0))
+                  .map((p, i) => (
+                    <div key={p.studentId} className="teacher-participant-row">
+                      <span className="participant-name">
+                        {i + 1}. {p.name}
+                      </span>
+                      <span className="td-shots">
+                        {p.round1Score ?? getSoloScore(p)} pts | {getSoloCount(p)} shots
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Right: team preview (only when not solo-only) */}
+            {!session.soloOnly && (
+              <div className="teacher-team-preview-col">
+                <div className="teacher-col-header">
+                  <h3 className="teacher-col-title">Team Preview</h3>
+                  <button className="randomize-btn" onClick={generatePendingTeams} title="Re-randomize teams">
+                    🔀 Randomize
+                  </button>
                 </div>
-              ))}
+                {pendingAssignments && (() => {
+                  // Build map of teamId → participants
+                  const previewTeamMap: Record<string, Participant[]> = {};
+                  participants.forEach((p) => {
+                    const tid = pendingAssignments[p.studentId];
+                    if (!tid) return;
+                    if (!previewTeamMap[tid]) previewTeamMap[tid] = [];
+                    previewTeamMap[tid].push(p);
+                  });
+                  const teamIds = Object.keys(previewTeamMap).sort();
+                  return teamIds.map((tid) => (
+                    <div key={tid} className="team-preview-card">
+                      <span className="team-badge">{tid.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                      {previewTeamMap[tid].map((p) => (
+                        <div key={p.studentId} className="team-member-move-row">
+                          <span className="team-member-name">{p.name}</span>
+                          <select
+                            className="team-move-select"
+                            value={pendingAssignments[p.studentId]}
+                            onChange={(e) =>
+                              setPendingAssignments((prev) => ({ ...prev!, [p.studentId]: e.target.value }))
+                            }
+                          >
+                            {teamIds.map((t) => (
+                              <option key={t} value={t}>
+                                {t.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
           </div>
 
           {session.soloOnly ? (

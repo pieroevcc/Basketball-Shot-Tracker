@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shot, Participant, calculateStats } from '../types';
 import CourtHeatmap from './CourtHeatmap';
 import StatsDisplay from './StatsDisplay';
 import './TeamReview.css';
+import './FeedbackPopup.css';
 
 interface TeamReviewProps {
   shots: Shot[];
@@ -11,12 +12,21 @@ interface TeamReviewProps {
   studentId: string;
 }
 
+const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSe86_wurZ-wqFbSnLn37tnQlIvttJcHv3gXQcsqV93Cce1flw/viewform';
+
 const TeamReview: React.FC<TeamReviewProps> = ({
   shots,
   myParticipant,
   participants,
   studentId,
 }) => {
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowFeedbackPopup(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+
   const myTeamId = myParticipant?.teamId ?? null;
 
   // All team members
@@ -46,7 +56,33 @@ const TeamReview: React.FC<TeamReviewProps> = ({
 
   const teamName = teamMembers.map((m) => m.name).join(' + ');
 
+  const feedbackPopup = showFeedbackPopup && (
+    <div className="feedback-popup-overlay">
+      <div className="feedback-popup-card">
+        <h2 className="feedback-popup-title">Rate the App! 🏀</h2>
+        <p className="feedback-popup-body">
+          Got 2 minutes? Your feedback helps improve this app for future classes.
+        </p>
+        <a
+          href={GOOGLE_FORM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="feedback-popup-link"
+        >
+          Open Feedback Form
+        </a>
+        <button
+          className="feedback-popup-close"
+          onClick={() => setShowFeedbackPopup(false)}
+        >
+          Maybe Later
+        </button>
+      </div>
+    </div>
+  );
+
   return (
+    <>
     <div className="team-review">
       <div className="team-review-header">
         <div className="team-review-trophy">🏆</div>
@@ -118,6 +154,8 @@ const TeamReview: React.FC<TeamReviewProps> = ({
         })}
       </div>
     </div>
+    {feedbackPopup}
+    </>
   );
 };
 

@@ -42,6 +42,7 @@ export interface Participant {
   teamShotsComplete: number;
   allocatedShots?: number; // Round 2 shot allocation
   round1Score?: number; // Cached total points from Round 1
+  kicked?: boolean; // Set by teacher to remove student (soft-delete)
 }
 
 export interface Stats {

@@ -15,6 +15,17 @@
   color: white;
 }
 
+.teacher-kick-error {
+  background: #fdecea;
+  color: #c0392b;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin: 8px 16px 0;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
 .teacher-lobby {
   display: flex;
   flex-direction: column;
@@ -343,6 +354,109 @@
   font-weight: 700;
   color: #555;
   text-align: center;
+}
+
+/* ---- Team preview (solo_review phase) ---- */
+.teacher-review-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.teacher-leaderboard-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.teacher-team-preview-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.teacher-col-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.teacher-col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.randomize-btn {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.randomize-btn:hover {
+  background: #e0e0e0;
+}
+
+.team-preview-card {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.team-member-move-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 3px 0;
+}
+
+.team-move-select {
+  font-size: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .teacher-review-layout {
+    flex-direction: column;
+  }
+}
+
+.teacher-removed-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e74c3c;
+  width: 100%;
+}
+
+.teacher-removed-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e74c3c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+}
+
+.teacher-participant-row.removed {
+  opacity: 0.55;
+}
+
+.removed-name {
+  text-decoration: line-through;
+  color: #999;
 }
 
 @media (max-width: 600px) {

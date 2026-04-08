@@ -277,14 +277,6 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
             />
           ))}
 
-          {/* Selected zone indicator */}
-          {selectedZone && (
-            <g>
-              <text x="250" y="450" textAnchor="middle" fill="#fff" fontSize="20" fontWeight="bold">
-                {selectedZone}
-              </text>
-            </g>
-          )}
         </svg>
 
         {/* Locked overlay */}
@@ -311,6 +303,10 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
             Cancel
           </button>
         </div>
+      )}
+
+      {selectedZone && !isLocked && (
+        <div className="selected-zone-label">Selected: {selectedZone}</div>
       )}
 
       {onUndo && shots.length > 0 && !isLocked && (

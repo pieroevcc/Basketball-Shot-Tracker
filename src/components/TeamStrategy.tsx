@@ -123,7 +123,7 @@ const TeamStrategy: React.FC<TeamStrategyProps> = ({
             <div className="strategy-members">
               {myTeamMembers.map((m) => (
                 <span key={m.studentId} className="strategy-member-chip">
-                  {m.name}: {m.round1Score ?? 0} pts
+                  {m.name}: {calculateStats(shots.filter(s => s.studentId === m.studentId && s.activity === 'solo')).totalPoints} pts
                 </span>
               ))}
             </div>
@@ -144,7 +144,7 @@ const TeamStrategy: React.FC<TeamStrategyProps> = ({
             <div className="strategy-members">
               {opponentMembers.map((m) => (
                 <span key={m.studentId} className="strategy-member-chip">
-                  {m.name}: {m.round1Score ?? 0} pts
+                  {m.name}: {calculateStats(shots.filter(s => s.studentId === m.studentId && s.activity === 'solo')).totalPoints} pts
                 </span>
               ))}
             </div>

@@ -52,18 +52,20 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, shots, participants 
 
   return (
     <div className="stats-container">
-      <div className="overall-stats-header">
-        <select
-          className="stats-dropdown"
-          value={selectedUserId}
-          onChange={(e) => setSelectedUserId(e.target.value)}
-        >
-          <option value="all">WHOLE CLASS / OVERALL</option>
-          {displayOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
+      {hasRealPlayers && (
+        <div className="overall-stats-header">
+          <select
+            className="stats-dropdown"
+            value={selectedUserId}
+            onChange={(e) => setSelectedUserId(e.target.value)}
+          >
+            <option value="all">WHOLE CLASS / OVERALL</option>
+            {displayOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="overall-stats-row">
         <div className="overall-stat-cell card-orange">
           <div className="overall-stat-label">TOTAL SHOTS</div>

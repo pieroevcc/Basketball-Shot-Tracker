@@ -38,6 +38,19 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
     [participants, myTeamId]
   );
 
+  // Deterministically pick one player per team as the designated saboteur.
+  // All clients compute the same result without any extra network write.
+  const designatedPlayer = useMemo(() => {
+    if (myTeamMembers.length === 0) return null;
+    const sorted = [...myTeamMembers].sort((a, b) => a.studentId.localeCompare(b.studentId));
+    const hash = (sessionCode + (myTeamId ?? ''))
+      .split('')
+      .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    return sorted[hash % sorted.length];
+  }, [myTeamMembers, sessionCode, myTeamId]);
+
+  const isDesignated = myParticipant?.studentId === designatedPlayer?.studentId;
+
   const opponents = useMemo(
     () => participants.filter((p) => p.teamId !== null && p.teamId !== myTeamId),
     [participants, myTeamId]
@@ -50,8 +63,25 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
   const [shotAdjustments, setShotAdjustments] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const alreadySubmitted = sabotageActions.some((a) => a.actingTeamId === myTeamId);
+
+  if (!isDesignated && designatedPlayer && !alreadySubmitted) {
+    return (
+      <div className="sabotage-panel">
+        <div className="session-activity-header">
+          <h2 className="activity-title">Sabotage Round 💣</h2>
+          <p className="activity-subtitle">Your team's sabotage is being decided by one person.</p>
+        </div>
+        <div className="allocation-waiting">
+          <span className="allocation-waiting-name">{designatedPlayer.name}</span>
+          <p className="allocation-waiting-msg">is choosing your team's sabotage action.</p>
+          <p className="allocation-waiting-cta">Look at their screen to help decide!</p>
+        </div>
+      </div>
+    );
+  }
 
   // --- Block zone helpers ---
   const handleZoneClick = (zone: string) => {
@@ -116,6 +146,7 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
   const handleSubmit = async () => {
     if (!myTeamId || !opponentTeamId || !isValid) return;
     setSaving(true);
+    setSubmitError(null);
 
     let action: SabotageAction;
 
@@ -143,9 +174,14 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
       };
     }
 
-    await saveSabotageActions(sessionCode, [action]);
-    setSubmitted(true);
-    setSaving(false);
+    try {
+      await saveSabotageActions(sessionCode, [action]);
+      setSubmitted(true);
+    } catch {
+      setSubmitError('Failed to save sabotage. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (submitted || alreadySubmitted) {
@@ -308,6 +344,10 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
           </div>
         )}
       </div>
+
+      {submitError && (
+        <p className="sabotage-error-msg">{submitError}</p>
+      )}
 
       <button
         className="btn btn-made sabotage-submit"

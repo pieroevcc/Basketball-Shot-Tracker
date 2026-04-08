@@ -23,6 +23,22 @@ service cloud.firestore {
         allow delete: if true;  // needed for undo
         allow update: if false;
       }
+
+      // Shot allocations subcollection
+      match /allocations/{allocationId} {
+        allow read: if true;
+        allow create: if true;
+        allow update: if true;
+        allow delete: if false;
+      }
+
+      // Sabotage actions subcollection
+      match /sabotages/{actionId} {
+        allow read: if true;
+        allow create: if true;
+        allow update: if false;
+        allow delete: if false;
+      }
     }
   }
 }

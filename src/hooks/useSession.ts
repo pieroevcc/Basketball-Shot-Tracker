@@ -51,7 +51,7 @@ export interface UseSessionReturn {
   // Teacher actions
   createSession: () => Promise<string>;
   advanceSession: (code: string, newStatus: SessionStatus) => Promise<void>;
-  pairTeams: (code: string) => Promise<void>;
+  pairTeams: (code: string, assignments?: Record<string, string>) => Promise<void>;
   assignGroups: (code: string) => Promise<void>;
   calculateRound1Winner: (code: string) => Promise<void>;
   saveShotAllocations: (code: string, allocations: ShotAllocation[]) => Promise<void>;
@@ -135,6 +135,9 @@ export function useSession(
         setParticipants(p);
         participantsLoaded = true;
         checkAllLoaded();
+      }, (err) => {
+        setError(err.message);
+        setLoadedCode(sessionCode);
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe to participants.';
@@ -147,6 +150,9 @@ export function useSession(
         setShots(s);
         shotsLoaded = true;
         checkAllLoaded();
+      }, (err) => {
+        setError(err.message);
+        setLoadedCode(sessionCode);
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe to shots.';
@@ -263,9 +269,9 @@ export function useSession(
     []
   );
 
-  const pairTeams = useCallback(async (code: string): Promise<void> => {
+  const pairTeams = useCallback(async (code: string, assignments?: Record<string, string>): Promise<void> => {
     try {
-      await pairTeamsService(code);
+      await pairTeamsService(code, assignments);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to pair teams.';
       setError(message);

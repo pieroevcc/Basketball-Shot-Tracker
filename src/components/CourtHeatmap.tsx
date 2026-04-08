@@ -17,19 +17,6 @@ function getHeatmapColor(percentage: number, total: number): string {
   return 'rgba(220, 30, 30, 0.35)';
 }
 
-function calculateStreak(shots: Shot[], zone: string): string {
-  const zoneShots = shots.filter(s => s.zone === zone);
-  if (zoneShots.length === 0) return '';
-  const reversed = [...zoneShots].reverse();
-  const firstMade = reversed[0].made;
-  let count = 0;
-  for (const shot of reversed) {
-    if (shot.made === firstMade) count++;
-    else break;
-  }
-  return `Streak: ${count} ${firstMade ? 'Makes' : 'Misses'}`;
-}
-
 const ZONE_PATHS: Record<string, React.ReactElement> = {
   'Zone 1: Paint': <rect x="175" y="0" width="150" height="220" />,
   'Zone 2: Left Mid-Range': (
@@ -148,11 +135,10 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats, onZoneClick, 
           if (!pos || data.total === 0) return null;
 
           const zoneName = zone.split(': ')[1] || zone;
-          const streakText = calculateStreak(shots, zone);
 
           return (
             <g key={zone}>
-              <rect x={pos.x - 36} y={pos.y - 24} width="72" height="56" rx="5" fill="rgba(0,0,0,0.65)" />
+              <rect x={pos.x - 36} y={pos.y - 24} width="72" height="38" rx="5" fill="rgba(0,0,0,0.65)" />
               <text
                 x={pos.x}
                 y={pos.y - 10}
@@ -174,17 +160,6 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats, onZoneClick, 
                 style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)' }}
               >
                 {zoneName}
-              </text>
-              <text
-                x={pos.x}
-                y={pos.y + 20}
-                textAnchor="middle"
-                fill="rgba(255,255,255,0.7)"
-                fontSize="10"
-                fontWeight="600"
-                style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9)' }}
-              >
-                {streakText}
               </text>
             </g>
           );

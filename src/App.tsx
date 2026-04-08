@@ -12,7 +12,6 @@ import SessionEnded from './components/SessionEnded';
 import ShotAllocationPanel from './components/ShotAllocationPanel';
 import SabotagePanel from './components/SabotagePanel';
 import TestMode from './components/TestMode';
-import ShotHistory from './components/ShotHistory';
 import PracticeMode from './components/PracticeMode';
 import { useSession } from './hooks/useSession';
 import { markTeacherDisconnected, updateTeacherHeartbeat } from './services/sessionService';
@@ -59,7 +58,6 @@ function App() {
   const [studentId, setStudentId] = useState<string | null>(
     () => readLocalStorage('studentId')
   );
-  const [activeTab, setActiveTab] = useState<'court' | 'stats' | 'history'>('court');
 
   // ---- Session mode state ----
   const {
@@ -156,7 +154,7 @@ function App() {
         (s.teacherLastSeen !== undefined &&
           Date.now() - s.teacherLastSeen > TEACHER_TIMEOUT_MS);
       if (gone) handleReturnHome();
-    }, 15_000);
+    }, 5_000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, sessionCode]);
@@ -169,13 +167,13 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, session, sessionCode, role]);
 
-  // If a student is kicked by the teacher, their participant document is deleted.
+  // If a student is kicked by the teacher, their participant is marked kicked: true.
   // Detect that and redirect home.
   useEffect(() => {
     if (loading || role !== 'student' || !sessionCode || !studentId) return;
-    if (session?.status === 'lobby' && myParticipant === null) handleReturnHome();
+    if (session?.status === 'lobby' && myParticipant?.kicked === true) handleReturnHome();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, role, sessionCode, studentId, session?.status, myParticipant]);
+  }, [loading, role, sessionCode, studentId, session?.status, myParticipant?.kicked]);
 
   // When the teacher reloads, beforeunload has already written teacherDisconnected:true.
   // On reconnect, detect that flag and send the teacher home too.
@@ -198,6 +196,9 @@ function App() {
   // ---------------------------------------------------------------------------
 
   const handleReturnHome = () => {
+    if (role === 'teacher' && sessionCode) {
+      markTeacherDisconnected(sessionCode); // fire-and-forget; students detect instantly via onSnapshot
+    }
     clearSessionStorage();
     setAppMode('session');
     setRole('student');
@@ -390,48 +391,16 @@ function App() {
             </p>
           </div>
 
-          <div className="nav-tabs">
-            <button
-              className={`tab ${activeTab === 'court' ? 'active' : ''}`}
-              onClick={() => setActiveTab('court')}
-            >
-              🏀 Court
-            </button>
-            <button
-              className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
-              onClick={() => setActiveTab('stats')}
-            >
-              📊 Stats
-            </button>
-            <button
-              className={`tab ${activeTab === 'history' ? 'active' : ''}`}
-              onClick={() => setActiveTab('history')}
-            >
-              📝 History
-            </button>
-          </div>
-
           <main className="app-content">
-            {activeTab === 'court' && (
-              <div className="session-court-wrapper">
-                <BasketballCourt
-                  onShotRecorded={handleSessionShot}
-                  shots={mySoloShots}
-                  maxShots={MAX_SOLO_SHOTS}
-                  onUndo={handleUndoShot}
-                  stats={soloStats}
-                />
-              </div>
-            )}
-            {activeTab === 'stats' && (
-              <div className="stats-tab-layout">
-                <CourtHeatmap shots={mySoloShots} stats={soloStats} />
-                <StatsDisplay stats={soloStats} />
-              </div>
-            )}
-            {activeTab === 'history' && (
-              <ShotHistory shots={mySoloShots} onClear={() => {}} onDelete={() => {}} />
-            )}
+            <div className="session-court-wrapper">
+              <BasketballCourt
+                onShotRecorded={handleSessionShot}
+                shots={mySoloShots}
+                maxShots={MAX_SOLO_SHOTS}
+                onUndo={handleUndoShot}
+                stats={soloStats}
+              />
+            </div>
           </main>
         </div>
       );
@@ -521,49 +490,17 @@ function App() {
             )}
           </div>
 
-          <div className="nav-tabs">
-            <button
-              className={`tab ${activeTab === 'court' ? 'active' : ''}`}
-              onClick={() => setActiveTab('court')}
-            >
-              🏀 Court
-            </button>
-            <button
-              className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
-              onClick={() => setActiveTab('stats')}
-            >
-              📊 Stats
-            </button>
-            <button
-              className={`tab ${activeTab === 'history' ? 'active' : ''}`}
-              onClick={() => setActiveTab('history')}
-            >
-              📝 History
-            </button>
-          </div>
-
           <main className="app-content">
-            {activeTab === 'court' && (
-              <div className="session-court-wrapper">
-                <BasketballCourt
-                  onShotRecorded={handleSessionShot}
-                  shots={myTeamShots}
-                  maxShots={effectiveMaxShots}
-                  onUndo={handleUndoShot}
-                  blockedZones={blockedZones}
-                  stats={teamStats}
-                />
-              </div>
-            )}
-            {activeTab === 'stats' && (
-              <div className="stats-tab-layout">
-                <CourtHeatmap shots={myTeamShots} stats={teamStats} />
-                <StatsDisplay stats={teamStats} />
-              </div>
-            )}
-            {activeTab === 'history' && (
-              <ShotHistory shots={myTeamShots} onClear={() => {}} onDelete={() => {}} />
-            )}
+            <div className="session-court-wrapper">
+              <BasketballCourt
+                onShotRecorded={handleSessionShot}
+                shots={myTeamShots}
+                maxShots={effectiveMaxShots}
+                onUndo={handleUndoShot}
+                blockedZones={blockedZones}
+                stats={teamStats}
+              />
+            </div>
           </main>
         </div>
       );

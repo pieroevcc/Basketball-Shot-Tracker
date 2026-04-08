@@ -3,7 +3,6 @@ import {
   doc,
   setDoc,
   updateDoc,
-  deleteDoc,
   getDoc,
   getDocs,
   collection,
@@ -165,28 +164,73 @@ export async function assignRound1Groups(sessionCode: string): Promise<void> {
 }
 
 /**
- * Fetches all participants, shuffles them with Fisher-Yates, assigns them into
- * teams of 4, then writes teamId to each participant and advances the session
- * status to 'team_strategy' atomically.
+ * Assigns participants into 2 teams using smart sizing rules:
+ *   n=1 → [1]  n=2 → [1,1]  n=3 → [2,1]  n=4 → [2,2]
+ *   n=5 → [4,1]  n=6 → [4,2]  n=7 → [4,3]  n≥8 → groups of 4
+ * Returns {studentId → teamId} map.
  */
-export async function pairTeams(sessionCode: string): Promise<void> {
+export function buildTeamAssignments(shuffled: Participant[]): Record<string, string> {
+  const n = shuffled.length;
+  let teamSizes: number[];
+
+  if (n <= 0) return {};
+  if (n === 1) teamSizes = [1];
+  else if (n === 2) teamSizes = [1, 1];
+  else if (n === 3) teamSizes = [2, 1];
+  else if (n === 4) teamSizes = [2, 2];
+  else if (n <= 7) teamSizes = [4, n - 4];
+  else {
+    const numTeams = Math.ceil(n / 4);
+    let remaining = n;
+    teamSizes = [];
+    for (let i = 0; i < numTeams; i++) {
+      teamSizes.push(Math.min(4, remaining));
+      remaining -= 4;
+    }
+  }
+
+  const assignments: Record<string, string> = {};
+  let idx = 0;
+  teamSizes.forEach((size, teamIdx) => {
+    for (let j = 0; j < size; j++) {
+      assignments[shuffled[idx].studentId] = `team-${teamIdx + 1}`;
+      idx++;
+    }
+  });
+  return assignments;
+}
+
+/**
+ * Fetches all participants, shuffles them with Fisher-Yates, assigns them into
+ * smart-sized teams, then writes teamId to each participant and advances the
+ * session status to 'team_strategy' atomically.
+ * If `assignments` is provided, skips shuffle and uses the given {studentId→teamId} map.
+ */
+export async function pairTeams(
+  sessionCode: string,
+  assignments?: Record<string, string>
+): Promise<void> {
   const database = requireDb();
   try {
-    const participantsRef = collection(database, 'sessions', sessionCode, 'participants');
-    const snapshot = await getDocs(participantsRef);
-    const participants = snapshot.docs.map((d) => d.data() as Participant);
+    let resolvedAssignments = assignments;
 
-    // Fisher-Yates shuffle
-    for (let i = participants.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [participants[i], participants[j]] = [participants[j], participants[i]];
+    if (!resolvedAssignments) {
+      const participantsRef = collection(database, 'sessions', sessionCode, 'participants');
+      const snapshot = await getDocs(participantsRef);
+      const participants = snapshot.docs.map((d) => d.data() as Participant);
+
+      // Fisher-Yates shuffle
+      for (let i = participants.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [participants[i], participants[j]] = [participants[j], participants[i]];
+      }
+
+      resolvedAssignments = buildTeamAssignments(participants);
     }
 
-    // Assign teamIds in groups of 4; last group may have fewer
     const batch = writeBatch(database);
-    for (let i = 0; i < participants.length; i++) {
-      const teamId = `team-${Math.floor(i / 4) + 1}`;
-      const participantRef = doc(database, 'sessions', sessionCode, 'participants', participants[i].studentId);
+    for (const [studentId, teamId] of Object.entries(resolvedAssignments)) {
+      const participantRef = doc(database, 'sessions', sessionCode, 'participants', studentId);
       batch.update(participantRef, { teamId });
     }
 
@@ -276,14 +320,15 @@ export async function updateParticipantName(
 }
 
 /**
- * Removes a participant document from the session (teacher kick).
+ * Soft-removes a participant from the session (teacher kick).
+ * Sets kicked: true instead of deleting so the teacher can see who was removed.
  */
 export async function removeParticipant(
   sessionCode: string,
   studentId: string
 ): Promise<void> {
   const database = requireDb();
-  await deleteDoc(doc(database, 'sessions', sessionCode, 'participants', studentId));
+  await updateDoc(doc(database, 'sessions', sessionCode, 'participants', studentId), { kicked: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -415,14 +460,15 @@ export function subscribeToSession(
  */
 export function subscribeToParticipants(
   sessionCode: string,
-  callback: (participants: Participant[]) => void
+  callback: (participants: Participant[]) => void,
+  onError?: (err: Error) => void
 ): () => void {
   const database = requireDb();
   const participantsRef = collection(database, 'sessions', sessionCode, 'participants');
   return onSnapshot(participantsRef, (snap) => {
     const participants = snap.docs.map((d) => d.data() as Participant);
     callback(participants);
-  });
+  }, (err) => { onError?.(err); });
 }
 
 /**
@@ -430,14 +476,15 @@ export function subscribeToParticipants(
  */
 export function subscribeToShots(
   sessionCode: string,
-  callback: (shots: Shot[]) => void
+  callback: (shots: Shot[]) => void,
+  onError?: (err: Error) => void
 ): () => void {
   const database = requireDb();
   const shotsRef = collection(database, 'sessions', sessionCode, 'shots');
   return onSnapshot(shotsRef, (snap) => {
     const shots = snap.docs.map((d) => d.data() as Shot);
     callback(shots);
-  });
+  }, (err) => { onError?.(err); });
 }
 
 /**

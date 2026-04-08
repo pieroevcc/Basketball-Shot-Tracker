@@ -126,6 +126,15 @@
   color: #fff;
 }
 
+.selected-zone-label {
+  text-align: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+
 .btn-undo:hover {
   background: #4f46e5;
   transform: translateY(-2px);

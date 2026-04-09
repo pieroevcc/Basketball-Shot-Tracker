@@ -266,6 +266,36 @@
   font-weight: 600;
 }
 
+/* --- Single-column shots transfer (new layout) --- */
+.shots-transfer-single-col {
+  width: 100%;
+  max-width: 460px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.transfer-value.neg {
+  color: #ef4444;
+}
+
+.transfer-value.pos {
+  color: #22c55e;
+}
+
+.transfer-totals-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 2px solid #eee;
+}
+
 /* --- Submit button --- */
 .sabotage-submit {
   width: 100%;

@@ -59,7 +59,7 @@ export interface UseSessionReturn {
   kickParticipant: (code: string, studentId: string) => Promise<void>;
 
   // Student actions
-  joinSession: (code: string, name: string, studentId: string) => Promise<void>;
+  joinSession: (code: string, name: string, studentId: string) => Promise<{ studentId: string; rejoined: boolean }>;
   updateName: (code: string, studentId: string, name: string) => Promise<void>;
   addShot: (code: string, shot: Shot) => Promise<void>;
   undoLastShot: (code: string, studentId: string, activity: 'solo' | 'team') => Promise<void>;
@@ -340,9 +340,9 @@ export function useSession(
   // ---------------------------------------------------------------------------
 
   const joinSession = useCallback(
-    async (code: string, name: string, sid: string): Promise<void> => {
+    async (code: string, name: string, sid: string): Promise<{ studentId: string; rejoined: boolean }> => {
       try {
-        await joinSessionService(code, name, sid);
+        return await joinSessionService(code, name, sid);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to join session.';
         setError(message);

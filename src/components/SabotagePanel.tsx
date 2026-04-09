@@ -92,48 +92,42 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
     });
   };
 
-  // --- Shots +/- helpers ---
+  // --- Shots +/- helpers (opponents only) ---
+  // All adjustments are within the opponent team.
+  // Negative delta = shots removed from this player; positive = shots given to this player.
   const totalRemoved = useMemo(
-    () =>
-      Object.entries(shotAdjustments)
-        .filter(([id]) => opponents.some((p) => p.studentId === id))
-        .reduce((sum, [, d]) => sum + Math.min(0, d), 0),
-    [shotAdjustments, opponents]
+    () => Object.values(shotAdjustments).reduce((sum, d) => sum + Math.min(0, d), 0),
+    [shotAdjustments]
   );
 
   const totalAdded = useMemo(
-    () =>
-      Object.entries(shotAdjustments)
-        .filter(([id]) => myTeamMembers.some((p) => p.studentId === id))
-        .reduce((sum, [, d]) => sum + Math.max(0, d), 0),
-    [shotAdjustments, myTeamMembers]
+    () => Object.values(shotAdjustments).reduce((sum, d) => sum + Math.max(0, d), 0),
+    [shotAdjustments]
   );
 
-  const adjustShots = (studentId: string, delta: number, isOpponent: boolean) => {
+  const adjustShots = (opponentId: string, delta: number) => {
     setShotAdjustments((prev) => {
-      const current = prev[studentId] ?? 0;
+      const current = prev[opponentId] ?? 0;
       let next = current + delta;
 
-      if (isOpponent) {
-        next = Math.min(0, next);
+      if (delta < 0) {
+        // Removing shots from this player — clamp total removed at -2
         const otherRemovals = Object.entries(prev)
-          .filter(([id]) => id !== studentId && opponents.some((p) => p.studentId === id))
+          .filter(([id]) => id !== opponentId)
           .reduce((sum, [, d]) => sum + Math.min(0, d), 0);
         if (next + otherRemovals < -2) next = -2 - otherRemovals;
       } else {
-        next = Math.max(0, next);
+        // Adding shots to this player — can't exceed total removed
         const otherAdditions = Object.entries(prev)
-          .filter(([id]) => id !== studentId && myTeamMembers.some((p) => p.studentId === id))
+          .filter(([id]) => id !== opponentId)
           .reduce((sum, [, d]) => sum + Math.max(0, d), 0);
-        const maxAdd = Math.abs(
-          Object.entries(prev)
-            .filter(([id]) => opponents.some((p) => p.studentId === id))
-            .reduce((sum, [, d]) => sum + Math.min(0, d), 0)
+        const totalRemovedInPrev = Math.abs(
+          Object.values(prev).reduce((sum, d) => sum + Math.min(0, d), 0)
         );
-        if (next + otherAdditions > maxAdd) next = maxAdd - otherAdditions;
+        if (next + otherAdditions > totalRemovedInPrev) next = totalRemovedInPrev - otherAdditions;
       }
 
-      return { ...prev, [studentId]: next };
+      return { ...prev, [opponentId]: next };
     });
   };
 
@@ -191,6 +185,11 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
           <h2 className="activity-title">Sabotage Submitted 💣</h2>
           <p className="activity-subtitle">Waiting for the next phase...</p>
         </div>
+        <div className="allocation-waiting">
+          <span className="allocation-waiting-name">💣 Sabotage locked in!</span>
+          <p className="allocation-waiting-msg">Your team's sabotage has been submitted.</p>
+          <p className="allocation-waiting-cta">Hang tight — Round 2 shooting starts soon!</p>
+        </div>
       </div>
     );
   }
@@ -247,98 +246,59 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
         {activeTab === 'shots_transfer' && (
           <div className="shots-transfer-section">
             <p className="sabotage-helper">
-              Remove up to <strong>2 shots</strong> from opponents, then give the same number to your team.
+              Remove up to <strong>2 shots</strong> from opponent players and give them to other
+              opponent players. Use <strong>−</strong> to take a shot away and <strong>+</strong> to
+              give it to someone else.
             </p>
-            <div className="shots-transfer-grid">
-              <div className="transfer-column">
-                <h3 className="transfer-col-title">
-                  Opponents <span className="remove-label">(remove shots)</span>
-                </h3>
-                {opponents.map((p) => {
-                  const pStats = calculateStats(
-                    shots.filter((s) => s.studentId === p.studentId && s.activity === 'solo')
-                  );
-                  const adj = shotAdjustments[p.studentId] ?? 0;
-                  return (
-                    <div key={p.studentId} className="transfer-player-row">
-                      <div className="transfer-player-info">
-                        <span className="transfer-name">{p.name}</span>
-                        <span className="transfer-stats">
-                          {p.round1Score ?? 0} pts · {pStats.shootingPercentage.toFixed(0)}%
-                        </span>
-                      </div>
-                      <div className="transfer-controls">
-                        <button
-                          className="transfer-btn remove"
-                          onClick={() => adjustShots(p.studentId, -1, true)}
-                          disabled={Math.abs(totalRemoved) >= 2 && adj >= 0}
-                        >
-                          −
-                        </button>
-                        <span className="transfer-value">{adj}</span>
-                        <button
-                          className="transfer-btn add"
-                          onClick={() => adjustShots(p.studentId, 1, true)}
-                          disabled={adj >= 0}
-                        >
-                          +
-                        </button>
-                      </div>
+            <div className="shots-transfer-single-col">
+              <h3 className="transfer-col-title">Opponent Players</h3>
+              {opponents.map((p) => {
+                const pStats = calculateStats(
+                  shots.filter((s) => s.studentId === p.studentId && s.activity === 'solo')
+                );
+                const adj = shotAdjustments[p.studentId] ?? 0;
+                const canRemove = adj > 0 ? true : Math.abs(totalRemoved) < 2;
+                const canAdd = adj < 0 ? true : totalAdded < Math.abs(totalRemoved);
+                return (
+                  <div key={p.studentId} className="transfer-player-row">
+                    <div className="transfer-player-info">
+                      <span className="transfer-name">{p.name}</span>
+                      <span className="transfer-stats">
+                        {p.round1Score ?? 0} pts · {pStats.shootingPercentage.toFixed(0)}%
+                      </span>
                     </div>
-                  );
-                })}
-                <div className="transfer-total">
+                    <div className="transfer-controls">
+                      <button
+                        className="transfer-btn remove"
+                        onClick={() => adjustShots(p.studentId, -1)}
+                        disabled={!canRemove && adj <= 0}
+                      >
+                        −
+                      </button>
+                      <span className={`transfer-value ${adj < 0 ? 'neg' : adj > 0 ? 'pos' : ''}`}>
+                        {adj > 0 ? `+${adj}` : adj}
+                      </span>
+                      <button
+                        className="transfer-btn add"
+                        onClick={() => adjustShots(p.studentId, 1)}
+                        disabled={!canAdd && adj >= 0}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="transfer-totals-row">
+                <span className="transfer-total">
                   Removed: <strong>{Math.abs(totalRemoved)}</strong> / 2
-                </div>
-              </div>
-
-              <div className="transfer-column">
-                <h3 className="transfer-col-title">
-                  Your Team <span className="add-label">(add shots)</span>
-                </h3>
-                {myTeamMembers.map((p) => {
-                  const pStats = calculateStats(
-                    shots.filter((s) => s.studentId === p.studentId && s.activity === 'solo')
-                  );
-                  const adj = shotAdjustments[p.studentId] ?? 0;
-                  const otherAdditions = Object.entries(shotAdjustments)
-                    .filter(([id]) => id !== p.studentId && myTeamMembers.some((m) => m.studentId === id))
-                    .reduce((sum, [, d]) => sum + Math.max(0, d), 0);
-                  const maxAdd = Math.abs(totalRemoved);
-                  return (
-                    <div key={p.studentId} className="transfer-player-row">
-                      <div className="transfer-player-info">
-                        <span className="transfer-name">{p.name}</span>
-                        <span className="transfer-stats">
-                          {p.round1Score ?? 0} pts · {pStats.shootingPercentage.toFixed(0)}%
-                        </span>
-                      </div>
-                      <div className="transfer-controls">
-                        <button
-                          className="transfer-btn remove"
-                          onClick={() => adjustShots(p.studentId, -1, false)}
-                          disabled={adj <= 0}
-                        >
-                          −
-                        </button>
-                        <span className="transfer-value">+{adj}</span>
-                        <button
-                          className="transfer-btn add"
-                          onClick={() => adjustShots(p.studentId, 1, false)}
-                          disabled={adj + otherAdditions >= maxAdd}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className={`transfer-total ${totalAdded === Math.abs(totalRemoved) && totalAdded > 0 ? 'valid' : ''}`}>
-                  Added: <strong>{totalAdded}</strong> / {Math.abs(totalRemoved)}
+                </span>
+                <span className={`transfer-total ${totalAdded === Math.abs(totalRemoved) && totalAdded > 0 ? 'valid' : ''}`}>
+                  Redistributed: <strong>{totalAdded}</strong> / {Math.abs(totalRemoved)}
                   {totalAdded !== Math.abs(totalRemoved) && totalRemoved < 0 && (
-                    <span className="transfer-warning"> — distribute all removed shots</span>
+                    <span className="transfer-warning"> — must redistribute all removed shots</span>
                   )}
-                </div>
+                </span>
               </div>
             </div>
           </div>

@@ -5,7 +5,7 @@
   gap: 14px;
   width: 100%;
   max-width: 460px;
-  margin-top: 36px;
+  margin: 0, 20px;
 }
 
 .court-svg-wrapper {
@@ -33,7 +33,7 @@
 }
 
 .heatmap-legend-container h3 {
-  color: white;
+  color: #000;
   font-size: 14px;
   letter-spacing: 1.5px;
   margin: 0;
@@ -53,10 +53,31 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 700;
-  color: black;
+  color: #000;
 }
 
 .legend-item.hot  { background: rgba(0, 180, 0, 0.75); }
 .legend-item.warm { background: rgba(170, 190, 0, 0.75); }
 .legend-item.cool { background: rgba(255, 140, 0, 0.75); }
 .legend-item.cold { background: rgba(200, 30, 30, 0.75); }
+
+@media (max-width: 480px) {
+  .court-heatmap {
+    max-width: 100%;
+    gap: 10px;
+  }
+
+  .heatmap-legend-container {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .heatmap-legend-container h3 {
+    font-size: 12px;
+  }
+
+  .legend-item {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}

@@ -195,17 +195,40 @@
 }
 
 /* ---- Stats Dropdown ---- */
+.stats-dropdown-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.stats-dropdown-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .stats-dropdown {
-  padding: 8px 16px;
+  width: 100%;
+  padding: 10px 16px;
   background: white;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #333;
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
 }
 
 .stats-dropdown:hover,
@@ -231,6 +254,9 @@
 .ended-stats-wrapper {
   flex: 1 1 260px;
   max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* ---- Teams grid ---- */
@@ -271,6 +297,73 @@
   border: 1px solid #ddd;
 }
 
+/* ---- Leaderboard (teacher tab) ---- */
+.ended-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.leaderboard-row.gold   { background: #fffbeb; border-color: #fbbf24; }
+.leaderboard-row.silver { background: #f8fafc; border-color: #94a3b8; }
+.leaderboard-row.bronze { background: #fff7ed; border-color: #fb923c; }
+
+.leaderboard-rank {
+  font-size: 22px;
+  font-weight: 900;
+  min-width: 36px;
+  text-align: center;
+}
+
+.leaderboard-name {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.leaderboard-score {
+  font-size: 17px;
+  font-weight: 900;
+  color: #FF6B35;
+}
+
+/* ---- Mini leaderboard (student end screen) ---- */
+.ended-leaderboard-mini {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.ended-leaderboard-mini h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #555;
+  margin: 0 0 4px 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ended-leaderboard-mini .leaderboard-row {
+  padding: 8px 14px;
+}
+
 @media (max-width: 600px) {
   .ended-card {
     padding: 36px 24px;
@@ -282,5 +375,52 @@
 
   .ended-trophy {
     font-size: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ended-card {
+    padding: 28px 16px;
+  }
+
+  .ended-trophy {
+    font-size: 48px;
+  }
+
+  .ended-title {
+    font-size: 24px;
+  }
+
+  .ended-tabs {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .ended-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .ended-overview-layout {
+    gap: 12px;
+  }
+
+  .ended-heatmap-wrapper,
+  .ended-stats-wrapper {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .ended-teams-grid {
+    gap: 12px;
+  }
+
+  .ended-team-card {
+    padding: 14px;
+  }
+
+  .ended-team-summary {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }

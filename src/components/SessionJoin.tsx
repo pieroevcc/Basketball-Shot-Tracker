@@ -39,15 +39,15 @@ const SessionJoin: React.FC<SessionJoinProps> = ({ onJoined, joinSession, onBack
       return;
     }
 
-    const studentId = crypto.randomUUID();
+    const newStudentId = crypto.randomUUID();
     setLoading(true);
     try {
-      await joinSession(code, name.trim(), studentId);
+      const { studentId: resolvedId } = await joinSession(code, name.trim(), newStudentId);
       localStorage.setItem('sessionCode', code);
-      localStorage.setItem('studentId', studentId);
+      localStorage.setItem('studentId', resolvedId);
       localStorage.setItem('studentName', name.trim());
       localStorage.setItem('appRole', 'student');
-      onJoined(code, studentId, name.trim());
+      onJoined(code, resolvedId, name.trim());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to join session. Try again!');
     } finally {

@@ -128,7 +128,12 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ onBack }) => {
 
       <main className="practice-content">
         {activeTab === 'court' && (
-          <BasketballCourt onShotRecorded={handleShot} shots={shots} />
+          <BasketballCourt
+            onShotRecorded={handleShot}
+            shots={shots}
+            stats={stats}
+            onUndo={() => { const last = shots[shots.length - 1]; if (last) deleteShot(last.id); }}
+          />
         )}
         {activeTab === 'stats' && (
           <div className="stats-tab-layout">

@@ -321,25 +321,12 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ shots, stats, onDelet
                         <span className="activity-result">{shot.made ? '✅' : '❌'}</span>
                         <span className="activity-zone">{shot.zone}</span>
                         <span className="activity-player">👤 {shot.studentId ? `Player ${shot.studentId.substring(0,4)}` : 'Local Player'}</span>
-                        <span className="activity-time">
-                          {new Date(shot.timestamp).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
                       </div>
                     ))}
                 </div>
               </div>
             )}
 
-            <div className="session-summary-panel">
-              <h3 className="panel-title">Session Summary</h3>
-              <div className="session-summary-pills">
-                <span className="summary-pill">🏀 Practice: 5 shots don't record</span>
-                <span className="summary-pill">📝 Goal: 20 recorded shots</span>
-              </div>
-            </div>
 
           </div>
         )}

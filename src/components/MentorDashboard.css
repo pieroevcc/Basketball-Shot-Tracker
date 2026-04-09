@@ -380,31 +380,6 @@
   overflow: visible;
 }
 
-/* Session Summary */
-.session-summary-panel {
-  background: rgba(255, 255, 255, 0.08); /* slightly transparent */
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  text-align: center;
-  margin-top: 20px;
-}
-
-.session-summary-pills {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.summary-pill {
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-}
 
 .activity-player {
   flex: 1;

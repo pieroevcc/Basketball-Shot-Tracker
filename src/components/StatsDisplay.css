@@ -86,7 +86,7 @@
 }
 
 .overall-stat-value {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 900;
   color: #fff;
 }
@@ -192,4 +192,27 @@
   font-size: 12px;
   color: rgba(255,255,255,0.8);
   line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .stats-container {
+    padding: 12px 12px;
+    max-width: 100%;
+  }
+
+  .overall-stats-row {
+    gap: 6px;
+  }
+
+  .overall-stat-cell {
+    padding: 8px 8px;
+  }
+
+  .overall-stat-value {
+    font-size: 16px;
+  }
+
+  .zone-list {
+    padding: 2px 4px;
+  }
 }

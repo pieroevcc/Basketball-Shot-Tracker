@@ -88,10 +88,12 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats, onZoneClick, 
           const zoneNum = zone.split(':')[0].replace('Zone ', '');
           let x = pos.x as number;
           let y = (pos.y as number) - 8;
-          
-          if (zoneNum === '4') { x = 70; y = 380; }
-          if (zoneNum === '5') { x = 250; y = 425; } /* Pulled back further */
-          if (zoneNum === '6') { x = 430; y = 380; }
+          if (zoneNum === '1') { x = 250; y = 140; }
+          if (zoneNum === '2') { x = 110; y = 180; }
+          if (zoneNum === '3') { x = 390; y = 180; }
+          if (zoneNum === '4') { x = 50; y = 420; }
+          if (zoneNum === '5') { x = 250; y = 440; }
+          if (zoneNum === '6') { x = 450; y = 420; }
 
           return (
             <text
@@ -145,7 +147,7 @@ const CourtHeatmap: React.FC<CourtHeatmapProps> = ({ shots, stats, onZoneClick, 
                 textAnchor="middle"
                 fill="white"
                 fontSize="16"
-                fontWeight="900"
+                fontWeight="700"
                 style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
               >
                 {data.percentage.toFixed(0)}%

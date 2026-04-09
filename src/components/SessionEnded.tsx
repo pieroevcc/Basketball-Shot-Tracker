@@ -5,7 +5,6 @@ import { Shot, Participant, Session, calculateStats, calculateScore } from '../t
 import CourtHeatmap from './CourtHeatmap';
 import StatsDisplay from './StatsDisplay';
 import './SessionEnded.css';
-import './FeedbackPopup.css';
 
 interface SessionEndedProps {
   role: 'student' | 'teacher';
@@ -23,6 +22,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
   shots,
   participants,
   sessionCode,
+  session,
   onReturnHome,
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'teams' | 'leaderboard'>('overview');
@@ -178,21 +178,24 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
   const filteredStats = calculateStats(filteredShots);
 
   const renderDropdown = () => (
-    <select 
-      className="stats-dropdown" 
-      value={selectedFilter} 
-      onChange={(e) => setSelectedFilter(e.target.value)}
-    >
-      <option value="all">Whole Class</option>
-      {participantStats.map((p) => {
-        let label = p.name;
-        if (p.shotsCount > 0) {
-          if (p.studentId === bestId && p.studentId !== worstId) label += ' 🔥 (Best)';
-          else if (p.studentId === worstId && p.studentId !== bestId) label += ' ❄️ (Worst)';
-        }
-        return <option key={p.studentId} value={p.studentId}>{label}</option>;
-      })}
-    </select>
+    <div className="stats-dropdown-wrapper">
+      <label className="stats-dropdown-label">View student:</label>
+      <select
+        className="stats-dropdown"
+        value={selectedFilter}
+        onChange={(e) => setSelectedFilter(e.target.value)}
+      >
+        <option value="all">Whole Class</option>
+        {participantStats.map((p) => {
+          let label = p.name;
+          if (p.shotsCount > 0) {
+            if (p.studentId === bestId && p.studentId !== worstId) label += ' 🔥 (Best)';
+            else if (p.studentId === worstId && p.studentId !== bestId) label += ' ❄️ (Worst)';
+          }
+          return <option key={p.studentId} value={p.studentId}>{label}</option>;
+        })}
+      </select>
+    </div>
   );
 
   // Build team groups
@@ -278,14 +281,14 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
           <div className="ended-teams-grid">
             {Object.entries(teamMap)
               .filter(([key]) => key !== '__unmatched__')
-              .map(([teamId, { members, shots: tShots }]) => {
+              .map(([teamId, { shots: tShots }]) => {
                 const tStats = calculateStats(tShots);
-                const names = members.map((m) => m.name).join(' + ');
+                const teamName = session?.teamNames?.[teamId] ?? teamId.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
                 const isWinner = teamId === winningTeamId;
                 return (
                   <div key={teamId} className={`ended-team-card ${isWinner ? 'winner' : ''}`}>
                     {isWinner && <div className="winner-badge">🏆 Winner!</div>}
-                    <h3 className="ended-team-name">{names}</h3>
+                    <h3 className="ended-team-name">{teamName}</h3>
                     <div className="ended-team-summary">
                       <span>{tShots.length} shots</span>
                       <span>{tStats.totalMade} made</span>
@@ -302,7 +305,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
 
       {activeTab === 'leaderboard' && (
         <div className="ended-panel">
-          <h2 className="ended-panel-title">Round 1 Individual Leaderboard</h2>
+          <h2 className="ended-panel-title">Solo Round Leaderboard</h2>
           <div className="ended-leaderboard">
             {leaderboard.map((p, i) => (
               <div
@@ -416,7 +419,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
         {/* Round 1 Leaderboard */}
         <div>
           <h2 style={{ fontSize: '22px', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>
-            Round 1 Leaderboard
+            Solo Round Leaderboard
           </h2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px' }}>
             <thead>

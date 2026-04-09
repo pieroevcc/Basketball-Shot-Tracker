@@ -69,6 +69,7 @@ const MOCK_SABOTAGE_ACTIONS: SabotageAction[] = [];
 const noop = () => {};
 const noopAsync = async () => {};
 const noopAsyncStr = async (): Promise<string> => 'TEST01';
+const noopJoinSession = async (_code: string, _name: string, studentId: string): Promise<{ studentId: string; rejoined: boolean }> => ({ studentId, rejoined: false });
 
 // ---------------------------------------------------------------------------
 // View registry
@@ -196,7 +197,7 @@ function renderView(id: string): React.ReactNode {
     case 'SessionJoin':
       return (
         <SessionJoin
-          joinSession={noopAsync}
+          joinSession={noopJoinSession}
           onJoined={noop}
           onBack={noop}
           onGoToTeacher={noop}

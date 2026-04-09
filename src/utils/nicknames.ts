@@ -17,3 +17,9 @@ export function generateNickname(): string {
   const num = Math.random() < 0.4 ? String(Math.floor(Math.random() * 99) + 1) : '';
   return `${adj}${noun}${num}`;
 }
+
+export function generateTeamName(): string {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  return `${adj} ${noun}s`;
+}

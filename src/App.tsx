@@ -435,6 +435,7 @@ function App() {
             myParticipant={myParticipant}
             participants={participants}
             studentId={studentId}
+            teamNames={session.teamNames}
           />
         </div>
       );
@@ -515,6 +516,7 @@ function App() {
             myParticipant={myParticipant}
             participants={participants}
             studentId={studentId}
+            teamNames={session.teamNames}
           />
         </div>
       );

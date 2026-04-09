@@ -211,6 +211,21 @@
   max-width: 500px;
 }
 
+@media (max-width: 480px) {
+  .stats-tab-layout {
+    gap: 12px;
+  }
+
+  .stats-tab-layout > * {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .app-content {
+    padding: 8px 10px;
+  }
+}
+
 .stats-solo-layout {
   display: flex;
   justify-content: center;

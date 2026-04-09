@@ -11,7 +11,10 @@ import {
   query,
   where,
   orderBy,
+  increment,
 } from 'firebase/firestore';
+import { checkRateLimit, trackRequest } from '../utils/rateLimit';
+import { generateTeamName } from '../utils/nicknames';
 import {
   Shot,
   Session,
@@ -72,6 +75,7 @@ export async function createSession(): Promise<string> {
       createdAt: Date.now(),
       teacherLastSeen: Date.now(),
       hostDeviceId: crypto.randomUUID(),
+      participantCount: 0,
     };
     await setDoc(doc(database, 'sessions', sessionCode), sessionData);
     return sessionCode;
@@ -234,9 +238,14 @@ export async function pairTeams(
       batch.update(participantRef, { teamId });
     }
 
-    // Also advance session status
+    // Generate a fun name for each team
+    const uniqueTeamIds = [...new Set(Object.values(resolvedAssignments))];
+    const teamNames: Record<string, string> = {};
+    uniqueTeamIds.forEach((tid) => { teamNames[tid] = generateTeamName(); });
+
+    // Also advance session status and save team names
     const sessionRef = doc(database, 'sessions', sessionCode);
-    batch.update(sessionRef, { status: 'team_strategy' as SessionStatus });
+    batch.update(sessionRef, { status: 'team_strategy' as SessionStatus, teamNames });
 
     await batch.commit();
   } catch (err) {
@@ -250,14 +259,18 @@ export async function pairTeams(
 // ---------------------------------------------------------------------------
 
 /**
- * Joins an existing session. Validates that the session exists, is in an
- * acceptable status, and that the chosen name is not already taken.
+ * Joins an existing session. Validates that the session exists and is not ended.
+ * If the name already exists (student rejoining after disconnect), returns the
+ * existing participant's studentId instead of creating a new record.
+ *
+ * Returns { studentId, rejoined } — callers must use the returned studentId
+ * because it may differ from the one passed in on a rejoin.
  */
 export async function joinSession(
   sessionCode: string,
   name: string,
   studentId: string
-): Promise<void> {
+): Promise<{ studentId: string; rejoined: boolean }> {
   const database = requireDb();
   try {
     const sessionRef = doc(database, 'sessions', sessionCode);
@@ -268,17 +281,31 @@ export async function joinSession(
     }
 
     const sessionData = sessionSnap.data() as Session;
-    const acceptableStatuses: SessionStatus[] = ['lobby', 'solo_active', 'solo_review'];
-    if (!acceptableStatuses.includes(sessionData.status)) {
-      throw new Error('Session already started.');
+    if (sessionData.status === 'ended') {
+      throw new Error('Session has already ended.');
     }
 
     // Check for name collision
     const participantsRef = collection(database, 'sessions', sessionCode, 'participants');
     const nameQuery = query(participantsRef, where('name', '==', name));
     const nameSnap = await getDocs(nameQuery);
+
     if (!nameSnap.empty) {
-      throw new Error('Name taken.');
+      // Name already exists — treat as a rejoin and return the existing studentId
+      const existing = nameSnap.docs[0].data() as Participant;
+      return { studentId: existing.studentId, rejoined: true };
+    }
+
+    // New participant — only allow joining during pre-team phases
+    const newJoinStatuses: SessionStatus[] = ['lobby', 'solo_active', 'solo_review'];
+    if (!newJoinStatuses.includes(sessionData.status)) {
+      throw new Error('Session is in progress. Use your original name to rejoin.');
+    }
+
+    // Participant cap check
+    const currentCount = sessionData.participantCount ?? 0;
+    if (currentCount >= 100) {
+      throw new Error('Session is full. Maximum 100 participants allowed.');
     }
 
     const participant: Participant = {
@@ -291,10 +318,14 @@ export async function joinSession(
       teamShotsComplete: 0,
     };
 
-    await setDoc(
+    const batch = writeBatch(database);
+    batch.set(
       doc(database, 'sessions', sessionCode, 'participants', studentId),
       participant
     );
+    batch.update(doc(database, 'sessions', sessionCode), { participantCount: increment(1) });
+    await batch.commit();
+    return { studentId, rejoined: false };
   } catch (err) {
     console.warn('Failed to join session:', err);
     throw err;
@@ -341,6 +372,8 @@ export async function removeParticipant(
  */
 export async function addSessionShot(sessionCode: string, shot: Shot): Promise<void> {
   const database = requireDb();
+  const deviceId = shot.studentId ?? 'unknown';
+  checkRateLimit(deviceId);
   try {
     const batch = writeBatch(database);
 
@@ -371,6 +404,7 @@ export async function addSessionShot(sessionCode: string, shot: Shot): Promise<v
     }
 
     await batch.commit();
+    trackRequest(deviceId);
   } catch (err) {
     console.warn('Failed to add session shot:', err);
     throw err;
@@ -387,6 +421,7 @@ export async function undoLastShot(
   activity: 'solo' | 'team'
 ): Promise<void> {
   const database = requireDb();
+  checkRateLimit(studentId);
   try {
     const shotsRef = collection(database, 'sessions', sessionCode, 'shots');
     const shotsQuery = query(
@@ -427,6 +462,7 @@ export async function undoLastShot(
     }
 
     await batch.commit();
+    trackRequest(studentId);
   } catch (err) {
     console.warn('Failed to undo last shot:', err);
     throw err;
@@ -531,6 +567,8 @@ export async function saveShotAllocations(
   allocations: ShotAllocation[]
 ): Promise<void> {
   const database = requireDb();
+  const deviceId = allocations[0]?.studentId ?? 'teacher';
+  checkRateLimit(deviceId);
   try {
     const batch = writeBatch(database);
 
@@ -555,6 +593,7 @@ export async function saveShotAllocations(
     }
 
     await batch.commit();
+    trackRequest(deviceId);
   } catch (err) {
     console.warn('Failed to save shot allocations:', err);
     throw err;
@@ -569,6 +608,8 @@ export async function saveSabotageActions(
   actions: SabotageAction[]
 ): Promise<void> {
   const database = requireDb();
+  const deviceId = actions[0]?.actingTeamId ?? 'teacher';
+  checkRateLimit(deviceId);
   try {
     const batch = writeBatch(database);
 
@@ -584,6 +625,7 @@ export async function saveSabotageActions(
     }
 
     await batch.commit();
+    trackRequest(deviceId);
   } catch (err) {
     console.warn('Failed to save sabotage actions:', err);
     throw err;

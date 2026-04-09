@@ -11,7 +11,6 @@ interface ShotAllocationPanelProps {
   saveShotAllocations: (code: string, allocations: ShotAllocation[]) => Promise<void>;
 }
 
-const TOTAL_POOL = 30;
 const MIN_SHOTS = 5;
 const MAX_SHOTS = 15;
 
@@ -42,17 +41,13 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
 
   const isDesignated = myParticipant?.studentId === designatedPlayer?.studentId;
 
-  // Spread 30 shots evenly, distribute remainder to first players
+  const totalPool = teamMembers.length * 10;
+
+  // Each player starts with 10 shots (even distribution)
   const defaultAllocs = useMemo<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
-    const n = teamMembers.length;
-    if (n === 0) return initial;
-    const base = Math.max(MIN_SHOTS, Math.min(MAX_SHOTS, Math.floor(TOTAL_POOL / n)));
-    let remainder = TOTAL_POOL - base * n;
     for (const member of teamMembers) {
-      const extra = remainder > 0 ? 1 : 0;
-      remainder -= extra;
-      initial[member.studentId] = base + extra;
+      initial[member.studentId] = 10;
     }
     return initial;
   }, [teamMembers]);
@@ -72,10 +67,7 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
   const [saving, setSaving] = useState(false);
 
   const totalAllocated = Object.values(allocs).reduce((sum, v) => sum + v, 0);
-  const allInRange = teamMembers.every(
-    (m) => (allocs[m.studentId] ?? 0) >= MIN_SHOTS && (allocs[m.studentId] ?? 0) <= MAX_SHOTS
-  );
-  const isValid = totalAllocated === TOTAL_POOL && allInRange;
+  const isValid = totalAllocated === totalPool;
 
   const handleChange = (studentId: string, value: number) => {
     setAllocs((prev) => ({
@@ -131,8 +123,7 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
       <div className="session-activity-header">
         <h2 className="activity-title">Shot Allocation 🎯</h2>
         <p className="activity-subtitle">
-          Distribute <strong>{TOTAL_POOL} shots</strong> among your team.
-          Each player must get between <strong>{MIN_SHOTS}–{MAX_SHOTS} shots</strong>.
+          Distribute <strong>{totalPool} shots</strong> among your team.
         </p>
       </div>
 
@@ -176,14 +167,11 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
       </div>
 
       <div className={`allocation-total ${isValid ? 'valid' : 'invalid'}`}>
-        {totalAllocated} / {TOTAL_POOL} shots allocated
-        {!isValid && totalAllocated !== TOTAL_POOL && (
+        {totalAllocated} / {totalPool} shots allocated
+        {!isValid && (
           <span className="allocation-warning">
-            {' '}— {totalAllocated < TOTAL_POOL ? `${TOTAL_POOL - totalAllocated} more to assign` : `${totalAllocated - TOTAL_POOL} too many`}
+            {' '}— {totalAllocated < totalPool ? `${totalPool - totalAllocated} more to assign` : `${totalAllocated - totalPool} too many`}
           </span>
-        )}
-        {!allInRange && totalAllocated === TOTAL_POOL && (
-          <span className="allocation-warning"> — each player needs {MIN_SHOTS}–{MAX_SHOTS} shots</span>
         )}
       </div>
 

@@ -41,7 +41,6 @@ export async function loadShots(): Promise<Shot[]> {
     const snapshot = await getDocs(shotsRef);
     const shots = snapshot.docs
       .map((d) => d.data() as Shot)
-      .sort((a, b) => a.timestamp - b.timestamp);
     // Only overwrite localStorage cache when Firestore actually has data.
     // If Firestore returns empty (e.g. writes failed), keep the local cache.
     if (shots.length > 0) {

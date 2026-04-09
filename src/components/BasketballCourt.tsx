@@ -122,7 +122,6 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         x: ZONES[selectedZone as keyof typeof ZONES].x,
         y: ZONES[selectedZone as keyof typeof ZONES].y,
         made,
-        timestamp: Date.now(),
         zone: selectedZone,
         points: made ? (ZONE_POINTS[selectedZone] ?? 0) : 0,
       };
@@ -149,7 +148,7 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         <div className="top-stats-container">
           <div className="top-stat-card card-yellow">
             <div className="stat-label">SHOTS TAKEN</div>
-            <div className="stat-value">{stats.totalShots}</div>
+            <div className="stat-value">{stats.totalShots}{maxShots !== undefined ? `/${maxShots}` : ''}</div>
             <div className="stat-sub">total attempts</div>
           </div>
           <div className="top-stat-card card-green">
@@ -165,7 +164,9 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         </div>
       )}
 
-    
+      {selectedZone && !isLocked && (
+        <div className="selected-zone-label"> {selectedZone}</div>
+      )}
 
       <div className="court-svg-wrapper-interactive">
         <svg
@@ -251,6 +252,16 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
           <path d="M 200 470 A 30 30 0 0 1 300 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
           <path d="M 227 470 A 20 20 0 0 1 273 470 Z" fill="none" stroke="#fff" strokeWidth="3" />
 
+          {/* Red full-court overlay when any zone is blocked */}
+          {blockedZones.length > 0 && (
+            <rect
+              width={COURT_WIDTH}
+              height={COURT_HEIGHT}
+              fill="rgba(255,0,0,0.18)"
+              pointerEvents="none"
+            />
+          )}
+
           {/* Blocked zone indicators */}
           {blockedZones.map((zone) => {
             const zoneCenter = ZONES[zone as keyof typeof ZONES];
@@ -305,9 +316,6 @@ const BasketballCourt: React.FC<BasketballCourtProps> = ({
         </div>
       )}
 
-      {selectedZone && !isLocked && (
-        <div className="selected-zone-label">Selected: {selectedZone}</div>
-      )}
 
       {onUndo && shots.length > 0 && !isLocked && (
         <button className="btn btn-undo" onClick={onUndo}>

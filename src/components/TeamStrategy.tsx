@@ -9,12 +9,14 @@ interface TeamStrategyProps {
   myParticipant: Participant | null;
   participants: Participant[];
   studentId: string;
+  teamNames?: Record<string, string>;
 }
 
 const TeamStrategy: React.FC<TeamStrategyProps> = ({
   shots,
   myParticipant,
   participants,
+  teamNames,
 }) => {
   const myTeamId = myParticipant?.teamId;
 
@@ -49,7 +51,7 @@ const TeamStrategy: React.FC<TeamStrategyProps> = ({
   const selectedIsOpponent = opponentMembers.some((p) => p.studentId === selectedPlayerId);
 
   const formatTeamId = (id: string | null | undefined) =>
-    id?.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase()) ?? 'TBD';
+    (id && teamNames?.[id]) ?? id?.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase()) ?? 'TBD';
 
   return (
     <div className="team-strategy">

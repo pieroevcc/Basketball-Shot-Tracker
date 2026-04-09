@@ -3,7 +3,7 @@ export interface Shot {
   x: number;
   y: number;
   made: boolean;
-  timestamp: number;
+  timestamp?: number;
   zone: string;
   studentId?: string;
   activity?: 'solo' | 'team';
@@ -30,6 +30,8 @@ export interface Session {
   teacherDisconnected?: boolean; // set when teacher closes/reloads page
   teacherLastSeen?: number;      // Unix ms, updated by teacher heartbeat every 30 s
   soloOnly?: boolean;            // skip all team phases
+  participantCount?: number;
+  teamNames?: Record<string, string>; // teamId → generated team name
 }
 
 export interface Participant {
@@ -100,10 +102,10 @@ export const ZONE_POINTS: Record<string, number> = {
 // Zone 4: Left side outside mid-range (baseline corner area)
 // Zone 6: Right side outside mid-range (baseline corner area)
 export const ZONES = {
-  'Zone 1: Paint': { x: 250, y: 95 },           // Paint area at top (0-190)
+  'Zone 1: Paint': { x: 250, y: 70 },            // Paint area at top (0-190)
   'Zone 2: Left Mid-Range': { x: 125, y: 240 }, // Left mid-range (0-250 X, 190-290 Y)
   'Zone 3: Right Mid-Range': { x: 375, y: 240 }, // Right mid-range (250-500 X, 190-290 Y)
-  'Zone 5: Top of Key': { x: 250, y: 410 },     // Top of key arc (150-350 X, 290-350 Y)
+  'Zone 5: Top of Key': { x: 250, y: 380 },     // Top of key arc — edit y here to move marker up/down
   'Zone 4: Left Outside': { x: 55, y: 360 },    // Left outside baseline (0-250 X, 350-470 Y)
   'Zone 6: Right Outside': { x: 445, y: 360 },  // Right outside baseline (250-500 X, 350-470 Y)
 };
@@ -125,9 +127,7 @@ export const calculateStats = (shots: Shot[]): Stats => {
   Object.keys(ZONES).forEach((zone) => {
     const zoneShots = shots.filter((s) => s.zone === zone);
     const madeShotsInZone = zoneShots.filter((s) => s.made).length;
-    // Zones 4, 5, 6 are 3-pointers; others are 2-pointers
-    const is3Pt = ['Zone 4: Left Outside', 'Zone 5: Top of Key', 'Zone 6: Right Outside'].includes(zone);
-    const ptsValue = is3Pt ? 3 : 2;
+    const ptsValue = ZONE_POINTS[zone] ?? 2;
     const zonePoints = madeShotsInZone * ptsValue;
     
     stats.totalPoints += zonePoints;

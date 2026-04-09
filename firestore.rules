@@ -1,41 +1,95 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Sessions: anyone can read; only create allowed (no client-side delete)
+
+    function isValidStatus(status) {
+      return status in [
+        'lobby', 'solo_active', 'solo_review',
+        'team_strategy', 'shot_allocation', 'sabotage',
+        'team_active', 'team_review', 'ended'
+      ];
+    }
+
     match /sessions/{sessionCode} {
       allow read: if true;
-      allow create: if true;
-      allow update: if true;
+
+      allow create: if
+        request.resource.data.keys().hasAll(['sessionCode', 'status', 'createdAt', 'hostDeviceId']) &&
+        request.resource.data.sessionCode is string &&
+        request.resource.data.status == 'lobby' &&
+        request.resource.data.createdAt is number &&
+        request.resource.data.hostDeviceId is string;
+
+      allow update: if
+        (!('status' in request.resource.data) || isValidStatus(request.resource.data.status)) &&
+        request.resource.data.keys().hasAll(['sessionCode', 'status', 'createdAt', 'hostDeviceId']);
+
       allow delete: if false;
 
-      // Participants subcollection
       match /participants/{studentId} {
         allow read: if true;
-        allow create: if true;
-        allow update: if true;
+
+        allow create: if
+          request.resource.data.keys().hasAll(['studentId', 'name', 'joinedAt', 'soloShotsComplete', 'teamShotsComplete']) &&
+          request.resource.data.studentId is string &&
+          request.resource.data.name is string &&
+          request.resource.data.name.size() > 0 &&
+          request.resource.data.name.size() <= 24 &&
+          request.resource.data.joinedAt is number &&
+          request.resource.data.soloShotsComplete == 0 &&
+          request.resource.data.teamShotsComplete == 0 &&
+          (
+            !('participantCount' in get(/databases/$(database)/documents/sessions/$(sessionCode)).data) ||
+            get(/databases/$(database)/documents/sessions/$(sessionCode)).data.participantCount < 100
+          );
+
+        allow update: if
+          request.resource.data.keys().hasAll(['studentId', 'name', 'joinedAt', 'soloShotsComplete', 'teamShotsComplete']) &&
+          request.resource.data.soloShotsComplete >= 0 &&
+          request.resource.data.teamShotsComplete >= 0;
+
         allow delete: if false;
       }
 
-      // Shots subcollection
       match /shots/{shotId} {
         allow read: if true;
-        allow create: if true;
-        allow delete: if true;  // needed for undo
+
+        allow create: if
+          request.resource.data.keys().hasAll(['id', 'made', 'timestamp', 'zone']) &&
+          request.resource.data.made is bool &&
+          request.resource.data.timestamp is number &&
+          request.resource.data.zone in [
+            'Zone 1: Paint', 'Zone 2: Left Mid-Range', 'Zone 3: Right Mid-Range',
+            'Zone 4: Left Outside', 'Zone 5: Top of Key', 'Zone 6: Right Outside'
+          ];
+
+        allow delete: if true;
         allow update: if false;
       }
 
-      // Shot allocations subcollection
       match /allocations/{allocationId} {
         allow read: if true;
-        allow create: if true;
-        allow update: if true;
+
+        allow create: if
+          request.resource.data.keys().hasAll(['teamId', 'studentId', 'allocatedShots']) &&
+          request.resource.data.allocatedShots is number &&
+          request.resource.data.allocatedShots >= 0;
+
+        allow update: if
+          request.resource.data.keys().hasAll(['teamId', 'studentId', 'allocatedShots']) &&
+          request.resource.data.allocatedShots >= 0;
+
         allow delete: if false;
       }
 
-      // Sabotage actions subcollection
       match /sabotages/{actionId} {
         allow read: if true;
-        allow create: if true;
+
+        allow create: if
+          request.resource.data.keys().hasAll(['id', 'actingTeamId', 'targetTeamId', 'type', 'timestamp']) &&
+          request.resource.data.type in ['block_zone', 'remove_shots', 'add_shots', 'shots_transfer'] &&
+          request.resource.data.timestamp is number;
+
         allow update: if false;
         allow delete: if false;
       }

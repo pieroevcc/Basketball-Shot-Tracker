@@ -77,6 +77,9 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
     }
   };
 
+  const formatTeamName = (tid: string) =>
+    session.teamNames?.[tid] ?? tid.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
   const getSoloCount = (p: Participant) =>
     shots.filter((s) => s.studentId === p.studentId && s.activity === 'solo').length;
 
@@ -374,7 +377,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                           >
                             {teamIds.map((t) => (
                               <option key={t} value={t}>
-                                {t.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                {formatTeamName(t)}
                               </option>
                             ))}
                           </select>
@@ -420,7 +423,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                 const teamStats = calculateStats(teamShots);
                 return (
                   <div key={teamId} className="teacher-team-card">
-                    <span className="team-badge">{teamId.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                    <span className="team-badge">{formatTeamName(teamId)}</span>
                     <span className="team-score">{teamStats.totalPoints} pts | {teamStats.shootingPercentage.toFixed(0)}%</span>
                     {members.map((m, i) => (
                       <React.Fragment key={m.studentId}>
@@ -452,7 +455,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
               .filter(([key]) => key !== '__unmatched__')
               .map(([teamId, members]) => (
                 <div key={teamId} className="teacher-team-card">
-                  <span className="team-badge">{teamId.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                  <span className="team-badge">{formatTeamName(teamId)}</span>
                   {members.map((m) => (
                     <div key={m.studentId} className="team-member-row">
                       <span className="team-member-name">{m.name}</span>
@@ -504,7 +507,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                 return (
                   <div key={teamId} className="teacher-team-card large">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <span className="team-badge">{teamId.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                      <span className="team-badge">{formatTeamName(teamId)}</span>
                       <span className="team-score">{teamStats.totalPoints} pts</span>
                     </div>
                     {members.map((m) => {
@@ -552,7 +555,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
                 const teamStats = calculateStats(teamShots);
                 return (
                   <div key={teamId} className="teacher-team-card">
-                    <span className="team-badge">{teamId.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                    <span className="team-badge">{formatTeamName(teamId)}</span>
                     <span className="team-score">{teamStats.totalPoints} pts | {teamStats.shootingPercentage.toFixed(0)}%</span>
                     {members.map((m, i) => (
                       <React.Fragment key={m.studentId}>

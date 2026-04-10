@@ -133,43 +133,43 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
 
   // --- Validation ---
   const blockZoneValid = selectedZones.length > 0;
-  const transferValid = Math.abs(totalRemoved) > 0 && totalAdded === Math.abs(totalRemoved);
-  const isValid = activeTab === 'block_zone' ? blockZoneValid : transferValid;
+  // transferValid: true if nothing removed (optional step), or if removed shots are fully redistributed
+  const transferValid = totalAdded === Math.abs(totalRemoved);
 
   // --- Submit ---
   const handleSubmit = async () => {
-    if (!myTeamId || !opponentTeamId || !isValid) return;
+    if (!myTeamId || !opponentTeamId || !blockZoneValid) return;
     setSaving(true);
     setSubmitError(null);
 
-    let action: SabotageAction;
-
-    if (activeTab === 'block_zone') {
-      action = {
-        id: `sabotage-${myTeamId}-${Date.now()}`,
+    const now = Date.now();
+    const actions: SabotageAction[] = [
+      {
+        id: `sabotage-block-${myTeamId}-${now}`,
         actingTeamId: myTeamId,
         targetTeamId: opponentTeamId,
         type: 'block_zone',
         blockedZones: selectedZones,
-        timestamp: Date.now(),
-      };
-    } else {
+        timestamp: now,
+      },
+    ];
+
+    if (Math.abs(totalRemoved) > 0 && transferValid) {
       const transfers: ShotTransfer[] = Object.entries(shotAdjustments)
         .filter(([, d]) => d !== 0)
         .map(([studentId, delta]) => ({ studentId, delta }));
-
-      action = {
-        id: `sabotage-${myTeamId}-${Date.now()}`,
+      actions.push({
+        id: `sabotage-transfer-${myTeamId}-${now}`,
         actingTeamId: myTeamId,
         targetTeamId: opponentTeamId,
         type: 'shots_transfer',
         shotTransfers: transfers,
-        timestamp: Date.now(),
-      };
+        timestamp: now,
+      });
     }
 
     try {
-      await saveSabotageActions(sessionCode, [action]);
+      await saveSabotageActions(sessionCode, actions);
       setSubmitted(true);
     } catch {
       setSubmitError('Failed to save sabotage. Please try again.');
@@ -198,7 +198,7 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
     <div className="sabotage-panel">
       <div className="session-activity-header">
         <h2 className="activity-title">Sabotage Round 💣</h2>
-        <p className="activity-subtitle">Choose one sabotage action against the opposing team!</p>
+        <p className="activity-subtitle">Block zones and steal shots from the opposing team!</p>
       </div>
 
       <div className="sabotage-tabs">
@@ -240,6 +240,13 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
                 selectedZones={selectedZones}
               />
             </div>
+            <button
+              className="btn btn-made sabotage-next-btn"
+              onClick={() => setActiveTab('shots_transfer')}
+              disabled={!blockZoneValid}
+            >
+              Next →
+            </button>
           </div>
         )}
 
@@ -293,7 +300,7 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
                 <span className="transfer-total">
                   Removed: <strong>{Math.abs(totalRemoved)}</strong> / 2
                 </span>
-                <span className={`transfer-total ${totalAdded === Math.abs(totalRemoved) && totalAdded > 0 ? 'valid' : ''}`}>
+                <span className={`transfer-total ${totalAdded === Math.abs(totalRemoved) ? 'valid' : ''}`}>
                   Redistributed: <strong>{totalAdded}</strong> / {Math.abs(totalRemoved)}
                   {totalAdded !== Math.abs(totalRemoved) && totalRemoved < 0 && (
                     <span className="transfer-warning"> — must redistribute all removed shots</span>
@@ -304,15 +311,13 @@ const SabotagePanel: React.FC<SabotagePanelProps> = ({
           </div>
         )}
       </div>
-
       {submitError && (
         <p className="sabotage-error-msg">{submitError}</p>
       )}
-
       <button
         className="btn btn-made sabotage-submit"
         onClick={handleSubmit}
-        disabled={!isValid || saving}
+        disabled={!blockZoneValid || saving || (totalRemoved < 0 && !transferValid)}
       >
         {saving ? 'Saving...' : 'Confirm Sabotage 💣'}
       </button>

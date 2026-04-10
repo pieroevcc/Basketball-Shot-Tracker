@@ -7,6 +7,9 @@
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
+  background: #fff;
+  border-radius: 20px;
+  margin-top: 20px;
 }
 
 /* --- Player list --- */
@@ -161,6 +164,20 @@
   font-size: 18px;
   font-weight: 900;
   border-radius: 16px;
+}
+
+/* Override App.css white-text header styles for the white panel background */
+.allocation-panel .session-activity-header {
+  color: #1a1a2e;
+}
+
+.allocation-panel .activity-title {
+  color: #1a1a2e;
+}
+
+.allocation-panel .activity-subtitle {
+  color: #555;
+  opacity: 1;
 }
 
 @media (max-width: 480px) {

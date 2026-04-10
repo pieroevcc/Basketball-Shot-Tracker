@@ -168,37 +168,59 @@ export async function assignRound1Groups(sessionCode: string): Promise<void> {
 }
 
 /**
- * Assigns participants into 2 teams using smart sizing rules:
- *   n=1 → [1]  n=2 → [1,1]  n=3 → [2,1]  n=4 → [2,2]
- *   n=5 → [4,1]  n=6 → [4,2]  n=7 → [4,3]  n≥8 → groups of 4
+ * Returns the number of teams for n participants.
+ *   n=1       → 1
+ *   n=2..9    → 2
+ *   n=10..11  → 4
+ *   n≥12      → floor(n/2) rounded down to nearest even number
+ */
+function getNumTeams(n: number): number {
+  if (n <= 1) return 1;
+  if (n <= 9) return 2;
+  if (n <= 11) return 4;
+  const raw = Math.floor(n / 2);
+  return raw % 2 === 0 ? raw : raw - 1;
+}
+
+/**
+ * Assigns participants into teams, prioritizing:
+ *   1. An even number of teams (pairs of teams)
+ *   2. Even-sized teams (pairs within teams)
+ *   3. Balanced distribution
+ *
+ * Examples: n=6→[4,2], n=8→[4,4], n=9→[5,4], n=12→6×[2]
  * Returns {studentId → teamId} map.
  */
 export function buildTeamAssignments(shuffled: Participant[]): Record<string, string> {
   const n = shuffled.length;
-  let teamSizes: number[];
-
   if (n <= 0) return {};
-  if (n === 1) teamSizes = [1];
-  else if (n === 2) teamSizes = [1, 1];
-  else if (n === 3) teamSizes = [2, 1];
-  else if (n === 4) teamSizes = [2, 2];
-  else if (n <= 7) teamSizes = [4, n - 4];
-  else {
-    const numTeams = Math.ceil(n / 4);
-    let remaining = n;
-    teamSizes = [];
-    for (let i = 0; i < numTeams; i++) {
-      teamSizes.push(Math.min(4, remaining));
-      remaining -= 4;
+
+  const numTeams = getNumTeams(n);
+  const base = Math.floor(n / numTeams);
+  const remainder = n % numTeams;
+
+  const sizes: number[] = Array.from({ length: numTeams }, (_, i) =>
+    i < remainder ? base + 1 : base
+  );
+
+  // Pair up odd-sized teams to maximize even-sized teams (pairs within teams)
+  let oddIndices = sizes.map((s, i) => (s % 2 !== 0 ? i : -1)).filter((i) => i >= 0);
+  while (oddIndices.length >= 2) {
+    const [i, j] = oddIndices;
+    if (sizes[i] > 1 && sizes[j] > 1) {
+      sizes[i] += 1;
+      sizes[j] -= 1;
+      oddIndices = sizes.map((s, idx) => (s % 2 !== 0 ? idx : -1)).filter((idx) => idx >= 0);
+    } else {
+      break;
     }
   }
 
   const assignments: Record<string, string> = {};
   let idx = 0;
-  teamSizes.forEach((size, teamIdx) => {
+  sizes.forEach((size, teamIdx) => {
     for (let j = 0; j < size; j++) {
-      assignments[shuffled[idx].studentId] = `team-${teamIdx + 1}`;
-      idx++;
+      assignments[shuffled[idx++].studentId] = `team-${teamIdx + 1}`;
     }
   });
   return assignments;
@@ -378,7 +400,7 @@ export async function addSessionShot(sessionCode: string, shot: Shot): Promise<v
     const batch = writeBatch(database);
 
     const shotRef = doc(database, 'sessions', sessionCode, 'shots', shot.id);
-    batch.set(shotRef, shot);
+    batch.set(shotRef, { timestamp: Date.now(), ...shot });
 
     if (shot.studentId) {
       const participantRef = doc(

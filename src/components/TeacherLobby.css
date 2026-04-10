@@ -37,7 +37,7 @@
 
 /* ---- Code Banner ---- */
 .teacher-code-banner {
-  background : rgba(255, 255, 255, 0.1);
+  background : rgba(0, 0, 0, 0.4);
   border-radius: 20px;
   padding: 24px 56px;
   display: flex;
@@ -236,6 +236,16 @@
   color: #f97316;
   font-weight: 600;
   font-size: 14px;
+}
+
+.teacher-sabotage-progress {
+  margin: 0.5rem 0 1rem;
+}
+
+.sabotage-counter {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e67e22;
 }
 
 /* ---- Teams list ---- */

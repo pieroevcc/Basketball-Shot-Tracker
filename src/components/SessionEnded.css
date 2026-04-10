@@ -73,28 +73,6 @@
   justify-content: center;
 }
 
-.btn-export-pdf {
-  padding: 12px 28px;
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: 12px;
-  border: 2px solid #3b82f6;
-  background: #fff;
-  color: #3b82f6;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, transform 0.15s;
-}
-
-.btn-export-pdf:hover:not(:disabled) {
-  background: #3b82f6;
-  color: #fff;
-  transform: translateY(-2px);
-}
-
-.btn-export-pdf:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
 .ended-teacher-title {
   font-size: 36px;
@@ -192,6 +170,7 @@
   font-weight: 900;
   color: #1a1a2e;
   margin: 0;
+  margin-bottom : 12px;
 }
 
 /* ---- Stats Dropdown ---- */

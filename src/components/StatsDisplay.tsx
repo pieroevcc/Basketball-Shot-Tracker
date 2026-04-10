@@ -6,6 +6,7 @@ interface StatsDisplayProps {
   stats: Stats;
   shots?: Shot[];
   participants?: Participant[];
+  hidePtsPerShot?: boolean;
 }
 
 const ZONE_ORDER = [
@@ -27,7 +28,7 @@ function getStrategicTip(_stats: Stats): string {
   return "Compare your Points Per Shot across zones — a 3-pointer only needs 34% accuracy to equal a 2-pointer at 51%. Where should you shoot more?";
 }
 
-const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, shots, participants }) => {
+const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, shots, participants, hidePtsPerShot }) => {
   const [selectedUserId, setSelectedUserId] = useState<string>('all');
 
   let activeStats = stats;
@@ -79,10 +80,12 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, shots, participants 
           <div className="overall-stat-label">SHOT %</div>
           <div className="overall-stat-value">{activeStats.shootingPercentage.toFixed(1)}%</div>
         </div>
-        <div className="overall-stat-cell card-pink">
-          <div className="overall-stat-label">PTS / SHOT</div>
-          <div className="overall-stat-value">{activeStats.totalShots > 0 ? (activeStats.totalPoints / activeStats.totalShots).toFixed(1) : '0.0'}</div>
-        </div>
+        {!hidePtsPerShot && (
+          <div className="overall-stat-cell card-pink">
+            <div className="overall-stat-label">PTS / SHOT</div>
+            <div className="overall-stat-value">{activeStats.totalShots > 0 ? (activeStats.totalPoints / activeStats.totalShots).toFixed(1) : '0.0'}</div>
+          </div>
+        )}
       </div>
 
       <div className="zone-breakdown-label">ZONE BREAKDOWN</div>
@@ -102,9 +105,11 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats, shots, participants 
                   {zone} <span className="zone-row-pts">({ZONE_POINTS[zone]}pt)</span>
                 </span>
                 <span className="zone-row-right">
-                  <span className="zone-row-score" style={{ color: '#f472b6' }}>
-                    {total > 0 ? (pts / total).toFixed(1) : '0.0'} pts/shot
-                  </span>
+                  {!hidePtsPerShot && (
+                    <span className="zone-row-score" style={{ color: '#f472b6' }}>
+                      {total > 0 ? (pts / total).toFixed(1) : '0.0'} pts/shot
+                    </span>
+                  )}
                   <span className="zone-row-made">{made}/{total}</span>
                   <span className="zone-row-pct">- {pct.toFixed(0)}%</span>
                 </span>

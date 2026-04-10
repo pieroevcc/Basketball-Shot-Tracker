@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shot, Participant, calculateStats } from '../types';
 import CourtHeatmap from './CourtHeatmap';
+import StatsDisplay from './StatsDisplay';
 import './TeamStrategy.css';
 
 interface TeamStrategyProps {
@@ -101,11 +102,11 @@ const TeamStrategy: React.FC<TeamStrategyProps> = ({
                 {selectedIsOpponent ? 'Opponent' : 'Your Team'}
               </span>
             </h2>
-            <CourtHeatmap shots={selectedPlayerShots} stats={selectedPlayerStats} />
-            <div className="strategy-court-summary">
-              <span>{selectedPlayerShots.length} shots</span>
-              <span>{selectedPlayerStats.totalPoints} pts</span>
-              <span>{selectedPlayerStats.shootingPercentage.toFixed(0)}%</span>
+            <div className="strategy-panel-body">
+              <CourtHeatmap shots={selectedPlayerShots} stats={selectedPlayerStats} />
+              <div className="strategy-panel-stats">
+                <StatsDisplay stats={selectedPlayerStats} hidePtsPerShot />
+              </div>
             </div>
           </div>
         </div>
@@ -116,18 +117,18 @@ const TeamStrategy: React.FC<TeamStrategyProps> = ({
             <h2 className="strategy-court-title">
               Your Team ({formatTeamId(myTeamId)})
             </h2>
-            <CourtHeatmap shots={myTeamSoloShots} stats={myTeamStats} />
-            <div className="strategy-court-summary">
-              <span>{myTeamSoloShots.length} shots</span>
-              <span>{myTeamStats.totalPoints} pts</span>
-              <span>{myTeamStats.shootingPercentage.toFixed(0)}%</span>
-            </div>
-            <div className="strategy-members">
-              {myTeamMembers.map((m) => (
-                <span key={m.studentId} className="strategy-member-chip">
-                  {m.name}: {calculateStats(shots.filter(s => s.studentId === m.studentId && s.activity === 'solo')).totalPoints} pts
-                </span>
-              ))}
+            <div className="strategy-panel-body">
+              <CourtHeatmap shots={myTeamSoloShots} stats={myTeamStats} />
+              <div className="strategy-panel-stats">
+                <StatsDisplay stats={myTeamStats} hidePtsPerShot />
+                <div className="strategy-members">
+                  {myTeamMembers.map((m) => (
+                    <span key={m.studentId} className="strategy-member-chip">
+                      {m.name}: {calculateStats(shots.filter(s => s.studentId === m.studentId && s.activity === 'solo')).totalPoints} pts
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -137,18 +138,18 @@ const TeamStrategy: React.FC<TeamStrategyProps> = ({
             <h2 className="strategy-court-title">
               Opponent ({formatTeamId(opponentTeamId)})
             </h2>
-            <CourtHeatmap shots={opponentSoloShots} stats={opponentStats} />
-            <div className="strategy-court-summary">
-              <span>{opponentSoloShots.length} shots</span>
-              <span>{opponentStats.totalPoints} pts</span>
-              <span>{opponentStats.shootingPercentage.toFixed(0)}%</span>
-            </div>
-            <div className="strategy-members">
-              {opponentMembers.map((m) => (
-                <span key={m.studentId} className="strategy-member-chip">
-                  {m.name}: {calculateStats(shots.filter(s => s.studentId === m.studentId && s.activity === 'solo')).totalPoints} pts
-                </span>
-              ))}
+            <div className="strategy-panel-body">
+              <CourtHeatmap shots={opponentSoloShots} stats={opponentStats} />
+              <div className="strategy-panel-stats">
+                <StatsDisplay stats={opponentStats} hidePtsPerShot />
+                <div className="strategy-members">
+                  {opponentMembers.map((m) => (
+                    <span key={m.studentId} className="strategy-member-chip">
+                      {m.name}: {calculateStats(shots.filter(s => s.studentId === m.studentId && s.activity === 'solo')).totalPoints} pts
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

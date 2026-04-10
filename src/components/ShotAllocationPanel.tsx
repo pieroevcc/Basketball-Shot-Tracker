@@ -41,16 +41,20 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
 
   const isDesignated = myParticipant?.studentId === designatedPlayer?.studentId;
 
-  const totalPool = teamMembers.length * 10;
+  const totalPool = 30;
 
-  // Each player starts with 10 shots (even distribution)
+  // Distribute totalPool evenly; first (remainder) players get base+1
   const defaultAllocs = useMemo<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
-    for (const member of teamMembers) {
-      initial[member.studentId] = 10;
-    }
+    if (teamMembers.length === 0) return initial;
+    const base = Math.floor(totalPool / teamMembers.length);
+    const remainder = totalPool % teamMembers.length;
+    teamMembers.forEach((member, index) => {
+      const shots = Math.max(MIN_SHOTS, Math.min(MAX_SHOTS, base + (index < remainder ? 1 : 0)));
+      initial[member.studentId] = shots;
+    });
     return initial;
-  }, [teamMembers]);
+  }, [teamMembers, totalPool]);
 
   const [allocs, setAllocs] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
@@ -141,7 +145,7 @@ const ShotAllocationPanel: React.FC<ShotAllocationPanelProps> = ({
               <div className="allocation-player-info">
                 <span className="allocation-name">{member.name}</span>
                 <span className="allocation-stats">
-                  R1: {stats.totalPoints} pts · {stats.shootingPercentage.toFixed(0)}%
+                  {stats.totalPoints} pts ● {stats.shootingPercentage.toFixed(0)}%
                 </span>
               </div>
               <div className="allocation-input-group">

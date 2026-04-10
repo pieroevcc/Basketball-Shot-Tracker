@@ -46,11 +46,10 @@
 
 .strategy-courts {
   display: flex;
-  gap: 24px;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
   width: 100%;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
 .strategy-court-panel {
@@ -58,12 +57,29 @@
   border-radius: 20px;
   padding: 20px;
   flex: 1 1 320px;
-  max-width: 480px;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+}
+
+/* Heatmap + stats side-by-side inside each panel */
+.strategy-panel-body {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+
+.strategy-panel-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .strategy-court-title {
@@ -230,7 +246,7 @@
     font-size: 22px;
   }
 
-  .strategy-courts {
+  .strategy-panel-body {
     flex-direction: column;
     align-items: center;
   }

@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import BasketballCourt from './components/BasketballCourt';
-import StatsDisplay from './components/StatsDisplay';
-import CourtHeatmap from './components/CourtHeatmap';
 import SessionJoin from './components/SessionJoin';
 import SessionCreate from './components/SessionCreate';
 import Lobby from './components/Lobby';
@@ -11,6 +9,8 @@ import TeamReview from './components/TeamReview';
 import SessionEnded from './components/SessionEnded';
 import ShotAllocationPanel from './components/ShotAllocationPanel';
 import SabotagePanel from './components/SabotagePanel';
+import CourtHeatmap from './components/CourtHeatmap';
+import StatsDisplay from './components/StatsDisplay';
 import TestMode from './components/TestMode';
 import PracticeMode from './components/PracticeMode';
 import { useSession } from './hooks/useSession';
@@ -58,6 +58,7 @@ function App() {
   const [studentId, setStudentId] = useState<string | null>(
     () => readLocalStorage('studentId')
   );
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // ---- Session mode state ----
   const {
@@ -91,6 +92,9 @@ function App() {
   const sessionRef = useRef(session);
   useEffect(() => { sessionRef.current = session; }, [session]);
 
+  // Tracks last user interaction time for idle detection.
+  const lastActivityRef = useRef(Date.now());
+
   // Sync state to localStorage
   useEffect(() => {
     if (appMode) localStorage.setItem('appMode', appMode);
@@ -111,6 +115,11 @@ function App() {
     else localStorage.removeItem('studentId');
   }, [studentId]);
 
+  // Reset leaderboard view when session moves out of team_review
+  useEffect(() => {
+    if (session?.status !== 'team_review') setShowLeaderboard(false);
+  }, [session?.status]);
+
   // When teacher closes or reloads the page, mark session as disconnected so
   // students are kicked out via the onSnapshot listener.
   useEffect(() => {
@@ -120,16 +129,17 @@ function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [role, sessionCode]);
 
-  // Teacher heartbeat — writes teacherLastSeen to Firestore every 30 s so
+  // Teacher heartbeat — writes teacherLastSeen to Firestore every 2 min so
   // students can detect a dead session even if beforeunload didn't fire.
   useEffect(() => {
     if (role !== 'teacher' || !sessionCode) return;
     updateTeacherHeartbeat(sessionCode);
-    const id = setInterval(() => updateTeacherHeartbeat(sessionCode), 30_000);
+    const id = setInterval(() => updateTeacherHeartbeat(sessionCode), 120_000);
     return () => clearInterval(id);
   }, [role, sessionCode]);
 
-  const TEACHER_TIMEOUT_MS = 60_000; // 2× heartbeat interval
+  const TEACHER_TIMEOUT_MS = 900_000; // 15 min
+  const IDLE_TIMEOUT_MS = 900_000;    // 15 min of user inactivity
 
   // Fires on every session snapshot — catches reload-into-dead-session immediately.
   useEffect(() => {
@@ -190,6 +200,38 @@ function App() {
     if (session === null) handleReturnHome();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, session, sessionCode, role]);
+
+  // Student idle detection — auto-exit after 15 min of no user interaction.
+  useEffect(() => {
+    if (role !== 'student' || !sessionCode) return;
+    const resetTimer = () => { lastActivityRef.current = Date.now(); };
+    const events = ['mousemove', 'keydown', 'touchstart', 'click'] as const;
+    events.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }));
+    const id = setInterval(() => {
+      if (Date.now() - lastActivityRef.current > IDLE_TIMEOUT_MS) handleReturnHome();
+    }, 60_000);
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetTimer));
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, sessionCode]);
+
+  // Teacher idle detection — auto-exit after 15 min of no user interaction.
+  useEffect(() => {
+    if (role !== 'teacher' || !sessionCode) return;
+    const resetTimer = () => { lastActivityRef.current = Date.now(); };
+    const events = ['mousemove', 'keydown', 'touchstart', 'click'] as const;
+    events.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }));
+    const id = setInterval(() => {
+      if (Date.now() - lastActivityRef.current > IDLE_TIMEOUT_MS) handleReturnHome();
+    }, 60_000);
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetTimer));
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, sessionCode]);
 
   // ---------------------------------------------------------------------------
   // Action handlers
@@ -412,15 +454,15 @@ function App() {
       return (
         <div className="app session-mode">
           <div className="session-activity-header">
-            <h2 className="activity-title">Your Solo Results 🎯</h2>
-            <p className="activity-subtitle">
-              Here's your heat map from the solo round!
-            </p>
+            <h2 className="activity-title">Solo Round Results</h2>
+            <p className="activity-subtitle">Here's how you did in the solo round!</p>
           </div>
-          <div className="stats-tab-layout">
-            <CourtHeatmap shots={mySoloShots} stats={soloStats} />
-            <StatsDisplay stats={soloStats} />
-          </div>
+          <main className="app-content">
+            <div className="solo-review-card">
+              <CourtHeatmap shots={mySoloShots} stats={soloStats} />
+              <StatsDisplay stats={soloStats} />
+            </div>
+          </main>
         </div>
       );
     }
@@ -509,6 +551,20 @@ function App() {
 
     // Team Review
     if (status === 'team_review') {
+      if (showLeaderboard) {
+        return (
+          <div className="app session-mode">
+            <SessionEnded
+              role="student"
+              shots={shots}
+              participants={participants}
+              sessionCode={sessionCode}
+              session={session}
+              onReturnHome={handleReturnHome}
+            />
+          </div>
+        );
+      }
       return (
         <div className="app session-mode">
           <TeamReview
@@ -517,6 +573,7 @@ function App() {
             participants={participants}
             studentId={studentId}
             teamNames={session.teamNames}
+            onLeaderboard={() => setShowLeaderboard(true)}
           />
         </div>
       );

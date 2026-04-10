@@ -11,6 +11,7 @@ interface TeamReviewProps {
   participants: Participant[];
   studentId: string;
   teamNames?: Record<string, string>;
+  onLeaderboard?: () => void;
 }
 
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSe86_wurZ-wqFbSnLn37tnQlIvttJcHv3gXQcsqV93Cce1flw/viewform';
@@ -21,6 +22,7 @@ const TeamReview: React.FC<TeamReviewProps> = ({
   participants,
   studentId,
   teamNames,
+  onLeaderboard,
 }) => {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
@@ -139,6 +141,14 @@ const TeamReview: React.FC<TeamReviewProps> = ({
         <h1 className="team-review-title">Team Results</h1>
         <p className="team-review-subtitle">{teamLabel(viewingTeamId ?? '')}</p>
       </div>
+      
+      {onLeaderboard && (
+        <div className="team-review-leaderboard-btn-wrapper">
+          <button className="team-review-leaderboard-btn" onClick={onLeaderboard}>
+            🏅 Leaderboard
+          </button>
+        </div>
+      )}
 
       {/* Team selector dropdown */}
       {allTeams.length > 1 && (
@@ -222,6 +232,7 @@ const TeamReview: React.FC<TeamReviewProps> = ({
           );
         })}
       </div>
+
     </div>
     {feedbackPopup}
     </>

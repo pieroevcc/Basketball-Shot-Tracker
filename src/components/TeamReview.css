@@ -255,3 +255,27 @@
     gap: 12px;
   }
 }
+
+.team-review-leaderboard-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.team-review-leaderboard-btn {
+  background: #f39c12;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s, transform 0.1s;
+}
+
+.team-review-leaderboard-btn:hover {
+  background: #e67e22;
+  transform: translateY(-2px);
+}

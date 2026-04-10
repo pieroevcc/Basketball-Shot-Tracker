@@ -1,6 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import React, { useState, useEffect } from 'react';
 import { Shot, Participant, Session, calculateStats, calculateScore } from '../types';
 import CourtHeatmap from './CourtHeatmap';
 import StatsDisplay from './StatsDisplay';
@@ -27,15 +25,12 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'teams' | 'leaderboard'>('overview');
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const [isExporting, setIsExporting] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setShowFeedbackPopup(true), 3000);
     return () => clearTimeout(t);
   }, []);
-  const pdfReportRef = useRef<HTMLDivElement>(null);
-
   // Round 1 leaderboard
   const leaderboard = [...participants]
     .map((p) => {
@@ -49,7 +44,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
     })
     .sort((a, b) => b.score - a.score);
 
-  const feedbackPopup = showFeedbackPopup && (
+  const feedbackPopup = showFeedbackPopup && role === 'student' && (
     <div className="feedback-popup-overlay">
       <div className="feedback-popup-card">
         <h2 className="feedback-popup-title">Rate the App! 🏀</h2>
@@ -85,7 +80,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
 
             {leaderboard.length > 0 && (
               <div className="ended-leaderboard-mini">
-                <h3>Round 1 Leaderboard</h3>
+                <h3>Solo Round Leaderboard</h3>
                 {leaderboard.map((p, i) => (
                   <div key={p.studentId} className="leaderboard-row">
                     <span className="leaderboard-rank">
@@ -108,55 +103,8 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
     );
   }
 
-  const generatePDF = async () => {
-    const el = pdfReportRef.current;
-    if (!el) return;
-    setIsExporting(true);
-    try {
-      // Briefly bring the hidden report into view so html2canvas can render it
-      el.style.position = 'fixed';
-      el.style.left = '0';
-      el.style.top = '0';
-      el.style.visibility = 'visible';
-      el.style.zIndex = '9999';
-      // Wait for layout
-      await new Promise((r) => setTimeout(r, 200));
-
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false });
-
-      el.style.position = 'absolute';
-      el.style.left = '-9999px';
-      el.style.top = '0';
-      el.style.visibility = 'hidden';
-      el.style.zIndex = '';
-
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-
-      const imgW = pageW;
-      const imgH = (canvas.height * imgW) / canvas.width;
-
-      let remainingH = imgH;
-      let yOffset = 0;
-
-      while (remainingH > 0) {
-        if (yOffset > 0) pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, -yOffset, imgW, imgH);
-        yOffset += pageH;
-        remainingH -= pageH;
-      }
-
-      pdf.save(`session-report-${sessionCode}.pdf`);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   // Teacher view
   const allShots = shots;
-  const allStats = calculateStats(allShots);
-  
   // Pre-calculate participant stats to find best and worst
   const participantStats = participants.map((p) => {
     const pShots = allShots.filter((s) => s.studentId === p.studentId);
@@ -227,13 +175,6 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
         <h1 className="ended-teacher-title">Session Complete!</h1>
         <p className="ended-teacher-code">Code: {sessionCode}</p>
         <div className="ended-teacher-actions">
-          <button
-            className="btn-export-pdf"
-            onClick={generatePDF}
-            disabled={isExporting}
-          >
-            {isExporting ? 'Exporting…' : 'Export to PDF'}
-          </button>
           <button className="btn-return-home small" onClick={onReturnHome}>
             End & Return Home
           </button>
@@ -294,6 +235,7 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
                       <span>{tStats.totalMade} made</span>
                       <span>{tStats.shootingPercentage.toFixed(0)}%</span>
                       <span><strong>{tStats.totalPoints} pts</strong></span>
+                      <span>{tStats.pointsPerShot.toFixed(1)} pts/shot</span>
                     </div>
                     <CourtHeatmap shots={tShots} stats={tStats} />
                   </div>
@@ -323,126 +265,6 @@ const SessionEnded: React.FC<SessionEndedProps> = ({
         </div>
       )}
 
-      {/* Hidden PDF report — rendered off-screen, captured by html2canvas */}
-      <div
-        ref={pdfReportRef}
-        style={{
-          position: 'absolute',
-          left: '-9999px',
-          top: '0',
-          visibility: 'hidden',
-          width: '1000px',
-          background: '#fff',
-          fontFamily: 'sans-serif',
-          color: '#111',
-          padding: '32px',
-          boxSizing: 'border-box',
-        }}
-      >
-        {/* Header */}
-        <div style={{ borderBottom: '2px solid #222', paddingBottom: '16px', marginBottom: '24px' }}>
-          <h1 style={{ margin: 0, fontSize: '28px' }}>Basketball Session Report</h1>
-          <p style={{ margin: '6px 0 0', fontSize: '16px', color: '#555' }}>
-            Session Code: <strong>{sessionCode}</strong>
-            &nbsp;&nbsp;·&nbsp;&nbsp;
-            {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-            &nbsp;&nbsp;·&nbsp;&nbsp;
-            {participants.length} participant{participants.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-
-        {/* Class Overview */}
-        <div style={{ marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '22px', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>
-            Class Overview
-          </h2>
-          <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-            <div style={{ flex: '0 0 auto' }}>
-              <CourtHeatmap shots={allShots} stats={allStats} />
-            </div>
-            <div style={{ flex: '1 1 auto' }}>
-              <StatsDisplay stats={allStats} />
-            </div>
-          </div>
-        </div>
-
-        {/* Team Results */}
-        {Object.entries(teamMap).filter(([key]) => key !== '__unmatched__').length > 0 && (
-          <div style={{ marginBottom: '32px' }}>
-            <h2 style={{ fontSize: '22px', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>
-              Team Results
-            </h2>
-            {Object.entries(teamMap)
-              .filter(([key]) => key !== '__unmatched__')
-              .map(([teamId, { members, shots: tShots }]) => {
-                const tStats = calculateStats(tShots);
-                const names = members.map((m) => m.name).join(' + ');
-                const isWinner = teamId === winningTeamId;
-                return (
-                  <div
-                    key={teamId}
-                    style={{
-                      border: isWinner ? '2px solid #f59e0b' : '1px solid #ddd',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      marginBottom: '20px',
-                      background: isWinner ? '#fffbeb' : '#fafafa',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                      <h3 style={{ margin: 0, fontSize: '18px' }}>{names}</h3>
-                      {isWinner && (
-                        <span style={{ background: '#f59e0b', color: '#fff', padding: '2px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: 700 }}>
-                          🏆 Winner
-                        </span>
-                      )}
-                    </div>
-                    <p style={{ margin: '0 0 12px', color: '#555', fontSize: '14px' }}>
-                      {tShots.length} shots &nbsp;·&nbsp; {tStats.totalMade} made &nbsp;·&nbsp;
-                      {tStats.shootingPercentage.toFixed(0)}% &nbsp;·&nbsp;
-                      <strong>{tStats.totalPoints} pts</strong>
-                    </p>
-                    <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-                      <div style={{ flex: '0 0 auto' }}>
-                        <CourtHeatmap shots={tShots} stats={tStats} />
-                      </div>
-                      <div style={{ flex: '1 1 auto' }}>
-                        <StatsDisplay stats={tStats} />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        )}
-
-        {/* Round 1 Leaderboard */}
-        <div>
-          <h2 style={{ fontSize: '22px', borderBottom: '1px solid #ddd', paddingBottom: '8px', marginBottom: '16px' }}>
-            Solo Round Leaderboard
-          </h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '15px' }}>
-            <thead>
-              <tr style={{ background: '#f3f4f6' }}>
-                <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>Rank</th>
-                <th style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600 }}>Name</th>
-                <th style={{ textAlign: 'right', padding: '8px 12px', fontWeight: 600 }}>Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaderboard.map((p, i) => (
-                <tr key={p.studentId} style={{ borderBottom: '1px solid #eee', background: i % 2 === 0 ? '#fff' : '#f9fafb' }}>
-                  <td style={{ padding: '8px 12px' }}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
-                  </td>
-                  <td style={{ padding: '8px 12px' }}>{p.name}</td>
-                  <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600 }}>{p.score}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
     {feedbackPopup}
     </>

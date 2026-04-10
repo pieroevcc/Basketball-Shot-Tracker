@@ -296,7 +296,17 @@
   border-top: 2px solid #eee;
 }
 
-/* --- Submit button --- */
+/* --- Next / Submit buttons --- */
+.sabotage-next-btn {
+  width: 100%;
+  max-width: 420px;
+  padding: 14px;
+  font-size: 17px;
+  font-weight: 800;
+  border-radius: 14px;
+  margin-top: 8px;
+}
+
 .sabotage-submit {
   width: 100%;
   max-width: 420px;

@@ -28,7 +28,7 @@ export interface Session {
   hostDeviceId: string;
   round1Winner?: string; // studentId of Round 1 individual winner
   teacherDisconnected?: boolean; // set when teacher closes/reloads page
-  teacherLastSeen?: number;      // Unix ms, updated by teacher heartbeat every 30 s
+  teacherLastSeen?: number;      // Unix ms, updated by teacher heartbeat every 2 min
   soloOnly?: boolean;            // skip all team phases
   participantCount?: number;
   teamNames?: Record<string, string>; // teamId → generated team name

@@ -11,6 +11,7 @@ import {
   calculateScore,
 } from '../types';
 import { UseSessionReturn } from '../hooks/useSession';
+import Leaderboard from './Leaderboard';
 import './TeacherLobby.css';
 
 interface TeacherLobbyProps {
@@ -45,7 +46,7 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
   calculateRound1Winner,
   kickParticipant,
   allocations: _allocations,
-  sabotageActions: _sabotageActions,
+  sabotageActions,
   onReturnHome,
 }) => {
   const status: SessionStatus = session.status;
@@ -143,11 +144,6 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
     if (!groupMap[key]) groupMap[key] = [];
     groupMap[key].push(p);
   });
-
-  // Round 1 winner
-  const round1Winner = session.round1Winner
-    ? participants.find((p) => p.studentId === session.round1Winner)
-    : null;
 
   return (
     <div className="teacher-lobby">
@@ -312,83 +308,58 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
       {status === 'solo_review' && (
         <div className="teacher-section">
           <h2 className="teacher-section-title">Round 1 Review</h2>
-          {round1Winner && (
-            <div className="teacher-winner-banner">
-              🏆 Round 1 Winner: <strong>{round1Winner.name}</strong> ({round1Winner.round1Score ?? 0} pts)
-            </div>
-          )}
           <p className="teacher-section-subtitle">
             {session.soloOnly
               ? 'Students are reviewing their solo results. End the session to show the full leaderboard!'
               : 'Students are reviewing their solo heatmaps. Adjust teams below, then start!'}
           </p>
 
-          <div className="teacher-review-layout">
-            {/* Left: leaderboard */}
-            <div className="teacher-leaderboard-col">
-              <h3 className="teacher-col-title">Leaderboard</h3>
-              <div className="teacher-participant-list">
-                {[...participants]
-                  .sort((a, b) => (b.round1Score ?? 0) - (a.round1Score ?? 0))
-                  .map((p, i) => (
-                    <div key={p.studentId} className="teacher-participant-row">
-                      <span className="participant-name">
-                        {i + 1}. {p.name}
-                      </span>
-                      <span className="td-shots">
-                        {p.round1Score ?? getSoloScore(p)} pts | {getSoloCount(p)} shots
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </div>
+          <Leaderboard participants={participants} shots={shots} currentStudentId="" />
 
-            {/* Right: team preview (only when not solo-only) */}
-            {!session.soloOnly && (
-              <div className="teacher-team-preview-col">
-                <div className="teacher-col-header">
-                  <h3 className="teacher-col-title">Team Preview</h3>
-                  <button className="randomize-btn" onClick={generatePendingTeams} title="Re-randomize teams">
-                    🔀 Randomize
-                  </button>
-                </div>
-                {pendingAssignments && (() => {
-                  // Build map of teamId → participants
-                  const previewTeamMap: Record<string, Participant[]> = {};
-                  participants.forEach((p) => {
-                    const tid = pendingAssignments[p.studentId];
-                    if (!tid) return;
-                    if (!previewTeamMap[tid]) previewTeamMap[tid] = [];
-                    previewTeamMap[tid].push(p);
-                  });
-                  const teamIds = Object.keys(previewTeamMap).sort();
-                  return teamIds.map((tid) => (
-                    <div key={tid} className="team-preview-card">
-                      <span className="team-badge">{tid.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
-                      {previewTeamMap[tid].map((p) => (
-                        <div key={p.studentId} className="team-member-move-row">
-                          <span className="team-member-name">{p.name}</span>
-                          <select
-                            className="team-move-select"
-                            value={pendingAssignments[p.studentId]}
-                            onChange={(e) =>
-                              setPendingAssignments((prev) => ({ ...prev!, [p.studentId]: e.target.value }))
-                            }
-                          >
-                            {teamIds.map((t) => (
-                              <option key={t} value={t}>
-                                {formatTeamName(t)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                  ));
-                })()}
+          {/* Team preview (only when not solo-only) */}
+          {!session.soloOnly && (
+            <div className="teacher-team-preview-col">
+              <div className="teacher-col-header">
+                <h3 className="teacher-col-title">Team Preview</h3>
+                <button className="randomize-btn" onClick={generatePendingTeams} title="Re-randomize teams">
+                  🔀 Randomize
+                </button>
               </div>
-            )}
-          </div>
+              {pendingAssignments && (() => {
+                const previewTeamMap: Record<string, Participant[]> = {};
+                participants.forEach((p) => {
+                  const tid = pendingAssignments[p.studentId];
+                  if (!tid) return;
+                  if (!previewTeamMap[tid]) previewTeamMap[tid] = [];
+                  previewTeamMap[tid].push(p);
+                });
+                const teamIds = Object.keys(previewTeamMap).sort();
+                return teamIds.map((tid) => (
+                  <div key={tid} className="team-preview-card">
+                    <span className="team-badge">{tid.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                    {previewTeamMap[tid].map((p) => (
+                      <div key={p.studentId} className="team-member-move-row">
+                        <span className="team-member-name">{p.name}</span>
+                        <select
+                          className="team-move-select"
+                          value={pendingAssignments[p.studentId]}
+                          onChange={(e) =>
+                            setPendingAssignments((prev) => ({ ...prev!, [p.studentId]: e.target.value }))
+                          }
+                        >
+                          {teamIds.map((t) => (
+                            <option key={t} value={t}>
+                              {formatTeamName(t)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
 
           {session.soloOnly ? (
             <button
@@ -478,9 +449,41 @@ const TeacherLobby: React.FC<TeacherLobbyProps> = ({
       {status === 'sabotage' && (
         <div className="teacher-section">
           <h2 className="teacher-section-title">Sabotage Round 💣</h2>
-          <p className="teacher-section-subtitle">
-            Teams are choosing their sabotage actions.
-          </p>
+
+          {(() => {
+            const allTeams = Object.keys(teamMap).filter((k) => k !== '__unmatched__');
+            const confirmedTeamIds = new Set(sabotageActions.map((a) => a.actingTeamId));
+            const confirmedCount = allTeams.filter((t) => confirmedTeamIds.has(t)).length;
+            const total = allTeams.length;
+            const allDone = confirmedCount === total && total > 0;
+            return (
+              <>
+                <p className="teacher-section-subtitle">
+                  {allDone
+                    ? 'All teams confirmed! You can start team shooting.'
+                    : 'Waiting for teams to confirm their sabotage choices…'}
+                </p>
+                <div className="teacher-sabotage-progress">
+                  <span className="sabotage-counter">
+                    {confirmedCount} / {total} teams confirmed
+                  </span>
+                </div>
+                <div className="teacher-teams-list">
+                  {allTeams.map((teamId) => {
+                    const confirmed = confirmedTeamIds.has(teamId);
+                    return (
+                      <div key={teamId} className="teacher-team-card">
+                        <span className="team-badge">{formatTeamName(teamId)}</span>
+                        {confirmed
+                          ? <span className="status-done">Confirmed ✅</span>
+                          : <span className="status-going">Choosing…</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            );
+          })()}
 
           <button className="teacher-action-btn primary" onClick={handleStartTeamActive}>
             Start Team Shooting

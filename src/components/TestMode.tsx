@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import BasketballCourt from './BasketballCourt';
 import CourtHeatmap from './CourtHeatmap';
+import Leaderboard from './Leaderboard';
 import Lobby from './Lobby';
 import MentorDashboard from './MentorDashboard';
 import PracticeMode from './PracticeMode';
@@ -88,12 +89,15 @@ const VIEWS: ViewDef[] = [
   { id: 'TeamStrategy',          label: 'Team Strategy',          category: 'Student' },
   { id: 'ShotAllocationPanel',   label: 'Shot Allocation Panel',  category: 'Student' },
   { id: 'SabotagePanel',         label: 'Sabotage Panel',         category: 'Student' },
+  { id: 'SoloReviewStudent',      label: 'Solo Review (Student)',  category: 'Student' },
   { id: 'TeamReview',            label: 'Team Review',            category: 'Student' },
   { id: 'SessionJoin',           label: 'Session Join',           category: 'Student' },
   { id: 'SessionEndedStudent',   label: 'Session Ended (Student)', category: 'Student' },
   { id: 'TeacherLobby',          label: 'Teacher Lobby',          category: 'Teacher' },
+  { id: 'SoloReviewTeacher',     label: 'Solo Review (Teacher)',  category: 'Teacher' },
   { id: 'SessionCreate',         label: 'Session Create',         category: 'Teacher' },
   { id: 'SessionEndedTeacher',   label: 'Session Ended (Teacher)', category: 'Teacher' },
+  { id: 'Leaderboard',           label: 'Leaderboard',            category: 'Shared' },
   { id: 'StatsDisplay',          label: 'Stats Display',          category: 'Shared' },
   { id: 'ShotHistory',           label: 'Shot History',           category: 'Shared' },
   { id: 'CourtHeatmapStats',     label: 'Heatmap + Stats',        category: 'Shared' },
@@ -120,6 +124,45 @@ function renderView(id: string): React.ReactNode {
 
     case 'CourtHeatmap':
       return <CourtHeatmap shots={MOCK_SHOTS.filter((s) => s.studentId === 'p1')} stats={MOCK_STATS} />;
+
+    case 'SoloReviewStudent': {
+      const p1SoloShots = MOCK_SHOTS.filter((s) => s.studentId === 'p1' && s.activity === 'solo');
+      const p1SoloStats = calculateStats(p1SoloShots);
+      return (
+        <div className="app session-mode">
+          <div className="session-activity-header">
+            <h2 className="activity-title">Solo Round Results</h2>
+            <p className="activity-subtitle">Here's how you did in the solo round!</p>
+          </div>
+          <main className="app-content">
+            <div className="solo-review-card">
+              <CourtHeatmap shots={p1SoloShots} stats={p1SoloStats} />
+              <StatsDisplay stats={p1SoloStats} />
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    case 'SoloReviewTeacher':
+      return (
+        <TeacherLobby
+          session={{ ...MOCK_SESSION, status: 'solo_review', round1Winner: 'p1' }}
+          participants={MOCK_PARTICIPANTS}
+          shots={MOCK_SHOTS}
+          sessionCode="TEST01"
+          advanceSession={noopAsync}
+          pairTeams={noopAsync}
+          assignGroups={noopAsync}
+          calculateRound1Winner={noopAsync}
+          saveShotAllocations={noopAsync}
+          saveSabotageActions={noopAsync}
+          kickParticipant={noopAsync}
+          allocations={MOCK_ALLOCATIONS}
+          sabotageActions={MOCK_SABOTAGE_ACTIONS}
+          onReturnHome={noop}
+        />
+      );
 
     case 'CourtHeatmapStats':
       return (
@@ -224,6 +267,15 @@ function renderView(id: string): React.ReactNode {
           shots={MOCK_SHOTS.filter((s) => s.studentId === 'p1')}
           onDelete={noop}
           onClear={noop}
+        />
+      );
+
+    case 'Leaderboard':
+      return (
+        <Leaderboard
+          participants={MOCK_PARTICIPANTS}
+          shots={MOCK_SHOTS}
+          currentStudentId="p1"
         />
       );
 

@@ -7,8 +7,9 @@
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
-  background: #fff;
-  border-radius: 20px;
+  background: #141928;
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   margin-top: 20px;
 }
 
@@ -25,10 +26,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 14px;
+  background: #1a2240;
+  border: 1px solid #2a3050;
+  border-radius: 12px;
   padding: 14px 18px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 
 .allocation-player-info {
@@ -41,7 +43,7 @@
 .allocation-name {
   font-size: 17px;
   font-weight: 800;
-  color: #1a1a2e;
+  color: #F0F4FF;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -49,7 +51,7 @@
 
 .allocation-stats {
   font-size: 13px;
-  color: #666;
+  color: #8892B0;
   font-weight: 600;
 }
 
@@ -65,9 +67,9 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  border: none;
-  background: #e8eaf6;
-  color: #3730a3;
+  border: 1px solid #2a3050;
+  background: #1a2240;
+  color: #FF6B35;
   font-size: 22px;
   font-weight: 900;
   cursor: pointer;
@@ -79,8 +81,10 @@
 }
 
 .allocation-btn:hover:not(:disabled) {
-  background: #3730a3;
+  background: #FF6B35;
   color: white;
+  border-color: #FF6B35;
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.3);
 }
 
 .allocation-btn:disabled {
@@ -90,8 +94,10 @@
 
 .allocation-value {
   font-size: 22px;
-  font-weight: 900;
-  color: #1a1a2e;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: #F0F4FF;
   min-width: 32px;
   text-align: center;
 }
@@ -108,15 +114,15 @@
 }
 
 .allocation-total.valid {
-  background: rgba(34, 197, 94, 0.2);
-  color: #16a34a;
-  border: 2px solid rgba(34, 197, 94, 0.4);
+  background: rgba(57, 255, 20, 0.1);
+  color: #39FF14;
+  border: 1px solid rgba(57, 255, 20, 0.3);
 }
 
 .allocation-total.invalid {
-  background: rgba(239, 68, 68, 0.15);
-  color: #dc2626;
-  border: 2px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .allocation-warning {
@@ -129,31 +135,34 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
+  background: #1a2240;
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   padding: 28px 32px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   width: 100%;
   text-align: center;
 }
 
 .allocation-waiting-name {
   font-size: 28px;
-  font-weight: 900;
-  color: #3730a3;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: #FF6B35;
 }
 
 .allocation-waiting-msg {
   font-size: 16px;
   font-weight: 600;
-  color: #444;
+  color: #8892B0;
   margin: 0;
 }
 
 .allocation-waiting-cta {
   font-size: 15px;
   font-weight: 700;
-  color: #f59e0b;
+  color: #FF6B35;
   margin: 0;
 }
 
@@ -161,22 +170,24 @@
 .allocation-submit {
   width: 100%;
   padding: 16px;
-  font-size: 18px;
-  font-weight: 900;
-  border-radius: 16px;
+  font-size: 16px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  font-weight: 400;
+  border-radius: 12px;
 }
 
-/* Override App.css white-text header styles for the white panel background */
+/* Override App.css white-text header styles for the dark panel background */
 .allocation-panel .session-activity-header {
-  color: #1a1a2e;
+  color: #F0F4FF;
 }
 
 .allocation-panel .activity-title {
-  color: #1a1a2e;
+  color: #F0F4FF;
 }
 
 .allocation-panel .activity-subtitle {
-  color: #555;
+  color: #8892B0;
   opacity: 1;
 }
 

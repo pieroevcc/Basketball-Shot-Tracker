@@ -19,12 +19,13 @@
 }
 
 .ended-card {
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 28px;
+  background: #141928;
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   padding: 56px 48px;
   max-width: 480px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -43,15 +44,17 @@
 }
 
 .ended-title {
-  font-size: 40px;
-  font-weight: 900;
+  font-size: 44px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 3px;
   color: #FF6B35;
   margin: 0;
 }
 
 .ended-subtitle {
-  font-size: 20px;
-  color: #555;
+  font-size: 18px;
+  color: #8892B0;
   margin: 0;
   line-height: 1.5;
 }
@@ -75,17 +78,18 @@
 
 
 .ended-teacher-title {
-  font-size: 36px;
-  font-weight: 900;
+  font-size: 44px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 3px;
   color: white;
   margin: 0;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .ended-teacher-code {
   font-size: 18px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.75);
+  color: #8892B0;
   margin: 0;
   letter-spacing: 2px;
 }
@@ -93,15 +97,17 @@
 /* ---- Return home button ---- */
 .btn-return-home {
   padding: 18px 40px;
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 18px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  font-weight: 400;
   background: linear-gradient(135deg, #FF6B35, #D2691E);
   color: white;
   border: none;
-  border-radius: 16px;
+  border-radius: 12px;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.35);
 }
 
 .btn-return-home:hover {
@@ -111,7 +117,7 @@
 
 .btn-return-home.small {
   padding: 12px 28px;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 /* ---- Tabs ---- */
@@ -124,35 +130,40 @@
 
 .ended-tab {
   padding: 14px 32px;
-  font-size: 18px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  font-size: 16px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1px;
+  font-weight: 400;
+  background: rgba(255, 255, 255, 0.05);
+  color: #8892B0;
+  border: 1px solid #2a3050;
   border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition: background 0.2s, transform 0.15s, border-color 0.2s;
 }
 
 .ended-tab:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 107, 53, 0.08);
+  border-color: #FF6B35;
+  color: #FF6B35;
   transform: translateY(-2px);
 }
 
 .ended-tab.active {
-  background: white;
-  color: #FF6B35;
-  border-color: white;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  background: #FF6B35;
+  color: white;
+  border-color: #FF6B35;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.35);
 }
 
 /* ---- Panel ---- */
 .ended-panel {
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 20px;
+  background: #141928;
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   padding: 28px;
   width: 100%;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
 }
 
@@ -166,11 +177,13 @@
 }
 
 .ended-panel-title {
-  font-size: 22px;
-  font-weight: 900;
-  color: #1a1a2e;
+  font-size: 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: #F0F4FF;
   margin: 0;
-  margin-bottom : 12px;
+  margin-bottom: 12px;
 }
 
 /* ---- Stats Dropdown ---- */
@@ -186,7 +199,7 @@
 .stats-dropdown-label {
   font-size: 13px;
   font-weight: 700;
-  color: #888;
+  color: #8892B0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -194,26 +207,27 @@
 .stats-dropdown {
   width: 100%;
   padding: 10px 16px;
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: #0f1520;
+  border: 1px solid #2a3050;
   border-radius: 12px;
   font-size: 15px;
   font-weight: 700;
-  color: #333;
+  color: #F0F4FF;
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238892B0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 40px;
+  font-family: 'Inter', sans-serif;
 }
 
 .stats-dropdown:hover,
 .stats-dropdown:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  border-color: #FF6B35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
 }
 
 /* ---- Overview layout ---- */
@@ -246,20 +260,22 @@
 }
 
 .ended-team-card {
-  background: #f8f8f8;
-  border-radius: 16px;
+  background: #1a2240;
+  border: 1px solid #2a3050;
+  border-radius: 14px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  border: 2px solid #e0e0e0;
 }
 
 .ended-team-name {
   font-size: 18px;
-  font-weight: 900;
-  color: #1a1a2e;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: #F0F4FF;
   margin: 0;
   text-align: center;
 }
@@ -269,11 +285,11 @@
   gap: 16px;
   font-size: 15px;
   font-weight: 700;
-  color: #555;
-  background: white;
+  color: #8892B0;
+  background: #0f1520;
+  border: 1px solid #2a3050;
   border-radius: 10px;
   padding: 6px 16px;
-  border: 1px solid #ddd;
 }
 
 /* ---- Leaderboard (teacher tab) ---- */
@@ -290,15 +306,15 @@
   align-items: center;
   gap: 14px;
   padding: 12px 20px;
-  background: white;
+  background: #1a2240;
   border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #2a3050;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.leaderboard-row.gold   { background: #fffbeb; border-color: #fbbf24; }
-.leaderboard-row.silver { background: #f8fafc; border-color: #94a3b8; }
-.leaderboard-row.bronze { background: #fff7ed; border-color: #fb923c; }
+.leaderboard-row.gold   { background: rgba(245, 197, 24, 0.1); border-color: rgba(245, 197, 24, 0.4); }
+.leaderboard-row.silver { background: rgba(176, 184, 193, 0.1); border-color: rgba(176, 184, 193, 0.3); }
+.leaderboard-row.bronze { background: rgba(205, 127, 50, 0.1); border-color: rgba(205, 127, 50, 0.4); }
 
 .leaderboard-rank {
   font-size: 22px;
@@ -311,7 +327,7 @@
   flex: 1;
   font-size: 17px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #F0F4FF;
 }
 
 .leaderboard-score {
@@ -330,9 +346,9 @@
 }
 
 .ended-leaderboard-mini h3 {
-  font-size: 16px;
-  font-weight: 800;
-  color: #555;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8892B0;
   margin: 0 0 4px 0;
   text-align: center;
   text-transform: uppercase;
@@ -349,7 +365,7 @@
   }
 
   .ended-title {
-    font-size: 30px;
+    font-size: 36px;
   }
 
   .ended-trophy {
@@ -367,7 +383,7 @@
   }
 
   .ended-title {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .ended-tabs {

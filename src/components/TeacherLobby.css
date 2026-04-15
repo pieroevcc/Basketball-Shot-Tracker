@@ -16,9 +16,9 @@
 }
 
 .teacher-kick-error {
-  background: #fdecea;
-  color: #c0392b;
-  border: 1px solid #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(231, 76, 60, 0.4);
   border-radius: 6px;
   padding: 8px 14px;
   margin: 8px 16px 0;
@@ -37,14 +37,15 @@
 
 /* ---- Code Banner ---- */
 .teacher-code-banner {
-  background : rgba(0, 0, 0, 0.4);
-  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   padding: 24px 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   width: 100%;
   max-width: 800px;
   box-sizing: border-box;
@@ -55,16 +56,17 @@
   padding: 8px 18px;
   font-size: 14px;
   font-weight: 700;
-  background: #000;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #1a2240;
+  color: #8892B0;
+  border: 1px solid #2a3050;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .teacher-back-btn:hover {
-  background: #5a75db;
+  border-color: #FF6B35;
+  color: #FF6B35;
 }
 
 .teacher-code-label {
@@ -72,7 +74,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 3px;
-  color: rgba(255, 255, 255, 1);
+  color: #8892B0;
 }
 
 .teacher-code-value {
@@ -82,16 +84,18 @@
   color: #FF6B35;
   font-family: 'Courier New', monospace;
   line-height: 1.1;
+  text-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
 }
 
 /* ---- Section card ---- */
 .teacher-section {
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 20px;
+  background: #141928;
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   padding: 32px;
   max-width: 800px;
   width: 100%;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -99,9 +103,11 @@
 }
 
 .teacher-section-title {
-  font-size: 26px;
-  font-weight: 900;
-  color: #1a1a2e;
+  font-size: 28px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: #F0F4FF;
   margin: 0;
   display: flex;
   align-items: center;
@@ -110,7 +116,7 @@
 }
 
 .participant-badge {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   background: #FF6B35;
   color: white;
@@ -120,14 +126,14 @@
 
 .teacher-section-subtitle {
   font-size: 16px;
-  color: #555;
+  color: #8892B0;
   margin: 0;
   line-height: 1.5;
 }
 
 .teacher-empty {
   font-size: 18px;
-  color: #888;
+  color: #8892B0;
   text-align: center;
   padding: 20px;
   margin: 0;
@@ -144,7 +150,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f7f7f7;
+  background: #1a2240;
+  border: 1px solid #2a3050;
   border-radius: 12px;
   padding: 12px 20px;
   font-size: 18px;
@@ -152,14 +159,14 @@
 
 .participant-name {
   font-weight: 700;
-  color: #1a1a2e;
+  color: #F0F4FF;
 }
 
 .participant-joined {
   font-size: 14px;
   font-weight: 600;
-  color: #27ae60;
-  background: #eafaf1;
+  color: #39FF14;
+  background: rgba(57, 255, 20, 0.1);
   border-radius: 8px;
   padding: 4px 12px;
 }
@@ -178,12 +185,12 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #888;
-  border-bottom: 2px solid #eee;
+  color: #8892B0;
+  border-bottom: 1px solid #2a3050;
 }
 
 .teacher-progress-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #1a2240;
 }
 
 .teacher-progress-table tbody tr:last-child {
@@ -198,12 +205,12 @@
 .td-name {
   font-weight: 700;
   font-size: 18px;
-  color: #1a1a2e;
+  color: #F0F4FF;
 }
 
 .td-shots {
   font-weight: 700;
-  color: #555;
+  color: #8892B0;
   white-space: nowrap;
 }
 
@@ -213,7 +220,7 @@
 }
 
 .progress-bar-bg {
-  background: #eee;
+  background: #1a2240;
   border-radius: 999px;
   height: 12px;
   overflow: hidden;
@@ -221,19 +228,19 @@
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #FF6B35, #f97316);
+  background: linear-gradient(90deg, #39FF14, #22c55e);
   border-radius: 999px;
   transition: width 0.4s ease;
 }
 
 .status-done {
-  color: #27ae60;
+  color: #39FF14;
   font-weight: 700;
   font-size: 15px;
 }
 
 .status-going {
-  color: #f97316;
+  color: #FF6B35;
   font-weight: 600;
   font-size: 14px;
 }
@@ -245,7 +252,7 @@
 .sabotage-counter {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #e67e22;
+  color: #FF6B35;
 }
 
 /* ---- Teams list ---- */
@@ -256,9 +263,9 @@
 }
 
 .teacher-team-card {
-  background: #f7f7ff;
-  border: 2px solid #c7d2fe;
-  border-radius: 16px;
+  background: #1a2240;
+  border: 1px solid #2a3050;
+  border-radius: 12px;
   padding: 16px 24px;
   display: flex;
   align-items: center;
@@ -276,7 +283,7 @@
 .team-badge {
   font-size: 12px;
   font-weight: 700;
-  background: #6366f1;
+  background: #FF6B35;
   color: white;
   border-radius: 8px;
   padding: 4px 10px;
@@ -286,11 +293,11 @@
 }
 
 .team-member-name {
-  color: #1a1a2e;
+  color: #F0F4FF;
 }
 
 .vs-divider {
-  color: #6366f1;
+  color: #FF6B35;
   font-size: 20px;
 }
 
@@ -310,13 +317,14 @@
 /* ---- Action buttons ---- */
 .teacher-action-btn {
   padding: 18px 36px;
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 18px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  font-weight: 400;
   border: none;
-  border-radius: 16px;
+  border-radius: 12px;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
-  letter-spacing: 0.3px;
   align-self: flex-start;
 }
 
@@ -331,19 +339,19 @@
 }
 
 .teacher-action-btn.primary {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: white;
-  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, #39FF14, #22c55e);
+  color: #0A0E1A;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
 }
 
 .teacher-action-btn.primary:hover:not(:disabled) {
-  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.5);
+  box-shadow: 0 10px 24px rgba(57, 255, 20, 0.4);
 }
 
 .teacher-action-btn.warning {
   background: linear-gradient(135deg, #f59e0b, #d97706);
   color: white;
-  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
 }
 
 .teacher-action-btn.warning:hover:not(:disabled) {
@@ -353,16 +361,17 @@
 .teacher-action-btn.danger {
   background: linear-gradient(135deg, #ef4444, #b91c1c);
   color: white;
-  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35);
 }
 
 .teacher-ended-badge {
   padding: 16px 32px;
-  background: #f0f0f0;
-  border-radius: 14px;
-  font-size: 20px;
+  background: #1a2240;
+  border: 1px solid #2a3050;
+  border-radius: 12px;
+  font-size: 18px;
   font-weight: 700;
-  color: #555;
+  color: #8892B0;
   text-align: center;
 }
 
@@ -387,7 +396,7 @@
 .teacher-col-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #333;
+  color: #8892B0;
   margin: 0 0 0.5rem 0;
 }
 
@@ -399,23 +408,25 @@
 }
 
 .randomize-btn {
-  background: #f0f0f0;
-  border: 1px solid #ccc;
+  background: #1a2240;
+  border: 1px solid #2a3050;
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 0.85rem;
   font-weight: 600;
+  color: #8892B0;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .randomize-btn:hover {
-  background: #e0e0e0;
+  border-color: #FF6B35;
+  color: #FF6B35;
 }
 
 .team-preview-card {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
+  background: #1a2240;
+  border: 1px solid #2a3050;
   border-radius: 8px;
   padding: 0.6rem 0.8rem;
   margin-bottom: 0.6rem;
@@ -431,10 +442,11 @@
 
 .team-move-select {
   font-size: 0.8rem;
-  border: 1px solid #ccc;
+  border: 1px solid #2a3050;
   border-radius: 4px;
   padding: 2px 4px;
-  background: #fff;
+  background: #0f1520;
+  color: #F0F4FF;
   cursor: pointer;
 }
 
@@ -447,7 +459,7 @@
 .teacher-removed-section {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px dashed #e74c3c;
+  border-top: 1px dashed rgba(231, 76, 60, 0.4);
   width: 100%;
 }
 
@@ -466,7 +478,7 @@
 
 .removed-name {
   text-decoration: line-through;
-  color: #999;
+  color: #4a5568;
 }
 
 @media (max-width: 600px) {

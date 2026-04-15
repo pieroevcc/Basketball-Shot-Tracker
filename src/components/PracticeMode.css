@@ -10,12 +10,13 @@
 }
 
 .practice-mode-body {
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 24px;
+  background: #141928;
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   padding: 48px 40px;
   max-width: 460px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   text-align: center;
 }
 
@@ -32,15 +33,17 @@
 }
 
 .practice-title {
-  font-size: 36px;
-  font-weight: 900;
+  font-size: 44px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
   color: #FF6B35;
   margin: 0 0 8px 0;
 }
 
 .practice-subtitle {
   font-size: 16px;
-  color: #555;
+  color: #8892B0;
   margin: 0 0 36px 0;
 }
 
@@ -57,23 +60,23 @@
   align-items: center;
   justify-content: center;
   padding: 30px 20px;
-  border-radius: 20px;
+  border-radius: 14px;
   width: 160px;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-  border: 2px solid #ddd;
-  background: white;
+  border: 1px solid #2a3050;
+  background: #1a2240;
 }
 
 .practice-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 28px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 0 24px rgba(255, 107, 53, 0.25);
   border-color: #FF6B35;
 }
 
 .student-card,
 .mentor-card {
-  background: white;
+  background: #1a2240;
 }
 
 .practice-card-icon {
@@ -82,28 +85,30 @@
 }
 
 .practice-card-label {
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 18px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
   color: #FF6B35;
-  letter-spacing: 1px;
   margin-bottom: 4px;
 }
 
 .practice-card-sub {
   font-size: 12px;
-  color: #555;
+  color: #8892B0;
 }
 
 .practice-back-btn {
   margin-top: 24px;
   background: none;
   border: none;
-  color: #454545;
+  color: #8892B0;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   padding: 4px 0;
   text-align: center;
+  transition: color 0.2s;
 }
 
 .practice-back-btn:hover {
@@ -115,19 +120,20 @@
 .practice-header {
   text-align: center;
   padding: 20px;
-  text-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
 
 .practice-header h1 {
   font-size: 40px;
-  font-weight: 900;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 3px;
   color: #fff;
   margin: 0 0 8px 0;
 }
 
 .practice-header p {
   font-size: 16px;
-  color: #fff;
+  color: #8892B0;
   margin: 0;
 }
 
@@ -135,7 +141,7 @@
   margin: 15px;
   background: none;
   border: none;
-  color: #454545;
+  color: #8892B0;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -159,14 +165,14 @@
 
 .practice-tab {
   padding: 12px 24px;
-  border: 2px solid #ddd;
-  background: #ffffff;
-  color: #555;
-  border-radius: 14px;
+  border: 1px solid #2a3050;
+  background: rgba(255, 255, 255, 0.04);
+  color: #8892B0;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 700;
-  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 .practice-tab:hover {
@@ -175,10 +181,10 @@
 }
 
 .practice-tab.active {
-  background: linear-gradient(135deg, #FF6B35, #D2691E);
+  background: #FF6B35;
   color: white;
-  border-color: transparent;
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+  border-color: #FF6B35;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.35);
 }
 
 /* ---- Content area ---- */
@@ -219,7 +225,7 @@
   }
 
   .practice-title {
-    font-size: 28px;
+    font-size: 36px;
   }
 
   .practice-header h1 {

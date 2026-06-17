@@ -7,12 +7,13 @@
 }
 
 .lobby-card {
-  background: rgba(255, 255, 255, 0.97);
-  border-radius: 28px;
+  background: #141928;
+  border: 1px solid #2a3050;
+  border-radius: 16px;
   padding: 52px 44px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -31,15 +32,17 @@
 }
 
 .lobby-title {
-  font-size: 36px;
-  font-weight: 900;
+  font-size: 44px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  letter-spacing: 2px;
   color: #FF6B35;
   margin: 0;
 }
 
 .lobby-waiting-text {
-  font-size: 20px;
-  color: #555;
+  font-size: 18px;
+  color: #8892B0;
   margin: 0;
   line-height: 1.5;
   font-weight: 600;
@@ -50,26 +53,27 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  background: #f9f9f9;
-  border-radius: 16px;
+  background: #0f1520;
+  border-radius: 12px;
   padding: 16px 32px;
-  border: 2px dashed #ddd;
+  border: 1px dashed #2a3050;
 }
 
 .lobby-code-label {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #888;
+  color: #8892B0;
   font-weight: 700;
 }
 
 .lobby-code {
   font-size: 36px;
   font-weight: 900;
-  color: #333;
+  color: #FF6B35;
   letter-spacing: 6px;
   font-family: 'Courier New', monospace;
+  text-shadow: 0 0 16px rgba(255, 107, 53, 0.4);
 }
 
 .lobby-name-section {
@@ -81,10 +85,10 @@
 }
 
 .lobby-name-label {
-  font-size: 14px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: #888;
+  color: #8892B0;
   font-weight: 700;
   margin: 0;
 }
@@ -98,25 +102,26 @@
 }
 
 .lobby-current-name {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 900;
-  color: #1a1a2e;
+  color: #F0F4FF;
 }
 
 .btn-edit-name {
   padding: 8px 18px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  background: #f0f0f0;
-  border: none;
+  background: #1a2240;
+  border: 1px solid #2a3050;
+  color: #8892B0;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .btn-edit-name:hover {
-  background: #e0e0e0;
-  transform: scale(1.05);
+  border-color: #FF6B35;
+  color: #FF6B35;
 }
 
 .lobby-name-edit {
@@ -131,12 +136,15 @@
   padding: 14px 20px;
   font-size: 22px;
   font-weight: 700;
-  border: 3px solid #FF6B35;
-  border-radius: 14px;
+  background: #0f1520;
+  border: 2px solid #FF6B35;
+  border-radius: 12px;
   outline: none;
   width: 100%;
   box-sizing: border-box;
   text-align: center;
+  color: #F0F4FF;
+  font-family: 'Inter', sans-serif;
 }
 
 .lobby-edit-buttons {
@@ -154,6 +162,7 @@
   border-radius: 10px;
   cursor: pointer;
   transition: transform 0.15s, opacity 0.15s;
+  box-shadow: 0 0 16px rgba(255, 107, 53, 0.3);
 }
 
 .btn-save-name:hover:not(:disabled) {
@@ -169,20 +178,20 @@
   padding: 10px 24px;
   font-size: 16px;
   font-weight: 700;
-  background: #eee;
-  color: #555;
-  border: none;
+  background: #1a2240;
+  border: 1px solid #2a3050;
+  color: #8892B0;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .btn-cancel-name:hover {
-  background: #ddd;
+  background: #222d50;
 }
 
 .lobby-save-error {
-  color: #c0392b;
+  color: #ef4444;
   font-size: 14px;
   font-weight: 600;
   margin: 0;
@@ -217,11 +226,11 @@
   }
 
   .lobby-title {
-    font-size: 28px;
+    font-size: 36px;
   }
 
   .lobby-waiting-text {
-    font-size: 17px;
+    font-size: 16px;
   }
 
   .lobby-code {

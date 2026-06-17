@@ -22,6 +22,9 @@ ui-debug.log
 .vscode/
 *.iml
 
+# Claude Code local tooling
+.claude/
+
 # OS files
 .DS_Store
 Thumbs.db

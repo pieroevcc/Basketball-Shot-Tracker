@@ -2,7 +2,7 @@
 
 **A live, classroom-wide basketball data app for an after-school program that teaches data science to kids.** A teacher starts a session, students join with a code from any device, and the whole class plays a tabletop mini-basketball game through two structured rounds. Every shot gets tracked by court zone — then each kid sees their own color-coded **heat map** and stats, turning a game they just played into data they can actually read.
 
-> 🎬 **Demo:** [TODO: add link]
+> 🎬 **Demo:** https://basketball-shot-tracker-21c0e.web.app/
 
 ```
   TEACHER                          STUDENTS (join with a 6-char code)

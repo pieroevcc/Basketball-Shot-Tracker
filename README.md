@@ -152,7 +152,7 @@ The emulator and bot scripts need the Firebase CLI installed.
 
 ## 🎬 Video demo
 
-[TODO: add walkthrough video link]
+https://github.com/user-attachments/assets/7176ab47-07b3-4129-af67-e3da9956e2e3
 
 ---
 

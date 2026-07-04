@@ -13,26 +13,25 @@
 
 .mentor-tab {
   padding: 12px 22px;
-  border: 1px solid #2a3050;
-  background: rgba(255, 255, 255, 0.04);
-  color: #8892B0;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
   border-radius: 8px;
   cursor: pointer;
   font-size: 15px;
   font-weight: bold;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .mentor-tab:hover {
-  border-color: #FF6B35;
-  color: #FF6B35;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .mentor-tab.active {
-  background: #FF6B35;
-  color: white;
-  border-color: #FF6B35;
-  box-shadow: 0 0 20px rgba(255, 107, 53, 0.35);
+  background: white;
+  color: #667eea;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* Content area */
@@ -55,8 +54,7 @@
 }
 
 .summary-card {
-  background: rgba(20, 25, 40, 0.85);
-  border: 1px solid #2a3050;
+  background: rgba(30, 40, 70, 0.4);
   border-radius: 16px;
   padding: 24px 16px;
   text-align: center;
@@ -65,24 +63,25 @@
   align-items: center;
   gap: 8px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .summary-card.custom-card-shots {
-  border-top: 6px solid #F6B846;
+  border-top: 6px solid #F6B846; /* Yellow/Orange */
 }
 
 .summary-card.custom-card-points {
-  border-top: 6px solid #EF4444;
+  border-top: 6px solid #EF4444; /* Red */
 }
 
 .summary-card.custom-card-fg {
-  border-top: 6px solid #60A5FA;
+  border-top: 6px solid #60A5FA; /* Blue */
 }
 
 .custom-card-title {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 700;
@@ -90,20 +89,19 @@
 
 .custom-card-value {
   font-size: 42px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 2px;
+  font-weight: 800;
   line-height: 1.1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .text-yellow { color: #F6B846; }
 .text-red { color: #EF4444; }
 .text-blue { color: #60A5FA; }
-.text-green { color: #39FF14; }
+.text-green { color: #4ade80; }
 
 .custom-card-sub {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Zone highlights */
@@ -116,23 +114,23 @@
 .zone-highlight {
   flex: 1;
   min-width: 200px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   padding: 16px 18px;
   display: flex;
   align-items: center;
   gap: 14px;
-  border: 1px solid #2a3050;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .zone-highlight.hot {
-  border-color: rgba(57, 255, 20, 0.4);
-  background: rgba(57, 255, 20, 0.06);
+  border-color: rgba(0, 210, 0, 0.5);
+  background: rgba(0, 160, 0, 0.12);
 }
 
 .zone-highlight.cold {
-  border-color: rgba(255, 107, 53, 0.4);
-  background: rgba(255, 107, 53, 0.06);
+  border-color: rgba(255, 110, 0, 0.5);
+  background: rgba(200, 70, 0, 0.12);
 }
 
 .highlight-icon {
@@ -150,40 +148,40 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #8892B0;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .highlight-zone {
   font-size: 14px;
   font-weight: bold;
-  color: #F0F4FF;
+  color: white;
 }
 
 .highlight-pct {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* Shared panel styles */
 .insights-panel,
 .recent-activity {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #2a3050;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .panel-title {
   margin: 0 0 14px 0;
   font-size: 16px;
-  color: #F0F4FF;
+  color: white;
   font-weight: 700;
 }
 
 .panel-subtitle {
   margin: -10px 0 12px 0;
   font-size: 13px;
-  color: #8892B0;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 /* Insights list */
@@ -198,12 +196,12 @@
 
 .insight-item {
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 14px;
   line-height: 1.5;
-  border-left: 3px solid #FF6B35;
+  border-left: 3px solid rgba(255, 255, 255, 0.35);
 }
 
 /* Recent activity */
@@ -218,7 +216,7 @@
   align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 8px;
 }
 
@@ -230,12 +228,12 @@
 .activity-zone {
   flex: 1;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .activity-time {
   font-size: 12px;
-  color: #8892B0;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 /* Centered tab wrapper (Stats and History tabs) */
@@ -254,18 +252,18 @@
 
 .top-stat-card {
   flex: 1;
-  background: rgba(20, 25, 40, 0.85);
-  border: 1px solid #2a3050;
+  background: rgba(30, 40, 70, 0.4);
   border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .top-stat-title {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 700;
   margin-bottom: 12px;
 }
@@ -286,15 +284,13 @@
 .tp-label {
   font-size: 10px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.5);
   letter-spacing: 0.5px;
 }
 
 .tp-val {
   font-size: 18px;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 1px;
-  font-weight: 400;
+  font-weight: bold;
   color: white;
 }
 
@@ -308,9 +304,7 @@
 
 .streak-val {
   font-size: 20px;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 1px;
-  font-weight: 400;
+  font-weight: bold;
   color: white;
   margin-bottom: 8px;
 }
@@ -325,20 +319,20 @@
 .streak-bar-bg {
   flex: 1;
   height: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .streak-bar-fill {
   height: 100%;
-  background: #39FF14;
+  background: #4ade80; /* bright green */
   transition: width 0.3s ease;
 }
 
 .streak-target {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* 4-COLS SUMMARY OVERRIDE */
@@ -349,7 +343,7 @@
 .stat-standard {
   padding: 16px 12px;
   gap: 4px;
-  border-top: none;
+  border-top: none; /* remove accent border for the restored cards */
   justify-content: center;
 }
 
@@ -362,7 +356,7 @@
 .make-rate-card {
   position: relative;
   overflow: hidden;
-  padding-bottom: 30px;
+  padding-bottom: 30px; /* Shift content up slightly */
 }
 
 .z-index-1 {
@@ -376,7 +370,7 @@
   right: -2px;
   height: 40px;
   width: calc(100% + 4px);
-  pointer-events: none;
+  pointer-events: none; /* Let clicks pass through if needed */
 }
 
 .sparkline-svg {
@@ -390,7 +384,7 @@
 .activity-player {
   flex: 1;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Responsive */

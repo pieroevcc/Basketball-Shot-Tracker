@@ -3,11 +3,10 @@
   max-width: 620px;
   margin: 0 auto;
   padding: 1rem;
-  background: #141928;
-  border: 1px solid #2a3050;
-  border-radius: 16px;
+  background: #fff;
+  border-radius: 20px;
   margin-top: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .leaderboard-header {
@@ -17,16 +16,14 @@
 
 .leaderboard-title {
   font-size: 1.8rem;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 2px;
-  color: #F0F4FF;
+  font-weight: 800;
+  color: #1a1a2e;
   margin: 0 0 0.35rem;
 }
 
 .leaderboard-subtitle {
   font-size: 0.95rem;
-  color: #8892B0;
+  color: #666;
   margin: 0;
 }
 
@@ -41,44 +38,44 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: #1a2240;
+  background: #fff;
   border-radius: 10px;
-  border: 1px solid #2a3050;
   border-left: 4px solid transparent;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .leaderboard-row:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
 }
 
 .leaderboard-row.gold {
   border-left-color: #f5c518;
-  background: rgba(245, 197, 24, 0.08);
+  background: #fffdf0;
 }
 
 .leaderboard-row.silver {
   border-left-color: #b0b8c1;
-  background: rgba(176, 184, 193, 0.06);
+  background: #f8f9fa;
 }
 
 .leaderboard-row.bronze {
   border-left-color: #cd7f32;
-  background: rgba(205, 127, 50, 0.08);
+  background: #fdf6ef;
 }
 
 .leaderboard-row.me {
-  border-left-color: #FF6B35;
-  background: rgba(255, 107, 53, 0.08);
+  border-left-color: #4361ee;
+  background: #eef1ff;
   font-weight: 600;
 }
 
 .leaderboard-row.gold.me,
 .leaderboard-row.silver.me,
 .leaderboard-row.bronze.me {
-  background: rgba(255, 107, 53, 0.08);
+  /* me overrides medal background when combined */
+  background: #eef1ff;
 }
 
 .leaderboard-rank {
@@ -91,7 +88,7 @@
 .leaderboard-name {
   flex: 1;
   font-size: 1rem;
-  color: #F0F4FF;
+  color: #1a1a2e;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -99,7 +96,7 @@
 
 .leaderboard-you-badge {
   font-size: 0.75rem;
-  color: #FF6B35;
+  color: #4361ee;
   font-weight: 700;
   margin-left: 0.25rem;
 }
@@ -108,13 +105,13 @@
 .leaderboard-score {
   font-size: 1rem;
   font-weight: 700;
-  color: #FF6B35;
+  color: #1a1a2e;
   min-width: 3.5rem;
   text-align: right;
 }
 
 .leaderboard-empty {
   text-align: center;
-  color: #8892B0;
+  color: #aaa;
   padding: 2rem 0;
 }

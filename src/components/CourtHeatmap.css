@@ -16,7 +16,7 @@
   width: 100%;
   height: auto;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   display: block;
 }
 
@@ -26,20 +26,19 @@
   align-items: center;
   gap: 12px;
   margin-top: 6px;
-  background: #141928;
-  border: 1px solid #2a3050;
+  background: rgba(255, 255, 255, 0.1);
   padding: 16px;
   border-radius: 12px;
   width: 100%;
 }
 
 .heatmap-legend-container h3 {
-  color: #8892B0;
-  font-size: 12px;
-  letter-spacing: 2px;
+  color: #000;
+  font-size: 14px;
+  letter-spacing: 1.5px;
   margin: 0;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .heatmap-legend {
@@ -54,13 +53,13 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: #000;
 }
 
-.legend-item.hot  { background: rgba(0, 180, 0, 0.85); }
-.legend-item.warm { background: rgba(170, 190, 0, 0.85); color: #0A0E1A; }
-.legend-item.cool { background: rgba(255, 140, 0, 0.85); color: #0A0E1A; }
-.legend-item.cold { background: rgba(200, 30, 30, 0.85); }
+.legend-item.hot  { background: rgba(0, 180, 0, 0.75); }
+.legend-item.warm { background: rgba(170, 190, 0, 0.75); }
+.legend-item.cool { background: rgba(255, 140, 0, 0.75); }
+.legend-item.cold { background: rgba(200, 30, 30, 0.75); }
 
 @media (max-width: 480px) {
   .court-heatmap {
@@ -74,7 +73,7 @@
   }
 
   .heatmap-legend-container h3 {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .legend-item {

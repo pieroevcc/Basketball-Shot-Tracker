@@ -28,19 +28,19 @@
 }
 
 .team-review-title {
-  font-size: 44px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 3px;
+  font-size: 32px;
+  font-weight: 900;
   color: white;
   margin: 0;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.35);
   text-align: center;
 }
 
 .team-review-subtitle {
   font-size: 18px;
-  color: #8892B0;
+  color: rgba(255, 255, 255, 0.85);
   margin: 0;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* ---- Summary cards ---- */
@@ -56,23 +56,20 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  background: #141928;
-  border: 1px solid #2a3050;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
   padding: 20px 32px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   min-width: 120px;
 }
 
 .review-summary-card.orange .summary-number { color: #FF6B35; }
-.review-summary-card.green  .summary-number { color: #39FF14; }
-.review-summary-card.purple .summary-number { color: #a78bfa; }
+.review-summary-card.green  .summary-number { color: #22c55e; }
+.review-summary-card.purple .summary-number { color: #7c3aed; }
 
 .summary-number {
   font-size: 44px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 2px;
+  font-weight: 900;
   line-height: 1;
 }
 
@@ -81,7 +78,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #8892B0;
+  color: #888;
 }
 
 /* ---- Score comparison banner ---- */
@@ -90,9 +87,9 @@
   align-items: center;
   justify-content: center;
   gap: 20px;
-  background: rgba(255, 107, 53, 0.08);
-  border: 1px solid rgba(255, 107, 53, 0.3);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
   padding: 18px 32px;
   width: 100%;
   max-width: 520px;
@@ -112,24 +109,23 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #8892B0;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .comparison-score {
   font-size: 36px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 2px;
-  color: #F0F4FF;
+  font-weight: 900;
+  color: #ffffff;
   line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .comparison-vs {
   font-size: 18px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 3px;
-  color: #FF6B35;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 2px;
   flex-shrink: 0;
 }
 
@@ -144,9 +140,8 @@
 }
 
 .team-review-heatmap-panel {
-  background: #141928;
-  border: 1px solid #2a3050;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
   padding: 20px;
   flex: 1 1 320px;
   max-width: 520px;
@@ -154,25 +149,22 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
 }
 
 .team-review-stats-panel {
-  background: #141928;
-  border: 1px solid #2a3050;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
   padding: 20px;
   flex: 1 1 280px;
   max-width: 400px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
 }
 
 .review-panel-title {
-  font-size: 22px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 2px;
-  color: #F0F4FF;
+  font-size: 20px;
+  font-weight: 900;
+  color: #1a1a2e;
   margin: 0;
 }
 
@@ -186,42 +178,40 @@
 }
 
 .individual-card {
-  background: #141928;
-  border: 1px solid #2a3050;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
   padding: 16px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   min-width: 140px;
 }
 
 .individual-name {
   font-size: 20px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 1px;
-  color: #F0F4FF;
+  font-weight: 900;
+  color: #1a1a2e;
   margin: 0 0 4px 0;
 }
 
 .individual-stat {
   font-size: 15px;
   font-weight: 600;
-  color: #8892B0;
+  color: #555;
 }
 
 .individual-plus {
   font-size: 28px;
   font-weight: 900;
-  color: #FF6B35;
+  color: white;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 @media (max-width: 700px) {
   .team-review-title {
-    font-size: 32px;
+    font-size: 24px;
   }
 
   .summary-number {
@@ -236,7 +226,7 @@
   }
 
   .team-review-title {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .team-review-trophy {
@@ -273,21 +263,19 @@
 }
 
 .team-review-leaderboard-btn {
-  background: linear-gradient(135deg, #FF6B35, #D2691E);
+  background: #f39c12;
   color: #fff;
   border: none;
   border-radius: 12px;
   padding: 0.75rem 2.5rem;
-  font-size: 1rem;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 2px;
-  font-weight: 400;
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 0 20px rgba(255, 107, 53, 0.35);
-  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s, transform 0.1s;
 }
 
 .team-review-leaderboard-btn:hover {
+  background: #e67e22;
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(255, 107, 53, 0.5);
 }

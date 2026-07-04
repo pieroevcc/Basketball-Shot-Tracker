@@ -5,7 +5,6 @@ import {
   addShot as addShotToStore,
   deleteShot as deleteShotFromStore,
   clearShots as clearShotsFromStore,
-  startNewSession,
 } from '../services/shotsService';
 
 export function useShots() {
@@ -34,10 +33,5 @@ export function useShots() {
     setShots([]);
   };
 
-  const resetForNewSession = () => {
-    startNewSession();
-    setShots([]);
-  };
-
-  return { shots, loading, addShot, deleteShot, clearShots, resetForNewSession };
+  return { shots, loading, addShot, deleteShot, clearShots };
 }

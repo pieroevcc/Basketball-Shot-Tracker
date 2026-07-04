@@ -1,11 +1,11 @@
 .solo-only-badge {
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px dashed rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px dashed rgba(255, 255, 255, 0.6);
   border-radius: 10px;
   padding: 10px 16px;
   font-size: 14px;
   font-weight: 700;
-  color: #8892B0;
+  color: #fff;
   margin-bottom: 16px;
   text-align: center;
 }
@@ -19,13 +19,12 @@
 }
 
 .session-create-card {
-  background: #141928;
-  border: 1px solid #2a3050;
-  border-radius: 16px;
+  background: white;
+  border-radius: 24px;
   width: 100%;
   max-width: 500px;
   padding: 30px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
 }
@@ -35,9 +34,9 @@
 }
 
 .create-session-back-btn {
-  background: #1a2240;
-  color: #8892B0;
-  border: 1px solid #2a3050;
+  background: #111827;
+  color: white;
+  border: none;
   border-radius: 50px;
   padding: 10px 24px;
   font-size: 14px;
@@ -49,8 +48,7 @@
 }
 
 .create-session-back-btn:hover {
-  border-color: #FF6B35;
-  color: #FF6B35;
+  background: #1f2937;
 }
 
 .session-create-content {
@@ -68,46 +66,36 @@
   animation: bounce 1.2s infinite alternate;
 }
 
-@keyframes bounce {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-10px); }
-}
-
 .session-create-title {
-  font-size: 40px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 2px;
-  color: #F0F4FF;
+  font-size: 36px;
+  font-weight: 800;
+  color: #111827;
   margin: 0 0 16px 0;
 }
 
 .session-create-subtitle {
   font-size: 18px;
-  color: #8892B0;
+  color: #4b5563;
   line-height: 1.5;
   margin: 0;
 }
 
 .create-session-start-btn {
-  background: linear-gradient(135deg, #FF6B35, #D2691E);
+  background: #111827;
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 18px;
-  font-size: 18px;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 2px;
-  font-weight: 400;
+  font-size: 20px;
+  font-weight: 700;
   width: 100%;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 0 20px rgba(255, 107, 53, 0.35);
 }
 
 .create-session-start-btn:hover {
+  background: #1f2937;
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(255, 107, 53, 0.5);
 }
 
 .session-created {
@@ -117,7 +105,7 @@
 
 .created-label {
   font-size: 16px;
-  color: #8892B0;
+  color: #4b5563;
   margin-bottom: 8px;
 }
 
@@ -125,23 +113,20 @@
   font-size: 48px;
   font-weight: bold;
   letter-spacing: 8px;
-  color: #FF6B35;
+  color: #111827;
   margin-bottom: 16px;
-  font-family: 'Courier New', monospace;
-  text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
 }
 
 .created-hint {
   font-size: 14px;
-  color: #8892B0;
+  color: #6b7280;
 }
 
 .qr-hint {
   margin-top: 20px;
   padding: 15px;
-  background: #1a2240;
-  border: 1px solid #2a3050;
+  background: #f3f4f6;
   border-radius: 12px;
   font-size: 14px;
-  color: #8892B0;
+  color: #374151;
 }

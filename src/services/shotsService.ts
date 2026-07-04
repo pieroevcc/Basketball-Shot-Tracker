@@ -21,13 +21,6 @@ function getSessionId(): string {
   return id;
 }
 
-/** Call when the user picks a mode — starts a fresh session and clears stored shots. */
-export function startNewSession(): void {
-  const id = `session-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  localStorage.setItem(SESSION_ID_KEY, id);
-  localStorage.removeItem(LOCAL_SHOTS_KEY);
-}
-
 /** Load shots. Prefers Firestore when configured; falls back to localStorage. */
 export async function loadShots(): Promise<Shot[]> {
   if (!isFirebaseConfigured() || !db) {

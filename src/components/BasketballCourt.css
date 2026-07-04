@@ -4,20 +4,19 @@
   gap: 16px;
 }
 .top-stat-card {
-  background: rgba(20, 25, 40, 0.85);
+  background: rgba(30, 20, 60, 0.4);
   backdrop-filter: blur(8px);
-  border: 1px solid #2a3050;
   border-radius: 12px;
   padding: 10px 14px;
   text-align: center;
   width: 160px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   border-top: 4px solid #fff;
 }
 .card-yellow { border-top-color: #ffb700; }
 .card-yellow .stat-value { color: #ffb700; }
-.card-green { border-top-color: #39FF14; }
-.card-green .stat-value { color: #39FF14; }
+.card-green { border-top-color: #00e676; }
+.card-green .stat-value { color: #00e676; }
 .card-blue { border-top-color: #40c4ff; }
 .card-blue .stat-value { color: #40c4ff; }
 
@@ -25,21 +24,19 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 8px;
   text-transform: uppercase;
 }
 .stat-value {
   font-size: 28px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 400;
-  letter-spacing: 1px;
+  font-weight: 900;
   line-height: 1;
   margin-bottom: 4px;
 }
 .stat-sub {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .court-container {
@@ -51,12 +48,12 @@
 }
 
 .basketball-court {
-  border: 4px solid #2a3050;
+  border: 4px solid #fff;
   border-radius: 8px;
   cursor: pointer;
   max-width: 100%;
   height: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s ease;
   background: transparent !important;
 }
@@ -85,66 +82,58 @@
 .btn {
   padding: 10px 20px;
   font-size: 15px;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 1.5px;
-  font-weight: 400;
+  font-weight: bold;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .btn-made {
-  background: #39FF14;
-  color: #0A0E1A;
+  background: #00ff00;
+  color: #000;
 }
 
 .btn-made:hover {
-  background: #2de010;
+  background: #00cc00;
   transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(57, 255, 20, 0.4);
 }
 
 .btn-missed {
-  background: #ef4444;
+  background: #ff0000;
   color: #fff;
 }
 
 .btn-missed:hover {
-  background: #dc2626;
+  background: #cc0000;
   transform: translateY(-2px);
-  box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
 }
 
 .btn-cancel {
-  background: #1a2240;
-  border: 1px solid #2a3050;
-  color: #8892B0;
+  background: #999;
+  color: #fff;
 }
 
 .btn-cancel:hover {
-  background: #222d50;
+  background: #777;
   transform: translateY(-2px);
 }
 
 .btn-undo {
-  background: #FF6B35;
+  background: #6366f1;
   color: #fff;
-  box-shadow: 0 0 16px rgba(255, 107, 53, 0.3);
 }
 
 .selected-zone-label {
   text-align: center;
-  color: #F0F4FF;
-  font-size: 18px;
+  color: #fff;
+  font-size: 20px;
   font-weight: 700;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 1px;
 }
 
 .btn-undo:hover {
-  background: #e55a26;
+  background: #4f46e5;
   transform: translateY(-2px);
 }
 
@@ -170,7 +159,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.45);
   border-radius: 8px;
   pointer-events: none;
 }
@@ -190,15 +179,18 @@
 }
 
 @keyframes locked-bounce {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-8px); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-8px);
+  }
 }
 
 .locked-text {
   font-size: 28px;
-  font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 2px;
-  font-weight: 400;
+  font-weight: 900;
   color: white;
   text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }

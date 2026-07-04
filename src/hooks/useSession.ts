@@ -242,150 +242,82 @@ export function useSession(
   }, [participants]);
 
   // ---------------------------------------------------------------------------
-  // Teacher action callbacks
+  // Action callbacks — all share the same handling: surface the error message
+  // via setError, then rethrow so callers can still react.
   // ---------------------------------------------------------------------------
 
-  const createSession = useCallback(async (): Promise<string> => {
-    try {
-      const code = await createSessionService();
-      return code;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create session.';
-      setError(message);
-      throw err;
-    }
-  }, []);
+  const run = useCallback(
+    async <T,>(fallback: string, fn: () => Promise<T>): Promise<T> => {
+      try {
+        return await fn();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : fallback);
+        throw err;
+      }
+    },
+    []
+  );
 
+  // Teacher actions
+  const createSession = useCallback(
+    () => run('Failed to create session.', () => createSessionService()),
+    [run]
+  );
   const advanceSession = useCallback(
-    async (code: string, newStatus: SessionStatus): Promise<void> => {
-      try {
-        await advanceSessionService(code, newStatus);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to advance session.';
-        setError(message);
-        throw err;
-      }
-    },
-    []
+    (code: string, newStatus: SessionStatus) =>
+      run('Failed to advance session.', () => advanceSessionService(code, newStatus)),
+    [run]
   );
-
-  const pairTeams = useCallback(async (code: string, assignments?: Record<string, string>): Promise<void> => {
-    try {
-      await pairTeamsService(code, assignments);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to pair teams.';
-      setError(message);
-      throw err;
-    }
-  }, []);
-
-  const assignGroups = useCallback(async (code: string): Promise<void> => {
-    try {
-      await assignRound1GroupsService(code);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to assign groups.';
-      setError(message);
-      throw err;
-    }
-  }, []);
-
-  const calculateRound1WinnerCb = useCallback(async (code: string): Promise<void> => {
-    try {
-      await calculateRound1WinnerService(code);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to calculate Round 1 winner.';
-      setError(message);
-      throw err;
-    }
-  }, []);
-
+  const pairTeams = useCallback(
+    (code: string, assignments?: Record<string, string>) =>
+      run('Failed to pair teams.', () => pairTeamsService(code, assignments)),
+    [run]
+  );
+  const assignGroups = useCallback(
+    (code: string) => run('Failed to assign groups.', () => assignRound1GroupsService(code)),
+    [run]
+  );
+  const calculateRound1WinnerCb = useCallback(
+    (code: string) =>
+      run('Failed to calculate Round 1 winner.', () => calculateRound1WinnerService(code)),
+    [run]
+  );
   const saveShotAllocations = useCallback(
-    async (code: string, allocs: ShotAllocation[]): Promise<void> => {
-      try {
-        await saveShotAllocationsService(code, allocs);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to save shot allocations.';
-        setError(message);
-        throw err;
-      }
-    },
-    []
+    (code: string, allocs: ShotAllocation[]) =>
+      run('Failed to save shot allocations.', () => saveShotAllocationsService(code, allocs)),
+    [run]
   );
-
   const saveSabotageActionsCb = useCallback(
-    async (code: string, actions: SabotageAction[]): Promise<void> => {
-      try {
-        await saveSabotageActionsService(code, actions);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to save sabotage actions.';
-        setError(message);
-        throw err;
-      }
-    },
-    []
+    (code: string, actions: SabotageAction[]) =>
+      run('Failed to save sabotage actions.', () => saveSabotageActionsService(code, actions)),
+    [run]
+  );
+  const kickParticipant = useCallback(
+    (code: string, sid: string) =>
+      run('Failed to kick participant.', () => removeParticipantService(code, sid)),
+    [run]
   );
 
-  const kickParticipant = useCallback(async (code: string, sid: string): Promise<void> => {
-    try {
-      await removeParticipantService(code, sid);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to kick participant.';
-      setError(message);
-      throw err;
-    }
-  }, []);
-
-  // ---------------------------------------------------------------------------
-  // Student action callbacks
-  // ---------------------------------------------------------------------------
-
+  // Student actions
   const joinSession = useCallback(
-    async (code: string, name: string, sid: string): Promise<{ studentId: string; rejoined: boolean }> => {
-      try {
-        return await joinSessionService(code, name, sid);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to join session.';
-        setError(message);
-        throw err;
-      }
-    },
-    []
+    (code: string, name: string, sid: string) =>
+      run('Failed to join session.', () => joinSessionService(code, name, sid)),
+    [run]
   );
-
   const updateName = useCallback(
-    async (code: string, sid: string, name: string): Promise<void> => {
-      try {
-        await updateParticipantNameService(code, sid, name);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to update name.';
-        setError(message);
-        throw err;
-      }
-    },
-    []
+    (code: string, sid: string, name: string) =>
+      run('Failed to update name.', () => updateParticipantNameService(code, sid, name)),
+    [run]
   );
-
-  const addShot = useCallback(async (code: string, shot: Shot): Promise<void> => {
-    try {
-      await addSessionShotService(code, shot);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to add shot.';
-      setError(message);
-      throw err;
-    }
-  }, []);
-
+  const addShot = useCallback(
+    (code: string, shot: Shot) =>
+      run('Failed to add shot.', () => addSessionShotService(code, shot)),
+    [run]
+  );
   const undoLastShot = useCallback(
-    async (code: string, sid: string, activity: 'solo' | 'team'): Promise<void> => {
-      try {
-        await undoLastShotService(code, sid, activity);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to undo last shot.';
-        setError(message);
-        throw err;
-      }
-    },
-    []
+    (code: string, sid: string, activity: 'solo' | 'team') =>
+      run('Failed to undo last shot.', () => undoLastShotService(code, sid, activity)),
+    [run]
   );
 
   return {

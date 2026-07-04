@@ -13,9 +13,7 @@ dist/
 
 # Firebase local cache & logs
 .firebase/
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
+*.log
 
 # Editor / IDE config
 .idea/
@@ -24,6 +22,7 @@ ui-debug.log
 
 # Claude Code local tooling
 .claude/
+.playwright-mcp
 
 # OS files
 .DS_Store

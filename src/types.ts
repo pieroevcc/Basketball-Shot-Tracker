@@ -129,8 +129,6 @@ export const calculateStats = (shots: Shot[]): Stats => {
     const madeShotsInZone = zoneShots.filter((s) => s.made).length;
     const ptsValue = ZONE_POINTS[zone] ?? 2;
     const zonePoints = madeShotsInZone * ptsValue;
-    
-    stats.totalPoints += zonePoints;
 
     stats.byZone[zone] = {
       made: madeShotsInZone,

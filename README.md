@@ -142,7 +142,6 @@ Firestore rules and indexes ship from `firestore.rules` and `firestore.indexes.j
 npm test                  # unit + component tests (Vitest)
 npm run test:emulator:ci  # integration tests against the Firestore emulator
 npm run test:e2e          # Playwright end-to-end tests
-npm run test:bots         # simulate 25 students hitting a live session
 npm run test:all          # everything
 ```
 The emulator and bot scripts need the Firebase CLI installed.

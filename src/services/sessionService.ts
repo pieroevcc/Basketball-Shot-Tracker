@@ -58,6 +58,25 @@ async function generateUniqueCode(database: NonNullable<typeof db>): Promise<str
   throw new Error('Failed to generate a unique session code after 5 attempts.');
 }
 
+/** Fisher-Yates in-place shuffle. Returns the same array for convenience. */
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** Runs `fn`, logging and rethrowing any failure as "Failed to <label>". */
+async function withLog<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    console.warn(`Failed to ${label}:`, err);
+    throw err;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Teacher actions
 // ---------------------------------------------------------------------------
@@ -67,7 +86,7 @@ async function generateUniqueCode(database: NonNullable<typeof db>): Promise<str
  */
 export async function createSession(): Promise<string> {
   const database = requireDb();
-  try {
+  return withLog('create session', async () => {
     const sessionCode = await generateUniqueCode(database);
     const sessionData: Session = {
       sessionCode,
@@ -79,10 +98,7 @@ export async function createSession(): Promise<string> {
     };
     await setDoc(doc(database, 'sessions', sessionCode), sessionData);
     return sessionCode;
-  } catch (err) {
-    console.warn('Failed to create session:', err);
-    throw err;
-  }
+  });
 }
 
 const N8N_WEBHOOK_URL = 'https://piero7.app.n8n.cloud/webhook/session-end';
@@ -120,7 +136,7 @@ export function updateTeacherHeartbeat(sessionCode: string): void {
  */
 export async function advanceSession(sessionCode: string, newStatus: SessionStatus): Promise<void> {
   const database = requireDb();
-  try {
+  return withLog('advance session', async () => {
     await updateDoc(doc(database, 'sessions', sessionCode), { status: newStatus });
 
     if (newStatus === 'ended') {
@@ -130,10 +146,7 @@ export async function advanceSession(sessionCode: string, newStatus: SessionStat
         body: JSON.stringify({ sessionCode, spreadsheetId: SPREADSHEET_ID, teacherEmail: TEACHER_EMAIL }),
       }).catch((err) => console.warn('n8n webhook failed:', err));
     }
-  } catch (err) {
-    console.warn('Failed to advance session:', err);
-    throw err;
-  }
+  });
 }
 
 /**
@@ -142,16 +155,10 @@ export async function advanceSession(sessionCode: string, newStatus: SessionStat
  */
 export async function assignRound1Groups(sessionCode: string): Promise<void> {
   const database = requireDb();
-  try {
+  return withLog('assign Round 1 groups', async () => {
     const participantsRef = collection(database, 'sessions', sessionCode, 'participants');
     const snapshot = await getDocs(participantsRef);
-    const participants = snapshot.docs.map((d) => d.data() as Participant);
-
-    // Fisher-Yates shuffle
-    for (let i = participants.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [participants[i], participants[j]] = [participants[j], participants[i]];
-    }
+    const participants = shuffle(snapshot.docs.map((d) => d.data() as Participant));
 
     const batch = writeBatch(database);
     for (let i = 0; i < participants.length; i++) {
@@ -161,10 +168,7 @@ export async function assignRound1Groups(sessionCode: string): Promise<void> {
     }
 
     await batch.commit();
-  } catch (err) {
-    console.warn('Failed to assign Round 1 groups:', err);
-    throw err;
-  }
+  });
 }
 
 /**
@@ -237,20 +241,13 @@ export async function pairTeams(
   assignments?: Record<string, string>
 ): Promise<void> {
   const database = requireDb();
-  try {
+  return withLog('pair teams', async () => {
     let resolvedAssignments = assignments;
 
     if (!resolvedAssignments) {
       const participantsRef = collection(database, 'sessions', sessionCode, 'participants');
       const snapshot = await getDocs(participantsRef);
-      const participants = snapshot.docs.map((d) => d.data() as Participant);
-
-      // Fisher-Yates shuffle
-      for (let i = participants.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [participants[i], participants[j]] = [participants[j], participants[i]];
-      }
-
+      const participants = shuffle(snapshot.docs.map((d) => d.data() as Participant));
       resolvedAssignments = buildTeamAssignments(participants);
     }
 
@@ -270,10 +267,7 @@ export async function pairTeams(
     batch.update(sessionRef, { status: 'team_strategy' as SessionStatus, teamNames });
 
     await batch.commit();
-  } catch (err) {
-    console.warn('Failed to pair teams:', err);
-    throw err;
-  }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -294,7 +288,7 @@ export async function joinSession(
   studentId: string
 ): Promise<{ studentId: string; rejoined: boolean }> {
   const database = requireDb();
-  try {
+  return withLog('join session', async () => {
     const sessionRef = doc(database, 'sessions', sessionCode);
     const sessionSnap = await getDoc(sessionRef);
 
@@ -348,10 +342,7 @@ export async function joinSession(
     batch.update(doc(database, 'sessions', sessionCode), { participantCount: increment(1) });
     await batch.commit();
     return { studentId, rejoined: false };
-  } catch (err) {
-    console.warn('Failed to join session:', err);
-    throw err;
-  }
+  });
 }
 
 /**
@@ -363,13 +354,10 @@ export async function updateParticipantName(
   name: string
 ): Promise<void> {
   const database = requireDb();
-  try {
+  return withLog('update participant name', async () => {
     const participantRef = doc(database, 'sessions', sessionCode, 'participants', studentId);
     await updateDoc(participantRef, { name });
-  } catch (err) {
-    console.warn('Failed to update participant name:', err);
-    throw err;
-  }
+  });
 }
 
 /**
@@ -396,7 +384,7 @@ export async function addSessionShot(sessionCode: string, shot: Shot): Promise<v
   const database = requireDb();
   const deviceId = shot.studentId ?? 'unknown';
   checkRateLimit(deviceId);
-  try {
+  return withLog('add session shot', async () => {
     const batch = writeBatch(database);
 
     const shotRef = doc(database, 'sessions', sessionCode, 'shots', shot.id);
@@ -427,10 +415,7 @@ export async function addSessionShot(sessionCode: string, shot: Shot): Promise<v
 
     await batch.commit();
     trackRequest(deviceId);
-  } catch (err) {
-    console.warn('Failed to add session shot:', err);
-    throw err;
-  }
+  });
 }
 
 /**
@@ -444,7 +429,7 @@ export async function undoLastShot(
 ): Promise<void> {
   const database = requireDb();
   checkRateLimit(studentId);
-  try {
+  return withLog('undo last shot', async () => {
     const shotsRef = collection(database, 'sessions', sessionCode, 'shots');
     const shotsQuery = query(
       shotsRef,
@@ -485,10 +470,7 @@ export async function undoLastShot(
 
     await batch.commit();
     trackRequest(studentId);
-  } catch (err) {
-    console.warn('Failed to undo last shot:', err);
-    throw err;
-  }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -546,7 +528,6 @@ export function subscribeToShots(
 }
 
 /**
-/**
  * Subscribes to the allocations subcollection. Returns an unsubscribe function.
  */
 export function subscribeToAllocations(
@@ -591,7 +572,7 @@ export async function saveShotAllocations(
   const database = requireDb();
   const deviceId = allocations[0]?.studentId ?? 'teacher';
   checkRateLimit(deviceId);
-  try {
+  return withLog('save shot allocations', async () => {
     const batch = writeBatch(database);
 
     for (const alloc of allocations) {
@@ -616,10 +597,7 @@ export async function saveShotAllocations(
 
     await batch.commit();
     trackRequest(deviceId);
-  } catch (err) {
-    console.warn('Failed to save shot allocations:', err);
-    throw err;
-  }
+  });
 }
 
 /**
@@ -632,7 +610,7 @@ export async function saveSabotageActions(
   const database = requireDb();
   const deviceId = actions[0]?.actingTeamId ?? 'teacher';
   checkRateLimit(deviceId);
-  try {
+  return withLog('save sabotage actions', async () => {
     const batch = writeBatch(database);
 
     for (const action of actions) {
@@ -648,10 +626,7 @@ export async function saveSabotageActions(
 
     await batch.commit();
     trackRequest(deviceId);
-  } catch (err) {
-    console.warn('Failed to save sabotage actions:', err);
-    throw err;
-  }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -664,7 +639,7 @@ export async function saveSabotageActions(
  */
 export async function calculateRound1Winner(sessionCode: string): Promise<void> {
   const database = requireDb();
-  try {
+  return withLog('calculate Round 1 winner', async () => {
     const shotsRef = collection(database, 'sessions', sessionCode, 'shots');
     const shotsQuery = query(shotsRef, where('activity', '==', 'solo'));
     const shotsSnap = await getDocs(shotsQuery);
@@ -698,8 +673,5 @@ export async function calculateRound1Winner(sessionCode: string): Promise<void> 
     }
 
     await batch.commit();
-  } catch (err) {
-    console.warn('Failed to calculate Round 1 winner:', err);
-    throw err;
-  }
+  });
 }

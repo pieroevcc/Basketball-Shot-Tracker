@@ -22,7 +22,7 @@ dist/
 
 # Claude Code local tooling
 .claude/
-.playwright-mcp
+.playwright-mcp/
 
 # OS files
 .DS_Store

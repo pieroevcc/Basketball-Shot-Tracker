@@ -1,6 +1,6 @@
 # 🏀 Basketball Shot Tracker
 
-**A live, classroom-wide basketball data app for an after-school program that teaches data science to kids.** A teacher starts a session, students join with a code from any device, and the whole class plays a tabletop mini-basketball game through two structured rounds. Every shot gets tracked by court zone — then each kid sees their own color-coded **heat map** and stats, turning a game they just played into data they can actually read.
+**A live, classroom-wide basketball data app for an after-school program that teaches data science to kids.** A teacher starts a session, students join with a code from any device, and the whole class plays a tabletop mini-basketball game through two structured rounds. Every shot gets tracked by court zone, then each kid sees their own color-coded **heat map** and stats, turning a game they just played into data they can actually read.
 
 > 🎬 **Demo:** https://basketball-shot-tracker-21c0e.web.app/
 
@@ -10,16 +10,16 @@
 
 ```mermaid
 flowchart TD
-    A["🟢 LOBBY<br/>students join with a 6-char code + nickname"] -->|"Teacher: Start Round 1"| B["🏀 SOLO ACTIVE<br/>tap zone → made / missed (×20)"]
-    B -->|"Teacher: End Round & Show Review"| C["📊 SOLO REVIEW<br/>personal heat map + stats"]
-    C -->|"Teacher: Form Teams"| D["🤝 TEAM STRATEGY<br/>compare heat maps, plan shots"]
-    D -->|"Teacher: Start Allocation"| E["🎯 ALLOCATION<br/>split team shots per player"]
-    E -->|"Teacher: Start Sabotage"| F["💣 SABOTAGE<br/>block a rival team's hot zones"]
-    F -->|"Teacher: Start Team Shooting"| G["🏀 TEAM ACTIVE<br/>shoot as a team, blocked zones enforced"]
-    G -->|"Teacher: Show Results"| H["🏆 TEAM REVIEW<br/>team heat map + leaderboard"]
+    A["🟢 LOBBY<br/>students join with a 6-char code + nickname"] -->|"Teacher starts round 1"| B["🏀 SOLO ACTIVE<br/>tap a zone, record made or missed (x20)"]
+    B -->|"Teacher ends round, shows review"| C["📊 SOLO REVIEW<br/>personal heat map + stats"]
+    C -->|"Teacher forms teams"| D["🤝 TEAM STRATEGY<br/>compare heat maps, plan shots"]
+    D -->|"Teacher starts allocation"| E["🎯 ALLOCATION<br/>split team shots per player"]
+    E -->|"Teacher starts sabotage"| F["💣 SABOTAGE<br/>block rival hot zones"]
+    F -->|"Teacher starts team shooting"| G["🏀 TEAM ACTIVE<br/>shoot as a team, blocked zones enforced"]
+    G -->|"Teacher shows results"| H["🏆 TEAM REVIEW<br/>team heat map + leaderboard"]
 ```
 
-Every screen advances in lock-step the moment the teacher moves the session forward — no refresh, no re-join.
+Every screen advances in lock-step the moment the teacher moves the session forward: no refresh, no re-join.
 
 ---
 

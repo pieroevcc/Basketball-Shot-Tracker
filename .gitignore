@@ -24,6 +24,10 @@ dist/
 .claude/
 .playwright-mcp/
 
+# Compiled vite config artifacts
+vite.config.js
+vite.config.d.ts
+
 # OS files
 .DS_Store
 Thumbs.db

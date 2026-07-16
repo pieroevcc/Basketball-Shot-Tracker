@@ -4,25 +4,19 @@
 
 > 🎬 **Demo:** https://basketball-shot-tracker-21c0e.web.app/
 
-```
-  TEACHER                          STUDENTS (join with a 6-char code)
-  ───────                          ──────────────────────────────────
-  Create Session ──► LOBBY ──────► join + pick a nickname
-        │                              │
-        ▼                              ▼
-  Start Solo  ───► SOLO ACTIVE ──► tap zone → made / missed (×20)
-        │                              │
-        ▼                              ▼
-  Show Review ───► SOLO REVIEW ──► personal heat map + stats
-        │                              │
-        ▼                              ▼
-  Pair Teams  ───► TEAM STRATEGY ─► compare heat maps, plan shots
-                   ↓ ALLOCATION ──► split team shots per player
-                   ↓ SABOTAGE   ──► block a rival's hot zone
-                   ↓ TEAM ACTIVE ─► shoot as a team
-        │                              │
-        ▼                              ▼
-  End Session ───► TEAM REVIEW ───► team heat map + leaderboard
+![Basketball Shot Tracker demo](assets/demo.gif)
+
+<sub>Prefer motion? There's a full [video walkthrough](https://github.com/user-attachments/assets/7176ab47-07b3-4129-af67-e3da9956e2e3) too.</sub>
+
+```mermaid
+flowchart TD
+    A["🟢 LOBBY<br/>students join with a 6-char code + nickname"] -->|"Teacher: Start Round 1"| B["🏀 SOLO ACTIVE<br/>tap zone → made / missed (×20)"]
+    B -->|"Teacher: End Round & Show Review"| C["📊 SOLO REVIEW<br/>personal heat map + stats"]
+    C -->|"Teacher: Form Teams"| D["🤝 TEAM STRATEGY<br/>compare heat maps, plan shots"]
+    D -->|"Teacher: Start Allocation"| E["🎯 ALLOCATION<br/>split team shots per player"]
+    E -->|"Teacher: Start Sabotage"| F["💣 SABOTAGE<br/>block a rival team's hot zones"]
+    F -->|"Teacher: Start Team Shooting"| G["🏀 TEAM ACTIVE<br/>shoot as a team, blocked zones enforced"]
+    G -->|"Teacher: Show Results"| H["🏆 TEAM REVIEW<br/>team heat map + leaderboard"]
 ```
 
 Every screen advances in lock-step the moment the teacher moves the session forward — no refresh, no re-join.
@@ -31,17 +25,16 @@ Every screen advances in lock-step the moment the teacher moves the session forw
 
 ## ✨ Features
 
-- Live multi-device sessions — students join with a 6-character code, no login.
-- Teacher-driven state machine — one tap advances every connected screen in real time.
-- Tap-a-zone shot input on a 6-zone half-court, with undo.
-- Solo round — individual shot tracking with a per-zone scoring system.
-- Team round — auto-pairing, shot allocation, and a "sabotage" mechanic that blocks a rival team's zone.
-- Personal, team, and class-wide heat maps color-coded by make/miss percentage.
-- Leaderboard and per-zone stats breakdown.
-- Random kid-friendly nickname generator (e.g. `SpeedyHooper`, `CoolShark42`).
-- Resilient sessions — teacher heartbeat, disconnect detection, and idle timeouts auto-recover stranded students.
-- Practice Mode — offline single-device play with no Firebase required.
-- Export results to PDF/image.
+- **Live multi-device sessions** : Students join with a 6-character code, no login.
+- **Teacher-driven state machine** : One tap advances every connected screen in real time.
+- **Tap-a-zone** : Shot input on a 6-zone half-court, with undo.
+- **Solo round** : Individual shot tracking with a per-zone scoring system.
+- **Team round** : Auto-pairing, shot allocation, and a "sabotage" mechanic that blocks a rival team's zone.
+- **Heat Maps** : Personal, team, and class-wide heat maps color-coded by make/miss percentage.
+- **Leaderboard** : Shows top 5 players and teams.
+- **Random Name Generator** : Kid-friendly nickname generator (e.g. `SpeedyHooper`).
+- **Resilient sessions** : Teacher heartbeat, disconnect detection, and idle timeouts auto-recover stranded students.
+- **Practice Mode** : Offline single-device play with no Firebase required.
 
 ---
 
@@ -63,9 +56,9 @@ Every screen advances in lock-step the moment the teacher moves the session forw
 
 ## 🛠️ How I built it (the process)
 
-This started as a way to replace the clunky Google Forms + Sheets workflow the program used to collect shot data — but the real goal was bigger: give low-income kids a fun, visual way to *understand* their own data. A spreadsheet doesn't teach a 12-year-old anything; a heat map of their own shooting does. So the whole design leans into the game itself, then quietly turns it into a data-science lesson at the end.
+This started as a way to replace the clunky Google Forms + Sheets workflow the program used to collect shot data; but the real goal was bigger: give low-income kids a fun, visual way to *understand* their own data. A spreadsheet doesn't teach a 12-year-old anything; a heat map of their own shooting does. So the whole design leans into the game itself, then quietly turns it into a data-science lesson at the end.
 
-I wrote a detailed PRD first and built around a single **session state machine** — every screen is just a function of the current session status, which the teacher controls. The frontend is intentionally backend-free: Firestore's `onSnapshot` listeners (wrapped in a `useSession` hook) push every state change to every device, so the teacher tapping "Start Team Shooting" instantly moves the whole class forward. The hardest parts were all about *liveness*: keeping many student and teacher screens perfectly in sync, handling the messy reality of a teacher closing their laptop mid-session (heartbeats, `beforeunload`, timeouts, and idle detection so kids never get stranded), and designing a two-round game — zone scoring, team shot allocation, and a sabotage mechanic — fun enough to keep kids engaged while still producing clean data.
+I wrote a detailed PRD first and built around a single **session state machine**. Every screen is just a function of the current session status, which the teacher controls. The frontend is intentionally backend-free: Firestore's `onSnapshot` listeners (wrapped in a `useSession` hook) push every state change to every device, so the teacher tapping "Start Team Shooting" instantly moves the whole class forward. The hardest parts were all about *liveness*: keeping many student and teacher screens perfectly in sync, handling the messy reality of a teacher closing their laptop mid-session (heartbeats, `beforeunload`, timeouts, and idle detection so kids never get stranded), and designing a two-round game (zone scoring, team shot allocation, and a sabotage mechanic) fun enough to keep kids engaged while still producing clean data.
 
 > Guiding principle: simple and playful for the kid in front of the screen, even when the sync logic behind it isn't.
 
@@ -75,18 +68,18 @@ I wrote a detailed PRD first and built around a single **session state machine**
 
 - Modeling a real-time multi-user app around Firestore `onSnapshot` listeners and a fully serverless (no-backend) architecture.
 - Designing a simple, playful, Kahoot-style UI that actually works for 10–14 year olds.
-- Testing concurrency for real — Firestore emulator tests, multi-user simulations, Playwright E2E, and a bot script that hammers a session with 25 fake students.
+- Testing concurrency for real Firestore emulator tests, multi-user simulations, Playwright E2E, and a bot script that hammers a session with 25 fake students.
 - Writing Firestore security rules to validate every write and protect data integrity without a traditional backend.
 
 ---
 
 ## 🚀 How it could be improved
 
-- **No authentication** — anyone with a code can join. Fine for a supervised classroom, but real auth (or per-class teacher accounts) would harden it for wider use.
-- **Open Firestore reads** — rules currently allow public reads on sessions. Scoping reads to participants would tighten privacy.
-- **No session history / data export per student** — results live only for the session. Persisting longitudinal data would let kids track progress over weeks.
-- **Single teacher per session** — no co-teacher or multi-class admin view yet. An admin panel is the natural next step as the program scales.
-- **Fixed shot limits and zones** — scoring and zone layout are hard-coded; making them teacher-configurable would support different game variants.
+- **No authentication** : Anyone with a code can join. Fine for a supervised classroom, but real auth (or per-class teacher accounts) would harden it for wider use.
+- **Open Firestore reads** : Rules currently allow public reads on sessions. Scoping reads to participants would tighten privacy.
+- **No session history / data export per student** : Results live only for the session. Persisting longitudinal data would let kids track progress over weeks.
+- **Single teacher per session** :No co-teacher or multi-class admin view yet. An admin panel is the natural next step as the program scales.
+- **Fixed shot limits and zones** : Scoring and zone layout are hard-coded; making them teacher-configurable would support different game variants.
 
 ---
 
@@ -146,12 +139,6 @@ npm run test:all          # everything
 ```
 The emulator and bot scripts need the Firebase CLI installed.
 </details>
-
----
-
-## 🎬 Video demo
-
-https://github.com/user-attachments/assets/7176ab47-07b3-4129-af67-e3da9956e2e3
 
 ---
 
